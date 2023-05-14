@@ -1,6 +1,5 @@
 package it.polito.mad.sportcamp.bottomnav
 
-import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,7 +22,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import it.polito.mad.sportcamp.ui.theme.GreenActionBar
-import org.w3c.dom.Text
 
 
 @Composable
@@ -65,7 +63,7 @@ fun BottomBar(navController:NavHostController)
 
     Row (
         modifier = Modifier
-            .background(Color.White)
+            .padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 8.dp)
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically

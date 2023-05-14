@@ -9,7 +9,6 @@ data class User(
     @PrimaryKey(autoGenerate = true) val id_user: Int?,
     @ColumnInfo(name= "nickname") val nickname: String?,
     @ColumnInfo(name= "name") val name: String?,
-    @ColumnInfo(name= "surname") val surname: String?,
     @ColumnInfo(name= "mail") val mail: String?,
     @ColumnInfo(name= "city") val city: String?,
     @ColumnInfo(name= "age") val age: Int?,
