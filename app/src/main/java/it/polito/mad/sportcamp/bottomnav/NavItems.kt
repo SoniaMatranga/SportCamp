@@ -1,13 +1,12 @@
 package it.polito.mad.sportcamp.bottomnav
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Icon
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -23,20 +22,34 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import it.polito.mad.sportcamp.ui.theme.Purple200
-import it.polito.mad.sportcamp.ui.theme.Purple500
+import it.polito.mad.sportcamp.ui.theme.GreenActionBar
+import org.w3c.dom.Text
+
 
 @Composable
-fun BottomNav(){
+fun NavItems(){
     val navController = rememberNavController()
 
     Scaffold (
-        bottomBar = { BottomBar(navController = navController)}
-            )
-    {
-        BottomNavGraph(navController = navController)
+        topBar = { TopAppBar(
+            title = {Text(text = "SportCamp")},
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(GreenActionBar)) },
+        bottomBar = {BottomBar(navController = navController)}
+
+    )
+    { innerPadding ->
+        // Apply the padding globally to the whole BottomNavScreensController
+        Box(modifier = Modifier.padding(innerPadding)) {
+            BottomNavGraph(navController = navController)
+        }
     }
+
 }
+
+
+
 
 @Composable
 fun BottomBar(navController:NavHostController)
@@ -52,7 +65,6 @@ fun BottomBar(navController:NavHostController)
 
     Row (
         modifier = Modifier
-            .padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 8.dp)
             .background(Color.White)
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -69,14 +81,14 @@ fun BottomBar(navController:NavHostController)
 }
 
 @Composable
-fun RowScope.AddItem(
+fun AddItem(
     screen: BottomBarScreen,
     currentDestination: NavDestination?,
     navController: NavHostController
 ){
     val selected = currentDestination?.hierarchy?.any{ it.route == screen.route} == true
 
-    val background = if(selected) Purple500.copy(alpha = 0.6f) else Color.Transparent
+    val background = if(selected) GreenActionBar.copy(alpha = 0.6f) else Color.Transparent
 
     val contentColor = if(selected) Color.White else Color.Black
 
@@ -116,5 +128,5 @@ fun RowScope.AddItem(
 @Composable
 @Preview
 fun BottomNavPreview(){
-    BottomNav()
+    NavItems()
 }
