@@ -574,7 +574,7 @@ private fun OptionsItemStyle(item: OptionsData, context: Context) {
         // Icon
         Icon(
             modifier = Modifier
-                .size(32.dp),
+                .size(25.dp),
             imageVector = item.icon,
             contentDescription = item.title,
             tint = MaterialTheme.colors.primary
@@ -596,7 +596,7 @@ private fun OptionsItemStyle(item: OptionsData, context: Context) {
                 Text(
                     text = item.title,
                     style = TextStyle(
-                        fontSize = 18.sp,
+                        fontSize = 16.sp,
                     )
                 )
 
