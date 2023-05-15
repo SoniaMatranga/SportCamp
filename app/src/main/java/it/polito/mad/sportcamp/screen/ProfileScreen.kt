@@ -305,10 +305,7 @@ data class OptionsData(val icon: ImageVector, val title: String, val subTitle: S
 */
 
 import android.content.Context
-import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -316,7 +313,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.*
@@ -329,27 +325,28 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import it.polito.mad.sportcamp.R
-import it.polito.mad.sportcamp.ui.theme.GreenActionBar
+import it.polito.mad.sportcamp.database.AppViewModel
 import it.polito.mad.sportcamp.ui.theme.SportCampTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-
+import androidx.compose.runtime.livedata.observeAsState
+import it.polito.mad.sportcamp.database.User
 
 
 @Composable
-fun ProfileScreen() {
-
+fun ProfileScreen(
+    viewModel: AppViewModel = viewModel(factory = AppViewModel.factory)
+) {
+    val user by viewModel.getUserById(1).observeAsState()
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        SportCampTheme() {
+        SportCampTheme {
             Column(
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -357,7 +354,7 @@ fun ProfileScreen() {
                 // Top appbar
                 //TopAppbarProfile(context = LocalContext.current.applicationContext)
 
-                Profile()
+                user?.let { Profile(user = it) }
             }
         }
     }
@@ -392,7 +389,7 @@ fun TopAppbarProfile(context: Context) {
 }*/
 
 @Composable
-fun Profile(context: Context = LocalContext.current.applicationContext) {
+fun Profile(user: User, context: Context = LocalContext.current.applicationContext) {
 
     // This indicates if the optionsList has data or not
     // Initially, the list is empty. So, its value is false.
@@ -405,7 +402,7 @@ fun Profile(context: Context = LocalContext.current.applicationContext) {
             optionsList.clear()
 
             // Add the data to optionsList
-            prepareOptionsData()
+            prepareOptionsData(user)
 
             listPrepared = true
         }
@@ -420,7 +417,7 @@ fun Profile(context: Context = LocalContext.current.applicationContext) {
 
             item {
                 // User's image, name, email and edit button
-                UserDetails(context = context)
+                UserDetails(user = user)
             }
 
             // Show the options
@@ -434,7 +431,7 @@ fun Profile(context: Context = LocalContext.current.applicationContext) {
 
 // This composable displays user's image, name, email and edit button
 @Composable
-private fun UserDetails(context: Context) {
+private fun UserDetails(user: User) {
 
 
         // User's image
@@ -513,36 +510,46 @@ private fun UserDetails(context: Context) {
             ) {
 
                 // User's name
-                Text(
-                    text = "Nickname",
-                    style = TextStyle(
-                        fontSize = 22.sp,
-                    ),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                    user.nickname?.let {
+                        Text(
+                            text = it,
+                            style = TextStyle(
+                                fontSize = 22.sp,
+                            ),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+
+                }
 
                 Spacer(modifier = Modifier.height(2.dp))
-
-                // User's email
+            Column(
+                modifier = Modifier
+                    .weight(weight = 3f, fill = false)
+                    .padding(start = 16.dp)
+            ){
+                // User's bio
+            user.bio?.let {
                 Text(
-                    text = "User bio and achievements",
+                    text = it,
                     style = TextStyle(
                         fontSize = 14.sp,
                         color = Color.Gray,
                         letterSpacing = (0.8).sp
                     ),
-                    maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
             }
+            }
+        }
 
             // Edit button
             IconButton(
                 modifier = Modifier
                     .weight(weight = 1f, fill = false),
                 onClick = {
-                    Toast.makeText(context, "Edit Button", Toast.LENGTH_SHORT).show()
+                   // Toast.makeText(context, "Edit Button", Toast.LENGTH_SHORT).show()
                 }) {
                 Icon(
                     modifier = Modifier.size(24.dp),
@@ -553,7 +560,7 @@ private fun UserDetails(context: Context) {
             }
 
         }
-    }
+
 }
 
 // Row style for options
@@ -620,23 +627,24 @@ private fun OptionsItemStyle(item: OptionsData, context: Context) {
     }
 }
 
-private fun prepareOptionsData() {
+private fun prepareOptionsData(user: User) {
 
     val appIcons = Icons.Outlined
 
     optionsList.add(
-        OptionsData(
-            icon = appIcons.Person,
-            title = "Name",
-            subTitle = "User name" + "  User surname"
-        )
+            OptionsData(
+                icon = appIcons.Person,
+                title = "Name",
+                subTitle = user.name.toString()
+            )
+
     )
 
     optionsList.add(
         OptionsData(
             icon = appIcons.Mail,
             title = "Mail",
-            subTitle = "email123@email.com"
+            subTitle = user.mail.toString()
         )
     )
 
@@ -644,7 +652,7 @@ private fun prepareOptionsData() {
         OptionsData(
             icon = appIcons.LocationCity,
             title = "City",
-            subTitle = "User city"
+            subTitle = user.city.toString()
         )
     )
 
@@ -652,7 +660,7 @@ private fun prepareOptionsData() {
         OptionsData(
             icon = appIcons.CalendarMonth,
             title = "Age",
-            subTitle = "User age"
+            subTitle = user.age.toString()
         )
     )
 
@@ -660,7 +668,7 @@ private fun prepareOptionsData() {
         OptionsData(
             icon = appIcons.Transgender,
             title = "Gender",
-            subTitle = "User gender"
+            subTitle = user.gender.toString()
         )
     )
 
@@ -668,7 +676,7 @@ private fun prepareOptionsData() {
         OptionsData(
             icon = appIcons.TrendingUp,
             title = "Level",
-            subTitle = "User level"
+            subTitle = user.level.toString()
         )
     )
 
@@ -676,7 +684,7 @@ private fun prepareOptionsData() {
         OptionsData(
             icon = appIcons.DirectionsRun,
             title = "Sports",
-            subTitle = "User sports"
+            subTitle = user.sports.toString()
         )
     )
 }

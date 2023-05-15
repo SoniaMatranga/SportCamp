@@ -12,7 +12,7 @@ interface Dao {
     //TODO: check if works
 
     @Query("SELECT * FROM users_table WHERE id_user=:id_user")
-    fun getUserById(id_user: Int) :User
+    fun getUserById(id_user: Int) : LiveData<User>
 
     @Query("UPDATE users_table SET nickname=:nickname, name=:name, mail=:mail," +
             "city=:city, age=:age, gender=:gender, level=:level, sports=:sports, bio=:bio WHERE id_user=:id_user")
