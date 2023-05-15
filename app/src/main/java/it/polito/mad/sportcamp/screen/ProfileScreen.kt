@@ -31,14 +31,22 @@ import it.polito.mad.sportcamp.ui.theme.SportCampTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import it.polito.mad.sportcamp.common.CustomToolBar
 import it.polito.mad.sportcamp.database.User
 
 
 @Composable
 fun ProfileScreen(
+    navController: NavController,
     viewModel: AppViewModel = viewModel(factory = AppViewModel.factory)
 ) {
+
     val user by viewModel.getUserById(1).observeAsState()
+
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -50,7 +58,8 @@ fun ProfileScreen(
                 // Top appbar
                 //TopAppbarProfile(context = LocalContext.current.applicationContext)
 
-                user?.let { Profile(user = it) }
+                CustomToolBar(title = "Profile")
+                user?.let { Profile(user = it, navController= navController) }
             }
         }
     }
@@ -85,7 +94,7 @@ fun TopAppbarProfile(context: Context) {
 }*/
 
 @Composable
-fun Profile(user: User, context: Context = LocalContext.current.applicationContext) {
+fun Profile(user: User, navController: NavController, context: Context = LocalContext.current.applicationContext) {
 
     // This indicates if the optionsList has data or not
     // Initially, the list is empty. So, its value is false.
@@ -113,7 +122,7 @@ fun Profile(user: User, context: Context = LocalContext.current.applicationConte
 
             item {
                 // User's image, name, email and edit button
-                UserDetails(user = user)
+                UserDetails(user = user, navController= navController)
             }
 
             // Show the options
@@ -127,7 +136,7 @@ fun Profile(user: User, context: Context = LocalContext.current.applicationConte
 
 // This composable displays user's image, name, email and edit button
 @Composable
-private fun UserDetails(user: User) {
+private fun UserDetails(user: User,  navController: NavController) {
 
 
         // User's image
@@ -150,30 +159,6 @@ private fun UserDetails(user: User) {
                 )
         )
 
-        IconButton(
-            onClick = { /* Azione da eseguire quando il bottone viene cliccato */ },
-            modifier = Modifier
-                .size(24.dp)
-                .align(Alignment.Center)
-                .graphicsLayer(
-                    translationX = 250f,
-                    translationY = 300f
-                )
-                .border(
-                    2.dp,
-                    MaterialTheme.colors.secondary,
-                    CircleShape
-                ).background(
-                    color = MaterialTheme.colors.primary,
-                    shape = CircleShape
-                ),
-        ) {
-            Icon(
-                imageVector = Icons.Filled.PhotoCamera,
-                contentDescription = "Edit Details",
-                tint = MaterialTheme.colors.secondary
-            )
-        }
     }
 
     Row(
@@ -227,7 +212,8 @@ private fun UserDetails(user: User) {
                 modifier = Modifier
                     .weight(weight = 1f, fill = false),
                 onClick = {
-                    // Toast.makeText(context, "Edit Button", Toast.LENGTH_SHORT).show()
+                    //Toast.makeText(context, "Edit Button", Toast.LENGTH_SHORT).show()
+                    navController.navigate("editProfile")
                 }) {
                 Icon(
                     modifier = Modifier.size(24.dp),

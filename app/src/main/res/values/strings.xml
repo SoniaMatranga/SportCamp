@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">SportCamp</string>
+    <string name="Nickname">Nickname</string>
+    <string name="Name">Name</string>
+    <string name="Mail">Mail</string>
+    <string name="City">City</string>
+    <string name="Age">Age</string>
+    <string name="Gender">Gender</string>
+    <string name="Level">Level</string>
+    <string name="Sports">Sports</string>
+    <string name="Bio">your bio and achievements</string>
 </resources>

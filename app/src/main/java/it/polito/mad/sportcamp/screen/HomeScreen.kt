@@ -18,6 +18,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
 import it.polito.mad.sportcamp.R
 import androidx.compose.ui.unit.dp
+import it.polito.mad.sportcamp.common.CustomToolBar
 
 
 @Composable
@@ -26,6 +27,7 @@ fun HomeScreen() {
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
+        CustomToolBar(title = "Home")
         Text(text = "Home Screen", fontSize = 20.sp)
        // CardComponent()
 

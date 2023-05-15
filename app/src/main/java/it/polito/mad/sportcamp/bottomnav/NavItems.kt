@@ -21,6 +21,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import it.polito.mad.sportcamp.common.CustomToolBar
 import it.polito.mad.sportcamp.ui.theme.GreenActionBar
 
 
@@ -29,11 +30,9 @@ fun NavItems(){
     val navController = rememberNavController()
 
     Scaffold (
-        topBar = { TopAppBar(
-            title = {Text(text = "SportCamp")},
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(GreenActionBar)) },
+        /*topBar = { CustomToolBar(title = "SportCamp", modifier = Modifier
+            .fillMaxWidth()
+            .background(GreenActionBar))},*/
         bottomBar = {BottomBar(navController = navController)}
 
     )

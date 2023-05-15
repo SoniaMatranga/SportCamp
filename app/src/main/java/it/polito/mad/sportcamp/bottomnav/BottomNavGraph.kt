@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import it.polito.mad.sportcamp.screen.EditProfileScreen
 import it.polito.mad.sportcamp.screen.HomeScreen
 import it.polito.mad.sportcamp.screen.ProfileScreen
 import it.polito.mad.sportcamp.screen.ReservationsScreen
@@ -26,7 +27,9 @@ fun BottomNavGraph(
         }
         composable(route = BottomBarScreen.Profile.route)
         {
-            ProfileScreen()
+            ProfileScreen(navController = navController)
         }
+        composable("editProfile") { EditProfileScreen(navController = navController) }
+
     }
 }

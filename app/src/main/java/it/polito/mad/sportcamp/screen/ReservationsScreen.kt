@@ -22,6 +22,7 @@ import it.polito.mad.sportcamp.ui.theme.SportCampTheme
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.*
+import it.polito.mad.sportcamp.common.CustomToolBar
 
 @Composable
 fun ReservationsScreen() {
@@ -30,15 +31,20 @@ fun ReservationsScreen() {
         modifier = Modifier.fillMaxSize()
     ) {
         SportCampTheme{
-            Surface (modifier = Modifier.fillMaxSize()) {
-                ReservationsList(mutableListOf(
-                    Content("Reservation name 1", "Info \n Info2 \n Info 3"),
-                    Content("Reservation name 2", "Info"),
-                    Content("Reservation name 3", "Info"),
-                    Content("Reservation name 4", "Info"),
-                ))
-                //ReservationCard(Content("Author name", "Info"))
+            Column() {
+                CustomToolBar(title = "Reservations")
+                Surface (modifier = Modifier.fillMaxSize()) {
+                    ReservationsList(mutableListOf(
+                        Content("Reservation name 1", "Info \n Info2 \n Info 3"),
+                        Content("Reservation name 2", "Info"),
+                        Content("Reservation name 3", "Info"),
+                        Content("Reservation name 4", "Info"),
+                    ))
+                    //ReservationCard(Content("Author name", "Info"))
+                }
+                
             }
+           
         }
     }
 }
@@ -84,7 +90,9 @@ fun ReservationCard(msg: Content) {
                 if (isExpanded) MaterialTheme.colors.secondary else MaterialTheme.colors.background,
             )
 
-            Column(modifier = Modifier.fillMaxWidth().clickable { isExpanded = !isExpanded}) {
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .clickable { isExpanded = !isExpanded }) {
 
                 Text(text = msg.author,
                     modifier = Modifier.fillMaxWidth())
@@ -96,11 +104,14 @@ fun ReservationCard(msg: Content) {
                         // surfaceColor color will be changing gradually from primary to surface
                         color = surfaceColor,
                         // animateContentSize will change the Surface size gradually
-                        modifier = Modifier.animateContentSize().padding(1.dp)) {
+                        modifier = Modifier
+                            .animateContentSize()
+                            .padding(1.dp)) {
                         Text(
                             text = msg.body,
                             style = MaterialTheme.typography.body1,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
                                 .padding(all = 4.dp),
                             // If the message is expanded, we display all its content
                             // otherwise we only display the first line
