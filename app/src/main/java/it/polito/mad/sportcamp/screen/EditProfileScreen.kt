@@ -3,13 +3,16 @@ package it.polito.mad.sportcamp.screen
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.launch
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -54,7 +57,9 @@ import it.polito.mad.sportcamp.database.User
 import kotlinx.coroutines.delay
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.layout.ContentScale
 import it.polito.mad.sportcamp.common.BitmapConverter
+import it.polito.mad.sportcamp.common.Permission
 import kotlinx.coroutines.launch
 
 
@@ -77,43 +82,55 @@ fun EditProfileScreen(
     viewModel: AppViewModel = viewModel(factory = AppViewModel.factory),
     navController: NavController
 ) {
-    var isEdit:Boolean = false
+
+    val mContext = LocalContext.current
+
+    // ============================= ASK FOR CAMERA PERMISSIONS ==========================
+    Permission(
+        permission = android.Manifest.permission.CAMERA,
+        rationale = "You need to provide camera permissions.",
+        permissionNotAvailableContent = {
+            Column() {
+                Text("O noes! No Camera!")
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(onClick = {
+                    mContext.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.fromParts("package", mContext.packageName, null)
+                    })
+                }) {}
+            }
+        }
+    )
+   //=========================================================================================
+
     var userId = navController.currentBackStackEntry?.arguments?.getInt(DETAIL_ARGUMENT_KEY).toString()
     val user by viewModel.getUserById(userId.toInt()).observeAsState()
-
-
-    lateinit var selectedUser: User
-    val mContext = LocalContext.current
     // The coroutine scope for event handlers calling suspend functions.
     val coroutineScope = rememberCoroutineScope()
     // True if the message about the edit feature is shown.
     var validationMessageShown by remember { mutableStateOf(false) }
+    var saveMessageShown by remember { mutableStateOf(false) }
     var imageUri by remember {
         mutableStateOf<Uri?>(null)
     }
-    val bitmap = remember {
-        mutableStateOf<Bitmap?>(null)
+    val bitmap1 = user?.image?.let { BitmapConverter.converterStringToBitmap(it) }
+
+    var bitmap = remember {
+        mutableStateOf<Bitmap?>(bitmap1)
     }
+
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         imageUri = uri
     }
+
+    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) {
+        bitmap.value = it
+    }
+
     clearAll()
 
-    /*if (isEdit) {
-        viewModel.getUserById(1)
-        selectedUser = viewModel.getUserById(1).observeAsState().value!!
-        usrName = selectedUser.name.toString()
-        usrNickname = selectedUser.nickname.toString()
-        usrMail = selectedUser.mail.toString()
-        usrCity = selectedUser.city.toString()
-        usrAge = selectedUser.age.toString()
-        usrGender = selectedUser.gender.toString()
-        usrLevel = selectedUser.level.toString()
-        usrSports = selectedUser.sports.toString()
-        usrBio = selectedUser.bio.toString()
-    }*/
 
     // Shows the validation message.
     suspend fun showEditMessage() {
@@ -124,9 +141,18 @@ fun EditProfileScreen(
         }
     }
 
+    // Shows the save message.
+    suspend fun showSaveMessage() {
+        if (!saveMessageShown) {
+            saveMessageShown = true
+            delay(3000L)
+            saveMessageShown = false
+        }
+    }
+
     val scrollState = rememberScrollState()
-    val bitmap1 = user?.image?.let { BitmapConverter.converterStringToBitmap(it) }
     var isEdited by remember { mutableStateOf(false) }
+
     var isEditedNickname by remember { mutableStateOf(false) }
     var isEditedName by remember { mutableStateOf(false) }
     var isEditedMail by remember { mutableStateOf(false) }
@@ -136,6 +162,80 @@ fun EditProfileScreen(
     var isEditedLevel by remember { mutableStateOf(false) }
     var isEditedSports by remember { mutableStateOf(false) }
     var isEditedBio by remember { mutableStateOf(false) }
+
+    //========================= Dialog on discard ===================================
+    val openDialog = remember { mutableStateOf(false)  }
+
+    if (openDialog.value) {
+        AlertDialog(
+            onDismissRequest = {
+                openDialog.value = false
+            },
+            text = {
+                Text("Changes will be discarded permanently. Are you sure to discard all? ")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        usrName = user?.name.toString()
+                        usrNickname = user?.nickname.toString()
+                        usrMail = user?.mail.toString()
+                        usrCity = user?.city.toString()
+                        usrAge = user?.age.toString()
+                        usrGender = user?.city.toString()
+                        usrLevel = user?.level.toString()
+                        usrSports = user?.sports.toString()
+                        usrBio = user?.bio.toString()
+                        openDialog.value = false
+                    }) {
+                    Text("Discard")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = {
+                        openDialog.value = false
+                    }) {
+                    Text("Don't discard")
+                }
+            }
+        )
+    }
+
+    //========================= Dialog Camera or gallery ===================================
+    val openCameraDialog = remember { mutableStateOf(false)  }
+
+    if (openCameraDialog.value) {
+
+        AlertDialog(
+            onDismissRequest = {
+                openCameraDialog.value = false
+            },
+            text = {
+                Text("Choose an option to update your profile image:")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        cameraLauncher.launch()
+                        openCameraDialog.value = false
+                    }) {
+                    Text("Camera")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = {
+                        galleryLauncher.launch("image/*")
+                        openCameraDialog.value = false
+                    }) {
+                    Text("Gallery")
+                }
+            }
+        )
+    }
+
+    // ==================================  EDIT SCREEN ==============================================
     Scaffold(
         topBar = {
             CustomToolbarWithBackArrow(
@@ -165,12 +265,30 @@ fun EditProfileScreen(
                             .padding(all = 8.dp),
                         contentAlignment = Alignment.Center
                     ) {
+
                         if (bitmap1 != null) {
                             Image(
                                 painter = BitmapPainter(bitmap1.asImageBitmap()),
                                 contentDescription = "Profile picture",
+                                contentScale = ContentScale.FillBounds,
                                 modifier = Modifier
                                     // Clip image to be shaped as a circle
+                                    .clip(CircleShape)
+                                    .size(200.dp)
+                                    .border(
+                                        2.dp,
+                                        MaterialTheme.colors.primary,
+                                        CircleShape
+                                    )
+                            )
+                        }
+                        bitmap.value?.let { btm ->
+                            Image(
+                                bitmap = btm.asImageBitmap(),
+                                contentDescription = null,
+                                contentScale = ContentScale.FillBounds,
+                                modifier = Modifier
+                                    .size(200.dp)
                                     .clip(CircleShape)
                                     .border(
                                         2.dp,
@@ -178,6 +296,33 @@ fun EditProfileScreen(
                                         CircleShape
                                     )
                             )
+                        }
+                        imageUri?.let {
+                            if (Build.VERSION.SDK_INT < 28) {
+                                bitmap.value = MediaStore.Images
+                                    .Media.getBitmap(mContext.contentResolver, it)
+
+                            } else {
+                                val source = ImageDecoder
+                                    .createSource(mContext.contentResolver, it)
+                                bitmap.value = ImageDecoder.decodeBitmap(source)
+                            }
+
+                            bitmap.value?.let { btm ->
+                                Image(
+                                    bitmap = btm.asImageBitmap(),
+                                    contentScale = ContentScale.FillBounds,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(200.dp)
+                                        .clip(CircleShape)
+                                        .border(
+                                            2.dp,
+                                            MaterialTheme.colors.primary,
+                                            CircleShape
+                                        )
+                                )
+                            }
                         }
 
                         IconButton(
@@ -187,7 +332,7 @@ fun EditProfileScreen(
                                 .align(Alignment.Center)
                                 .graphicsLayer(
                                     translationX = 250f,
-                                    translationY = 300f
+                                    translationY = 250f
                                 )
                                 .border(
                                     2.dp,
@@ -202,31 +347,13 @@ fun EditProfileScreen(
                             Icon(
                                 imageVector = Icons.Filled.PhotoCamera,
                                 contentDescription = "Camera",
+                                modifier = Modifier.clickable {
+                                    openCameraDialog.value = true
+                                },
                                 tint = MaterialTheme.colors.secondary
                             )
                         }
                     }
-                    imageUri?.let {
-                        if (Build.VERSION.SDK_INT < 28) {
-                            bitmap.value = MediaStore.Images
-                                .Media.getBitmap(mContext.contentResolver, it)
-
-                        } else {
-                            val source = ImageDecoder
-                                .createSource(mContext.contentResolver, it)
-                            bitmap.value = ImageDecoder.decodeBitmap(source)
-                        }
-
-                        bitmap.value?.let { btm ->
-                            Image(
-                                bitmap = btm.asImageBitmap(),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(120.dp)
-                            )
-                        }
-                    }
-
 
                     user?.nickname?.let {
                         CustomTextField(
@@ -413,41 +540,64 @@ fun EditProfileScreen(
                     }
                     Spacer(modifier = Modifier.height(20.dp))
                     ValidationMessage(validationMessageShown)
-                    Button(onClick = {
-                        if (isEdited || isEditedAge || isEditedBio || isEditedCity || isEditedGender || isEditedLevel || isEditedMail
-                            || isEditedMail || isEditedName || isEditedNickname) {
-                            val user = User(
-                                id_user = if (isEdit) selectedUser.id_user else userId.trim().toInt(),
-                                nickname = if (isEditedNickname) usrNickname else user?.nickname,
-                                name = if (isEditedName) usrName else user?.name,
-                                mail = if (isEditedMail) usrMail else user?.mail,
-                                city = if (isEditedCity) usrCity else user?.city,
-                                age = if (isEditedAge) usrAge.toInt() else user?.age,
-                                gender = if (isEditedGender) usrGender else user?.gender,
-                                level = if (isEditedLevel) usrLevel else user?.level,
-                                sports = if(isEditedSports) usrSports else user?.sports,
-                                bio = if (isEditedBio) usrBio else user?.bio,
-                                image= null //da cambiare
-                            )
-
-                                updateUserInDB(mContext,
-                                    navController as NavHostController, user, viewModel)
-                            clearAll()
-                        } else {
-//                            toast(mContext, "Please add or update something...")
-                            coroutineScope.launch {
-                                showEditMessage()
+                    SaveMessage(saveMessageShown)
+                    Row (
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        modifier= Modifier.fillMaxWidth()
+                    ){
+                        Column() {
+                            Button(onClick = {
+                                openDialog.value = true
+                            }) {
+                                Text(
+                                    text = "Discard",
+                                    fontSize = 18.sp,
+                                    textAlign = TextAlign.Center,
+                                )
                             }
                         }
-                    }) {
-                        Text(
-                            text = if (isEdit) "Update Details" else "Save",
-                            fontSize = 18.sp,
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Center,
-                        )
-                    }
+                        Column() {
+                            Button(onClick = {
+                                if (isEdited || isEditedAge || isEditedBio || isEditedCity || isEditedGender || isEditedLevel || isEditedMail
+                                    || isEditedMail || isEditedName || isEditedNickname) {
+                                    val user = User(
+                                        id_user =  userId.trim().toInt(),
+                                        nickname = if (isEditedNickname) usrNickname else user?.nickname,
+                                        name = if (isEditedName) usrName else user?.name,
+                                        mail = if (isEditedMail) usrMail else user?.mail,
+                                        city = if (isEditedCity) usrCity else user?.city,
+                                        age = if (isEditedAge) usrAge.toInt() else user?.age,
+                                        gender = if (isEditedGender) usrGender else user?.gender,
+                                        level = if (isEditedLevel) usrLevel else user?.level,
+                                        sports = if(isEditedSports) usrSports else user?.sports,
+                                        bio = if (isEditedBio) usrBio else user?.bio,
+                                        image = bitmap.value?.let {
+                                            BitmapConverter.converterBitmapToString(
+                                                it
+                                            )
+                                        }
+                                    )
+                                    updateUserInDB(user, viewModel)
+                                    coroutineScope.launch {
+                                        showSaveMessage()
+                                    }
+                                    clearAll()
+                                } else {
+                                    //toast(mContext, "Please add or update something...")
+                                    coroutineScope.launch {
+                                        showEditMessage()
+                                    }
+                                }
+                            }) {
+                                Text(
+                                    text = "Save",
+                                    fontSize = 18.sp,
+                                    textAlign = TextAlign.Center,
+                                )
+                            }
+                        }
 
+                    }
                     Spacer(modifier = Modifier.height(80.dp))
                 }
             }
@@ -458,9 +608,6 @@ fun EditProfileScreen(
 
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
-
-
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun ValidationMessage(shown: Boolean) {
 
@@ -500,6 +647,45 @@ private fun ValidationMessage(shown: Boolean) {
     }
 }
 
+@Composable
+private fun SaveMessage(shown: Boolean) {
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        AnimatedVisibility(
+            visible = shown,
+            enter = slideInVertically(
+                // Enters by sliding in from offset -fullHeight to 0.
+                initialOffsetY = { fullHeight -> -fullHeight },
+                animationSpec = tween(durationMillis = 150, easing = LinearOutSlowInEasing)
+            ),
+            exit = slideOutVertically(
+                // Exits by sliding out from offset 0 to -fullHeight.
+                targetOffsetY = { fullHeight -> -fullHeight },
+                animationSpec = tween(durationMillis = 250, easing = FastOutLinearInEasing)
+            )
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    color = MaterialTheme.colors.primaryVariant,
+                    elevation = 4.dp,
+
+                    ) {
+                    Text(
+                        text = "Profile successfully updated!",
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
+
+        }
+    }
+}
+
 fun clearAll() {
     usrName = ""
     usrNickname = ""
@@ -512,25 +698,11 @@ fun clearAll() {
     usrBio = ""
 }
 
-/*
-fun addEmployeeInDB(
-    context: Context,
-    navController: NavHostController,
-    employee: User,
-    homeViewModel: HomeViewModel
-) {
-    homeViewModel.addEmployee(employee)
-    navController.popBackStack()
-}*/
-
 fun updateUserInDB(
-    context: Context,
-    navController: NavHostController,
     user: User,
     viewModel: AppViewModel
 ) {
     viewModel.updateUser(user.nickname!!, user.name!!,user.mail!!,user.city!!,user.age!!,user.gender!!,user.level!!,user.sports!!,user.bio!!,user.id_user!!, user.image!! )
-    //navController.popBackStack()
 }
 
 @Composable

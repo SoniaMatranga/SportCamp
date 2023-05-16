@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.*
@@ -31,10 +32,11 @@ import it.polito.mad.sportcamp.ui.theme.SportCampTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.layout.ContentScale
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -42,6 +44,7 @@ import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.BitmapConverter
 import it.polito.mad.sportcamp.common.CustomToolBar
 import it.polito.mad.sportcamp.database.User
+import it.polito.mad.sportcamp.ui.theme.GreenActionBar
 
 
 @Composable
@@ -63,7 +66,8 @@ fun ProfileScreen(
                 // Top appbar
                 //TopAppbarProfile(context = LocalContext.current.applicationContext)
 
-                CustomToolBar(title = "Profile")
+                CustomToolbarWithEditButton(title = "Profile", navController= navController as NavHostController)
+
                 user?.let { Profile(user = it, navController= navController) }
             }
         }
@@ -120,44 +124,57 @@ fun Profile(user: User, navController: NavController, context: Context = LocalCo
 
     if (listPrepared) {
 
+        // User's image, name, email
+
+        UserDetails(user = user, navController= navController)
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-
-            item {
-                // User's image, name, email and edit button
-                UserDetails(user = user, navController= navController)
-            }
-
             // Show the options
             items(optionsList) { item ->
-                OptionsItemStyle(item = item, context = context)
+                Card(
+                    elevation = 10.dp,
+                    modifier = Modifier.padding(5.dp)
+
+                ) {
+                    OptionsItemStyle(item = item, context = context)
+                }
             }
 
         }
+
+
     }
 }
 
-// This composable displays user's image, name, email and edit button
+
+
+// This composable displays user's image, name, email
 @Composable
 private fun UserDetails(user: User,  navController: NavController) {
-        val bitmap = user.image?.let { BitmapConverter.converterStringToBitmap(it) }
 
-        // User's image
+
+    val bitmap = user.image?.let { BitmapConverter.converterStringToBitmap(it) }
+    // User's image
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(all = 8.dp),
         contentAlignment = Alignment.Center
     ) {
+
         if (bitmap != null) {
             Image(
                 painter = BitmapPainter(bitmap.asImageBitmap()),
                 contentDescription = "Profile picture",
+                contentScale = ContentScale.FillBounds,
                 modifier = Modifier
                     // Clip image to be shaped as a circle
                     .clip(CircleShape)
+                    .size(200.dp)
                     .border(
                         2.dp,
                         MaterialTheme.colors.primary,
@@ -167,6 +184,7 @@ private fun UserDetails(user: User,  navController: NavController) {
         }
 
     }
+
 
     Row(
         modifier = Modifier
@@ -187,16 +205,16 @@ private fun UserDetails(user: User,  navController: NavController) {
             ) {
 
                 // User's name
-                    user.nickname?.let {
-                        Text(
-                            text = it,
-                            style = TextStyle(
-                                fontSize = 22.sp,
-                            ),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
+                user.nickname?.let {
+                    Text(
+                        text = it,
+                        style = TextStyle(
+                            fontSize = 22.sp,
+                        ),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
 
                 // User's bio
                 user.bio?.let {
@@ -211,36 +229,18 @@ private fun UserDetails(user: User,  navController: NavController) {
                     )
                 }
 
-                }
-
-                Spacer(modifier = Modifier.height(2.dp))
-            // Edit button
-            IconButton(
-                modifier = Modifier
-                    .weight(weight = 1f, fill = false),
-                onClick = {
-                    //Toast.makeText(context, "Edit Button", Toast.LENGTH_SHORT).show()
-                    navController.navigate(route = Screen.EditProfile.passId(1))
-                }) {
-                Icon(
-                    modifier = Modifier.size(24.dp),
-                    imageVector = Icons.Outlined.Edit,
-                    contentDescription = "Edit Details",
-                    tint = MaterialTheme.colors.primary
-                )
             }
 
         }
 
-
-
-        }
+    }
 
 }
 
 // Row style for options
 @Composable
 private fun OptionsItemStyle(item: OptionsData, context: Context) {
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -302,16 +302,32 @@ private fun OptionsItemStyle(item: OptionsData, context: Context) {
     }
 }
 
+@Composable
+fun CustomToolbarWithEditButton(title: String, navController: NavHostController) {
+    TopAppBar(
+        title = { Text(text = title, style = MaterialTheme.typography.h6) },
+        actions = {
+            IconButton(onClick = {navController.navigate(route = Screen.EditProfile.passId(1))}) {
+                Icon(Icons.Filled.Edit,
+                    contentDescription = "edit",
+                    tint = Color.White)
+            }
+        })
+
+
+
+}
+
 private fun prepareOptionsData(user: User) {
 
     val appIcons = Icons.Outlined
 
     optionsList.add(
-            OptionsData(
-                icon = appIcons.Person,
-                title = "Name",
-                subTitle = user.name.toString()
-            )
+        OptionsData(
+            icon = appIcons.Person,
+            title = "Name",
+            subTitle = user.name.toString()
+        )
 
     )
 

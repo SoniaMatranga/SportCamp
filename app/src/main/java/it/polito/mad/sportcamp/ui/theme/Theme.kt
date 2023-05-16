@@ -15,7 +15,7 @@ private val DarkColorPalette = darkColors(
 
 private val LightColorPalette = lightColors(
     primary = GreenActionBar,
-    primaryVariant = Purple700,
+    primaryVariant = ClearGreen,
     secondary = Color.White,
 
     /* Other default colors to override
