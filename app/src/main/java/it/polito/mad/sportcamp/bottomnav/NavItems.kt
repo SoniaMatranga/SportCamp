@@ -52,9 +52,9 @@ fun NavItems(){
 fun BottomBar(navController:NavHostController)
 {
     val screens = listOf(
-        BottomBarScreen.Home,
-        BottomBarScreen.Reservations,
-        BottomBarScreen.Profile
+        Screen.Home,
+        Screen.Reservations,
+        Screen.Profile
     )
 
     val navStackBackEntry by navController.currentBackStackEntryAsState()
@@ -79,7 +79,7 @@ fun BottomBar(navController:NavHostController)
 
 @Composable
 fun AddItem(
-    screen: BottomBarScreen,
+    screen: Screen,
     currentDestination: NavDestination?,
     navController: NavHostController
 ){

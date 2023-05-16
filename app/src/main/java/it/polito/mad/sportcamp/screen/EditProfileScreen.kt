@@ -47,9 +47,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY
 import it.polito.mad.sportcamp.database.AppViewModel
 import it.polito.mad.sportcamp.database.User
 import kotlinx.coroutines.delay
+import androidx.compose.runtime.getValue
 
 
 
@@ -65,14 +67,16 @@ var usrBio: String = ""
 
 
 
+
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun EditProfileScreen(
     viewModel: AppViewModel = viewModel(factory = AppViewModel.factory),
     navController: NavController
 ) {
-
     var isEdit:Boolean = false
+    var userId = navController.currentBackStackEntry?.arguments?.getInt(DETAIL_ARGUMENT_KEY).toString()
+    val user by viewModel.getUserById(userId.toInt()).observeAsState()
     lateinit var selectedUser: User
     val mContext = LocalContext.current
     // The coroutine scope for event handlers calling suspend functions.
@@ -206,168 +210,188 @@ fun EditProfileScreen(
                     }
                     ValidationMessage(validationMessageShown)
 
-                    CustomTextField(
-                        modifier = Modifier
-                            .padding(all = 10.dp)
-                            .fillMaxWidth(),
-                        labelResId = R.string.Nickname,
-                        inputWrapper = usrNickname,
-                        keyboardOptions = KeyboardOptions(
-                            capitalization = KeyboardCapitalization.None,
-                            autoCorrect = false,
-                            keyboardType = KeyboardType.Text,
-                            imeAction = ImeAction.Done
-                        ),
-                        maxLength = 50,
-                        maxLines = 1
-                    ) {
-                        isEdited = true
-                        usrNickname = it
+                    user?.nickname?.let {
+                        CustomTextField(
+                            modifier = Modifier
+                                .padding(all = 10.dp)
+                                .fillMaxWidth(),
+                            labelResId = R.string.Nickname,
+                            inputWrapper = it,
+                            keyboardOptions = KeyboardOptions(
+                                capitalization = KeyboardCapitalization.None,
+                                autoCorrect = false,
+                                keyboardType = KeyboardType.Text,
+                                imeAction = ImeAction.Done
+                            ),
+                            maxLength = 50,
+                            maxLines = 1
+                        ) {
+                            isEdited = true
+                            usrNickname = it
+                        }
                     }
 
-                    CustomTextField(
-                        modifier = Modifier
-                            .padding(all = 10.dp)
-                            .fillMaxWidth(),
-                        labelResId = R.string.Name,
-                        inputWrapper = usrName,
-                        keyboardOptions = KeyboardOptions(
-                            capitalization = KeyboardCapitalization.None,
-                            autoCorrect = false,
-                            keyboardType = KeyboardType.Text,
-                            imeAction = ImeAction.Done
-                        ),
-                        maxLength = 50,
-                        maxLines = 1
-                    ) {
-                        isEdited = true
-                        usrName = it
+                    user?.name?.let {
+                        CustomTextField(
+                            modifier = Modifier
+                                .padding(all = 10.dp)
+                                .fillMaxWidth(),
+                            labelResId = R.string.Name,
+                            inputWrapper = it,
+                            keyboardOptions = KeyboardOptions(
+                                capitalization = KeyboardCapitalization.None,
+                                autoCorrect = false,
+                                keyboardType = KeyboardType.Text,
+                                imeAction = ImeAction.Done
+                            ),
+                            maxLength = 50,
+                            maxLines = 1
+                        ) {
+                            isEdited = true
+                            usrName = it
+                        }
                     }
-                    CustomTextField(
-                        modifier = Modifier
-                            .padding(all = 10.dp)
-                            .fillMaxWidth(),
-                        labelResId = R.string.Mail,
-                        inputWrapper = usrMail,
-                        keyboardOptions = KeyboardOptions(
-                            capitalization = KeyboardCapitalization.None,
-                            autoCorrect = false,
-                            keyboardType = KeyboardType.Email,
-                            imeAction = ImeAction.Done
-                        ),
-                        maxLength = 5,
-                        maxLines = 1
-                    ) {
-                        isEdited = true
-                        usrMail = it
+                    user?.mail?.let {
+                        CustomTextField(
+                            modifier = Modifier
+                                .padding(all = 10.dp)
+                                .fillMaxWidth(),
+                            labelResId = R.string.Mail,
+                            inputWrapper = it,
+                            keyboardOptions = KeyboardOptions(
+                                capitalization = KeyboardCapitalization.None,
+                                autoCorrect = false,
+                                keyboardType = KeyboardType.Email,
+                                imeAction = ImeAction.Done
+                            ),
+                            maxLength = 5,
+                            maxLines = 1
+                        ) {
+                            isEdited = true
+                            usrMail = it
+                        }
                     }
-                    CustomTextField(
-                        modifier = Modifier
-                            .padding(all = 10.dp)
-                            .fillMaxWidth(),
-                        labelResId = R.string.City,
-                        inputWrapper = usrCity,
-                        keyboardOptions = KeyboardOptions(
-                            capitalization = KeyboardCapitalization.None,
-                            autoCorrect = false,
-                            keyboardType = KeyboardType.Text,
-                            imeAction = ImeAction.Done
-                        ),
-                        maxLength = 100,
-                        maxLines = 1
-                    ) {
-                        isEdited = true
-                        usrCity = it
+                    user?.city?.let {
+                        CustomTextField(
+                            modifier = Modifier
+                                .padding(all = 10.dp)
+                                .fillMaxWidth(),
+                            labelResId = R.string.City,
+                            inputWrapper = it,
+                            keyboardOptions = KeyboardOptions(
+                                capitalization = KeyboardCapitalization.None,
+                                autoCorrect = false,
+                                keyboardType = KeyboardType.Text,
+                                imeAction = ImeAction.Done
+                            ),
+                            maxLength = 100,
+                            maxLines = 1
+                        ) {
+                            isEdited = true
+                            usrCity = it
+                        }
                     }
-                    CustomTextField(
-                        modifier = Modifier
-                            .padding(all = 10.dp)
-                            .fillMaxWidth(),
-                        labelResId = R.string.Age,
-                        inputWrapper = usrAge,
-                        keyboardOptions = KeyboardOptions(
-                            capitalization = KeyboardCapitalization.None,
-                            autoCorrect = false,
-                            keyboardType = KeyboardType.Number,
-                            imeAction = ImeAction.Done
-                        ),
-                        maxLength = 3,
-                        maxLines = 1
-                    ) {
-                        isEdited = true
-                        usrAge = it
+                    user?.age?.toString().let {
+                        if (it != null) {
+                            CustomTextField(
+                                modifier = Modifier
+                                    .padding(all = 10.dp)
+                                    .fillMaxWidth(),
+                                labelResId = R.string.Age,
+                                inputWrapper = it,
+                                keyboardOptions = KeyboardOptions(
+                                    capitalization = KeyboardCapitalization.None,
+                                    autoCorrect = false,
+                                    keyboardType = KeyboardType.Number,
+                                    imeAction = ImeAction.Done
+                                ),
+                                maxLength = 3,
+                                maxLines = 1
+                            ) {
+                                isEdited = true
+                                usrAge = it
+                            }
+                        }
                     }
-                    CustomTextField(
-                        modifier = Modifier
-                            .padding(all = 10.dp)
-                            .fillMaxWidth(),
-                        labelResId = R.string.Gender,
-                        inputWrapper = usrGender,
-                        keyboardOptions = KeyboardOptions(
-                            capitalization = KeyboardCapitalization.None,
-                            autoCorrect = false,
-                            keyboardType = KeyboardType.Text,
-                            imeAction = ImeAction.Done
-                        ),
-                        maxLength = 100,
-                        maxLines = 1
-                    ) {
-                        isEdited = true
-                        usrGender = it
+                    user?.gender?.let {
+                        CustomTextField(
+                            modifier = Modifier
+                                .padding(all = 10.dp)
+                                .fillMaxWidth(),
+                            labelResId = R.string.Gender,
+                            inputWrapper = it,
+                            keyboardOptions = KeyboardOptions(
+                                capitalization = KeyboardCapitalization.None,
+                                autoCorrect = false,
+                                keyboardType = KeyboardType.Text,
+                                imeAction = ImeAction.Done
+                            ),
+                            maxLength = 100,
+                            maxLines = 1
+                        ) {
+                            isEdited = true
+                            usrGender = it
+                        }
                     }
-                    CustomTextField(
-                        modifier = Modifier
-                            .padding(all = 10.dp)
-                            .fillMaxWidth(),
-                        labelResId = R.string.Level,
-                        inputWrapper = usrLevel,
-                        keyboardOptions = KeyboardOptions(
-                            capitalization = KeyboardCapitalization.None,
-                            autoCorrect = false,
-                            keyboardType = KeyboardType.Text,
-                            imeAction = ImeAction.Done,
-                        ),
-                        maxLength = 10,
-                        maxLines = 1
-                    ) {
-                        isEdited = true
-                        usrLevel = it
+                    user?.level?.let {
+                        CustomTextField(
+                            modifier = Modifier
+                                .padding(all = 10.dp)
+                                .fillMaxWidth(),
+                            labelResId = R.string.Level,
+                            inputWrapper = it,
+                            keyboardOptions = KeyboardOptions(
+                                capitalization = KeyboardCapitalization.None,
+                                autoCorrect = false,
+                                keyboardType = KeyboardType.Text,
+                                imeAction = ImeAction.Done,
+                            ),
+                            maxLength = 10,
+                            maxLines = 1
+                        ) {
+                            isEdited = true
+                            usrLevel = it
+                        }
                     }
-                    CustomTextField(
-                        modifier = Modifier
-                            .padding(all = 10.dp)
-                            .fillMaxWidth(),
-                        labelResId = R.string.Sports,
-                        inputWrapper = usrSports,
-                        keyboardOptions = KeyboardOptions(
-                            capitalization = KeyboardCapitalization.None,
-                            autoCorrect = false,
-                            keyboardType = KeyboardType.Text,
-                            imeAction = ImeAction.Done
-                        ),
-                        maxLength = 100,
-                        maxLines = 1
-                    ) {
-                        isEdited = true
-                        usrSports = it
+                    user?.sports?.let {
+                        CustomTextField(
+                            modifier = Modifier
+                                .padding(all = 10.dp)
+                                .fillMaxWidth(),
+                            labelResId = R.string.Sports,
+                            inputWrapper = it,
+                            keyboardOptions = KeyboardOptions(
+                                capitalization = KeyboardCapitalization.None,
+                                autoCorrect = false,
+                                keyboardType = KeyboardType.Text,
+                                imeAction = ImeAction.Done
+                            ),
+                            maxLength = 100,
+                            maxLines = 1
+                        ) {
+                            isEdited = true
+                            usrSports = it
+                        }
                     }
-                    CustomTextField(
-                        modifier = Modifier
-                            .padding(all = 10.dp)
-                            .fillMaxWidth(),
-                        labelResId = R.string.Bio,
-                        inputWrapper = usrBio,
-                        keyboardOptions = KeyboardOptions(
-                            capitalization = KeyboardCapitalization.None,
-                            autoCorrect = false,
-                            keyboardType = KeyboardType.Text,
-                            imeAction = ImeAction.Done
-                        ),
-                        maxLength = 100,
-                        maxLines = 1
-                    ) {
-                        isEdited = true
-                        usrBio = it
+                    user?.bio?.let {
+                        CustomTextField(
+                            modifier = Modifier
+                                .padding(all = 10.dp)
+                                .fillMaxWidth(),
+                            labelResId = R.string.Bio,
+                            inputWrapper = it,
+                            keyboardOptions = KeyboardOptions(
+                                capitalization = KeyboardCapitalization.None,
+                                autoCorrect = false,
+                                keyboardType = KeyboardType.Text,
+                                imeAction = ImeAction.Done
+                            ),
+                            maxLength = 100,
+                            maxLines = 1
+                        ) {
+                            isEdited = true
+                            usrBio = it
+                        }
                     }
                     Spacer(modifier = Modifier.height(20.dp))
                     Button(onClick = {

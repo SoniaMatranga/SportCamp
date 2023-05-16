@@ -35,6 +35,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.CustomToolBar
 import it.polito.mad.sportcamp.database.User
 
@@ -213,7 +214,7 @@ private fun UserDetails(user: User,  navController: NavController) {
                     .weight(weight = 1f, fill = false),
                 onClick = {
                     //Toast.makeText(context, "Edit Button", Toast.LENGTH_SHORT).show()
-                    navController.navigate("editProfile")
+                    navController.navigate(route = Screen.EditProfile.passId(1))
                 }) {
                 Icon(
                     modifier = Modifier.size(24.dp),

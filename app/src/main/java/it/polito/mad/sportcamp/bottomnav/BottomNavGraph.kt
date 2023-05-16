@@ -1,9 +1,12 @@
 package it.polito.mad.sportcamp.bottomnav
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import it.polito.mad.sportcamp.screen.EditProfileScreen
 import it.polito.mad.sportcamp.screen.HomeScreen
 import it.polito.mad.sportcamp.screen.ProfileScreen
@@ -15,21 +18,30 @@ fun BottomNavGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = BottomBarScreen.Home.route
+        startDestination = Screen.Home.route
     ){
-        composable(route = BottomBarScreen.Home.route)
+        composable(route = Screen.Home.route)
         {
             HomeScreen()
         }
-        composable(route = BottomBarScreen.Reservations.route)
+        composable(route = Screen.Reservations.route)
         {
             ReservationsScreen()
         }
-        composable(route = BottomBarScreen.Profile.route)
+        composable(route = Screen.Profile.route)
         {
             ProfileScreen(navController = navController)
         }
-        composable("editProfile") { EditProfileScreen(navController = navController) }
+        composable(
+            route = Screen.EditProfile.route,
+            arguments = listOf(navArgument(DETAIL_ARGUMENT_KEY){
+                type= NavType.IntType
+            })
+        )
+        {
+            Log.d("Args",it.arguments?.getInt(DETAIL_ARGUMENT_KEY).toString())
+            EditProfileScreen(navController = navController)
+        }
 
     }
 }
