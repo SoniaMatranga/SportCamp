@@ -16,7 +16,7 @@ interface Dao {
 
     @Query("UPDATE users_table SET nickname=:nickname, name=:name, mail=:mail," +
             "city=:city, age=:age, gender=:gender, level=:level, sports=:sports, bio=:bio WHERE id_user=:id_user")
-    fun updateUserById( nickname: String, name:String,mail:String, city:String,
+    fun updateUser( nickname: String, name:String,mail:String, city:String,
                         age:Int, gender:String, level:String, sports:String, bio:String, id_user:Int)
 
 

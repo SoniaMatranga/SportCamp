@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.*
@@ -32,6 +33,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -59,7 +61,7 @@ fun ProfileScreen(
                 // Top appbar
                 //TopAppbarProfile(context = LocalContext.current.applicationContext)
 
-                CustomToolBar(title = "Profile")
+                CustomToolbarWithEditButton(title = "Profile", navController= navController as NavHostController)
                 user?.let { Profile(user = it, navController= navController) }
             }
         }
@@ -208,21 +210,6 @@ private fun UserDetails(user: User,  navController: NavController) {
                 }
 
                 Spacer(modifier = Modifier.height(2.dp))
-            // Edit button
-            IconButton(
-                modifier = Modifier
-                    .weight(weight = 1f, fill = false),
-                onClick = {
-                    //Toast.makeText(context, "Edit Button", Toast.LENGTH_SHORT).show()
-                    navController.navigate(route = Screen.EditProfile.passId(1))
-                }) {
-                Icon(
-                    modifier = Modifier.size(24.dp),
-                    imageVector = Icons.Outlined.Edit,
-                    contentDescription = "Edit Details",
-                    tint = MaterialTheme.colors.primary
-                )
-            }
 
         }
 
@@ -294,6 +281,22 @@ private fun OptionsItemStyle(item: OptionsData, context: Context) {
         }
 
     }
+}
+
+@Composable
+fun CustomToolbarWithEditButton(title: String, navController: NavHostController) {
+    TopAppBar(
+        title = { Text(text = title, style = MaterialTheme.typography.h6) },
+        actions = {
+            IconButton(onClick = {navController.navigate(route = Screen.EditProfile.passId(1))}) {
+                Icon(Icons.Filled.Edit,
+                    contentDescription = "edit",
+                    tint = Color.White)
+            }
+        })
+
+
+
 }
 
 private fun prepareOptionsData(user: User) {

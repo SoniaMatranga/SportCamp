@@ -2,6 +2,7 @@ package it.polito.mad.sportcamp.screen
 
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
@@ -52,7 +53,7 @@ import it.polito.mad.sportcamp.database.AppViewModel
 import it.polito.mad.sportcamp.database.User
 import kotlinx.coroutines.delay
 import androidx.compose.runtime.getValue
-
+import kotlinx.coroutines.launch
 
 
 var usrName: String = ""
@@ -77,6 +78,8 @@ fun EditProfileScreen(
     var isEdit:Boolean = false
     var userId = navController.currentBackStackEntry?.arguments?.getInt(DETAIL_ARGUMENT_KEY).toString()
     val user by viewModel.getUserById(userId.toInt()).observeAsState()
+
+
     lateinit var selectedUser: User
     val mContext = LocalContext.current
     // The coroutine scope for event handlers calling suspend functions.
@@ -96,7 +99,7 @@ fun EditProfileScreen(
     }
     clearAll()
 
-    if (isEdit) {
+    /*if (isEdit) {
         viewModel.getUserById(1)
         selectedUser = viewModel.getUserById(1).observeAsState().value!!
         usrName = selectedUser.name.toString()
@@ -108,7 +111,7 @@ fun EditProfileScreen(
         usrLevel = selectedUser.level.toString()
         usrSports = selectedUser.sports.toString()
         usrBio = selectedUser.bio.toString()
-    }
+    }*/
 
     // Shows the validation message.
     suspend fun showEditMessage() {
@@ -121,6 +124,15 @@ fun EditProfileScreen(
 
     val scrollState = rememberScrollState()
     var isEdited by remember { mutableStateOf(false) }
+    var isEditedNickname by remember { mutableStateOf(false) }
+    var isEditedName by remember { mutableStateOf(false) }
+    var isEditedMail by remember { mutableStateOf(false) }
+    var isEditedCity by remember { mutableStateOf(false) }
+    var isEditedAge by remember { mutableStateOf(false) }
+    var isEditedGender by remember { mutableStateOf(false) }
+    var isEditedLevel by remember { mutableStateOf(false) }
+    var isEditedSports by remember { mutableStateOf(false) }
+    var isEditedBio by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             CustomToolbarWithBackArrow(
@@ -176,7 +188,8 @@ fun EditProfileScreen(
                                     2.dp,
                                     MaterialTheme.colors.secondary,
                                     CircleShape
-                                ).background(
+                                )
+                                .background(
                                     color = MaterialTheme.colors.primary,
                                     shape = CircleShape
                                 ),
@@ -208,7 +221,7 @@ fun EditProfileScreen(
                             )
                         }
                     }
-                    ValidationMessage(validationMessageShown)
+
 
                     user?.nickname?.let {
                         CustomTextField(
@@ -226,7 +239,7 @@ fun EditProfileScreen(
                             maxLength = 50,
                             maxLines = 1
                         ) {
-                            isEdited = true
+                            isEditedNickname = true
                             usrNickname = it
                         }
                     }
@@ -247,7 +260,7 @@ fun EditProfileScreen(
                             maxLength = 50,
                             maxLines = 1
                         ) {
-                            isEdited = true
+                            isEditedName = true
                             usrName = it
                         }
                     }
@@ -267,7 +280,7 @@ fun EditProfileScreen(
                             maxLength = 5,
                             maxLines = 1
                         ) {
-                            isEdited = true
+                            isEditedMail = true
                             usrMail = it
                         }
                     }
@@ -287,7 +300,7 @@ fun EditProfileScreen(
                             maxLength = 100,
                             maxLines = 1
                         ) {
-                            isEdited = true
+                            isEditedCity = true
                             usrCity = it
                         }
                     }
@@ -308,7 +321,7 @@ fun EditProfileScreen(
                                 maxLength = 3,
                                 maxLines = 1
                             ) {
-                                isEdited = true
+                                isEditedAge = true
                                 usrAge = it
                             }
                         }
@@ -329,7 +342,7 @@ fun EditProfileScreen(
                             maxLength = 100,
                             maxLines = 1
                         ) {
-                            isEdited = true
+                            isEditedGender = true
                             usrGender = it
                         }
                     }
@@ -349,7 +362,7 @@ fun EditProfileScreen(
                             maxLength = 10,
                             maxLines = 1
                         ) {
-                            isEdited = true
+                            isEditedLevel = true
                             usrLevel = it
                         }
                     }
@@ -369,7 +382,7 @@ fun EditProfileScreen(
                             maxLength = 100,
                             maxLines = 1
                         ) {
-                            isEdited = true
+                            isEditedSports = true
                             usrSports = it
                         }
                     }
@@ -389,34 +402,37 @@ fun EditProfileScreen(
                             maxLength = 100,
                             maxLines = 1
                         ) {
-                            isEdited = true
+                            isEditedBio = true
                             usrBio = it
                         }
                     }
                     Spacer(modifier = Modifier.height(20.dp))
+                    ValidationMessage(validationMessageShown)
                     Button(onClick = {
-                        /*if (isEdited) {
-                            val employee = Employee(
-                                id = if (isEdit) selectedEmployee.id else empId.trim().toInt(),
-                                employeeId = empId.trim().toLong(),
-                                employeeName = empName,
-                                employeeDesignation = empDesignation,
-                                empExperience = empExp.toFloat(),
-                                empEmail = empEmailId,
-                                empPhoneNo = empPhoneNumber.toLong()
+                        if (isEdited || isEditedAge || isEditedBio || isEditedCity || isEditedGender || isEditedLevel || isEditedMail
+                            || isEditedMail || isEditedName || isEditedNickname) {
+                            val user = User(
+                                id_user = if (isEdit) selectedUser.id_user else userId.trim().toInt(),
+                                nickname = if (isEditedNickname) usrNickname else user?.nickname,
+                                name = if (isEditedName) usrName else user?.name,
+                                mail = if (isEditedMail) usrMail else user?.mail,
+                                city = if (isEditedCity) usrCity else user?.city,
+                                age = if (isEditedAge) usrAge.toInt() else user?.age,
+                                gender = if (isEditedGender) usrGender else user?.gender,
+                                level = if (isEditedLevel) usrLevel else user?.level,
+                                sports = if(isEditedSports) usrSports else user?.sports,
+                                bio = if (isEditedBio) usrBio else user?.bio
                             )
-                            if (isEdit) {
-                                updateEmployeeInDB(mContext, navController, employee, homeViewModel)
-                            } else {
-                                addEmployeeInDB(mContext, navController, employee, homeViewModel)
-                            }
+
+                                updateUserInDB(mContext,
+                                    navController as NavHostController, user, viewModel)
                             clearAll()
                         } else {
 //                            toast(mContext, "Please add or update something...")
                             coroutineScope.launch {
                                 showEditMessage()
                             }
-                        }*/
+                        }
                     }) {
                         Text(
                             text = if (isEdit) "Update Details" else "Save",
@@ -425,6 +441,8 @@ fun EditProfileScreen(
                             textAlign = TextAlign.Center,
                         )
                     }
+
+                    Spacer(modifier = Modifier.height(80.dp))
                 }
             }
         }
@@ -439,28 +457,39 @@ fun EditProfileScreen(
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun ValidationMessage(shown: Boolean) {
-    AnimatedVisibility(
-        visible = shown,
-        enter = slideInVertically(
-            // Enters by sliding in from offset -fullHeight to 0.
-            initialOffsetY = { fullHeight -> -fullHeight },
-            animationSpec = tween(durationMillis = 150, easing = LinearOutSlowInEasing)
-        ),
-        exit = slideOutVertically(
-            // Exits by sliding out from offset 0 to -fullHeight.
-            targetOffsetY = { fullHeight -> -fullHeight },
-            animationSpec = tween(durationMillis = 250, easing = FastOutLinearInEasing)
-        )
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
     ) {
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colors.secondary,
-            elevation = 4.dp
-        ) {
-            Text(
-                text = "Please add or update detail",
-                modifier = Modifier.padding(16.dp)
+        AnimatedVisibility(
+            visible = shown,
+            enter = slideInVertically(
+                // Enters by sliding in from offset -fullHeight to 0.
+                initialOffsetY = { fullHeight -> -fullHeight },
+                animationSpec = tween(durationMillis = 150, easing = LinearOutSlowInEasing)
+            ),
+            exit = slideOutVertically(
+                // Exits by sliding out from offset 0 to -fullHeight.
+                targetOffsetY = { fullHeight -> -fullHeight },
+                animationSpec = tween(durationMillis = 250, easing = FastOutLinearInEasing)
             )
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    color = MaterialTheme.colors.secondary,
+                    elevation = 4.dp,
+
+                    ) {
+                    Text(
+                        text = "Please update at least one field",
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
+
         }
     }
 }
@@ -486,17 +515,17 @@ fun addEmployeeInDB(
 ) {
     homeViewModel.addEmployee(employee)
     navController.popBackStack()
-}
+}*/
 
-fun updateEmployeeInDB(
+fun updateUserInDB(
     context: Context,
     navController: NavHostController,
-    employee: Employee,
-    homeViewModel: HomeViewModel
+    user: User,
+    viewModel: AppViewModel
 ) {
-    homeViewModel.updateEmployeeDetails(employee)
-    navController.popBackStack()
-}*/
+    viewModel.updateUser(user.nickname!!, user.name!!,user.mail!!,user.city!!,user.age!!,user.gender!!,user.level!!,user.sports!!,user.bio!!,user.id_user!! )
+    //navController.popBackStack()
+}
 
 @Composable
 fun CustomToolbarWithBackArrow(title: String, navController: NavHostController) {
