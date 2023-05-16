@@ -1,45 +1,47 @@
 package it.polito.mad.sportcamp.bottomnav
 
-import it.polito.mad.sportcamp.R
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.ui.graphics.vector.ImageVector
 
 const val DETAIL_ARGUMENT_KEY = "id"
 
 sealed class Screen(
     val route: String,
     val title: String,
-    val icon: Int,
-    val icon_focused: Int
+    val icon: ImageVector,
+    val icon_focused: ImageVector
 ) {
 
     //for home
-    object Home: Screen(
-        route = "home",
-        title = "Home",
-        icon = R.drawable.outline_home_24,
-        icon_focused = R.drawable.baseline_home_24
+    object AddReservations: Screen(
+        route = "addReservations",
+        title = "Add reservations",
+        icon = Icons.Outlined.DashboardCustomize,
+        icon_focused = Icons.Outlined.DashboardCustomize
     )
 
     //for reservations
     object Reservations: Screen(
         route = "reservations",
         title = "Reservations",
-        icon = R.drawable.outline_dashboard_24,
-        icon_focused = R.drawable.baseline_dashboard_24
+        icon = Icons.Outlined.Dashboard,
+        icon_focused = Icons.Outlined.Dashboard
     )
 
     //for profile
     object Profile: Screen(
         route = "profile",
         title = "Profile",
-        icon = R.drawable.outline_person_24,
-        icon_focused = R.drawable.baseline_person_24
+        icon = Icons.Outlined.Person,
+        icon_focused = Icons.Outlined.Person
     )
 
     object EditProfile: Screen(
         route = "editProfile/{$DETAIL_ARGUMENT_KEY}",
         title = "editProfile",
-        icon = 1,
-        icon_focused = 1
+        icon =Icons.Outlined.Edit,
+        icon_focused = Icons.Outlined.Edit
     ) {
         fun passId(id: Int): String {
             return this.route.replace(oldValue = "{$DETAIL_ARGUMENT_KEY}", newValue = id.toString())

@@ -3,7 +3,6 @@ package it.polito.mad.sportcamp.screen
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -14,7 +13,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.res.imageResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
 import it.polito.mad.sportcamp.R
 import androidx.compose.ui.unit.dp
@@ -22,13 +20,13 @@ import it.polito.mad.sportcamp.common.CustomToolBar
 
 
 @Composable
-fun HomeScreen() {
+fun AddReservationsScreen() {
 
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        CustomToolBar(title = "Home")
-        Text(text = "Home Screen", fontSize = 20.sp)
+        CustomToolBar(title = "Add reservations")
+        Text(text = "Add reservations screen", fontSize = 20.sp)
        // CardComponent()
 
     }
@@ -50,7 +48,7 @@ fun CardComponent() {
             Image(bitmap = image, contentDescription = "image")
             AnimatedVisibility(expanded) {
                 Text(
-                    text = "Home Screen",
+                    text = "Add reservations screen",
                     style = MaterialTheme.typography.body1
                 )
             }

@@ -7,10 +7,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import it.polito.mad.sportcamp.screen.EditProfileScreen
-import it.polito.mad.sportcamp.screen.HomeScreen
-import it.polito.mad.sportcamp.screen.ProfileScreen
-import it.polito.mad.sportcamp.screen.ReservationsScreen
+import it.polito.mad.sportcamp.screen.*
 
 @Composable
 fun BottomNavGraph(
@@ -18,11 +15,11 @@ fun BottomNavGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Home.route
+        startDestination = Screen.Reservations.route
     ){
-        composable(route = Screen.Home.route)
+        composable(route = Screen.AddReservations.route)
         {
-            HomeScreen()
+            AddReservationsScreen()
         }
         composable(route = Screen.Reservations.route)
         {

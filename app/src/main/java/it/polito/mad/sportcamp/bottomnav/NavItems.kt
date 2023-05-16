@@ -52,7 +52,7 @@ fun NavItems(){
 fun BottomBar(navController:NavHostController)
 {
     val screens = listOf(
-        Screen.Home,
+        Screen.AddReservations,
         Screen.Reservations,
         Screen.Profile
     )
@@ -108,7 +108,7 @@ fun AddItem(
             horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ){
             Icon(
-                painter = painterResource(id= if(selected) screen.icon_focused else screen.icon),
+                if(selected) screen.icon_focused else screen.icon,
                 contentDescription = "icon",
                 tint = contentColor
             )

@@ -270,7 +270,7 @@ fun EditProfileScreen(
                             Image(
                                 painter = BitmapPainter(bitmap1.asImageBitmap()),
                                 contentDescription = "Profile picture",
-                                contentScale = ContentScale.FillBounds,
+                                contentScale = ContentScale.Crop,
                                 modifier = Modifier
                                     // Clip image to be shaped as a circle
                                     .clip(CircleShape)
@@ -286,7 +286,7 @@ fun EditProfileScreen(
                             Image(
                                 bitmap = btm.asImageBitmap(),
                                 contentDescription = null,
-                                contentScale = ContentScale.FillBounds,
+                                contentScale = ContentScale.Crop,
                                 modifier = Modifier
                                     .size(200.dp)
                                     .clip(CircleShape)
@@ -311,7 +311,7 @@ fun EditProfileScreen(
                             bitmap.value?.let { btm ->
                                 Image(
                                     bitmap = btm.asImageBitmap(),
-                                    contentScale = ContentScale.FillBounds,
+                                    contentScale = ContentScale.Crop,
                                     contentDescription = null,
                                     modifier = Modifier
                                         .size(200.dp)

@@ -16,8 +16,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -32,9 +30,10 @@ import it.polito.mad.sportcamp.ui.theme.SportCampTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -157,11 +156,18 @@ private fun UserDetails(user: User,  navController: NavController) {
 
 
     val bitmap = user.image?.let { BitmapConverter.converterStringToBitmap(it) }
+   // val listColors = listOf(  MaterialTheme.colors.primary, Color.Yellow)
     // User's image
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            /*.background(
+                Brush.verticalGradient(
+                    listColors,
+                    tileMode = TileMode.Repeated
+                )
+            )*/
             .padding(all = 8.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -170,7 +176,7 @@ private fun UserDetails(user: User,  navController: NavController) {
             Image(
                 painter = BitmapPainter(bitmap.asImageBitmap()),
                 contentDescription = "Profile picture",
-                contentScale = ContentScale.FillBounds,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     // Clip image to be shaped as a circle
                     .clip(CircleShape)
@@ -244,11 +250,6 @@ private fun OptionsItemStyle(item: OptionsData, context: Context) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(enabled = true) {
-                Toast
-                    .makeText(context, item.title, Toast.LENGTH_SHORT)
-                    .show()
-            }
             .padding(all = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
