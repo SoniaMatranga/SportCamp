@@ -9,7 +9,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.*
@@ -32,12 +31,15 @@ import it.polito.mad.sportcamp.ui.theme.SportCampTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import it.polito.mad.sportcamp.bottomnav.Screen
+import it.polito.mad.sportcamp.common.BitmapConverter
 import it.polito.mad.sportcamp.common.CustomToolBar
 import it.polito.mad.sportcamp.database.User
 
@@ -61,7 +63,7 @@ fun ProfileScreen(
                 // Top appbar
                 //TopAppbarProfile(context = LocalContext.current.applicationContext)
 
-                CustomToolbarWithEditButton(title = "Profile", navController= navController as NavHostController)
+                CustomToolBar(title = "Profile")
                 user?.let { Profile(user = it, navController= navController) }
             }
         }
@@ -140,7 +142,7 @@ fun Profile(user: User, navController: NavController, context: Context = LocalCo
 // This composable displays user's image, name, email and edit button
 @Composable
 private fun UserDetails(user: User,  navController: NavController) {
-
+        val bitmap = user.image?.let { BitmapConverter.converterStringToBitmap(it) }
 
         // User's image
     Box(
@@ -149,18 +151,20 @@ private fun UserDetails(user: User,  navController: NavController) {
             .padding(all = 8.dp),
         contentAlignment = Alignment.Center
     ) {
-        Image(
-            painter = painterResource(R.drawable.user_image1),
-            contentDescription = "Profile picture",
-            modifier = Modifier
-                // Clip image to be shaped as a circle
-                .clip(CircleShape)
-                .border(
-                    2.dp,
-                    MaterialTheme.colors.primary,
-                    CircleShape
-                )
-        )
+        if (bitmap != null) {
+            Image(
+                painter = BitmapPainter(bitmap.asImageBitmap()),
+                contentDescription = "Profile picture",
+                modifier = Modifier
+                    // Clip image to be shaped as a circle
+                    .clip(CircleShape)
+                    .border(
+                        2.dp,
+                        MaterialTheme.colors.primary,
+                        CircleShape
+                    )
+            )
+        }
 
     }
 
@@ -210,6 +214,21 @@ private fun UserDetails(user: User,  navController: NavController) {
                 }
 
                 Spacer(modifier = Modifier.height(2.dp))
+            // Edit button
+            IconButton(
+                modifier = Modifier
+                    .weight(weight = 1f, fill = false),
+                onClick = {
+                    //Toast.makeText(context, "Edit Button", Toast.LENGTH_SHORT).show()
+                    navController.navigate(route = Screen.EditProfile.passId(1))
+                }) {
+                Icon(
+                    modifier = Modifier.size(24.dp),
+                    imageVector = Icons.Outlined.Edit,
+                    contentDescription = "Edit Details",
+                    tint = MaterialTheme.colors.primary
+                )
+            }
 
         }
 
@@ -281,22 +300,6 @@ private fun OptionsItemStyle(item: OptionsData, context: Context) {
         }
 
     }
-}
-
-@Composable
-fun CustomToolbarWithEditButton(title: String, navController: NavHostController) {
-    TopAppBar(
-        title = { Text(text = title, style = MaterialTheme.typography.h6) },
-        actions = {
-            IconButton(onClick = {navController.navigate(route = Screen.EditProfile.passId(1))}) {
-                Icon(Icons.Filled.Edit,
-                    contentDescription = "edit",
-                    tint = Color.White)
-            }
-        })
-
-
-
 }
 
 private fun prepareOptionsData(user: User) {

@@ -53,6 +53,8 @@ import it.polito.mad.sportcamp.database.AppViewModel
 import it.polito.mad.sportcamp.database.User
 import kotlinx.coroutines.delay
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import it.polito.mad.sportcamp.common.BitmapConverter
 import kotlinx.coroutines.launch
 
 
@@ -123,6 +125,7 @@ fun EditProfileScreen(
     }
 
     val scrollState = rememberScrollState()
+    val bitmap1 = user?.image?.let { BitmapConverter.converterStringToBitmap(it) }
     var isEdited by remember { mutableStateOf(false) }
     var isEditedNickname by remember { mutableStateOf(false) }
     var isEditedName by remember { mutableStateOf(false) }
@@ -162,18 +165,20 @@ fun EditProfileScreen(
                             .padding(all = 8.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Image(
-                            painter = painterResource(R.drawable.user_image1),
-                            contentDescription = "Profile picture",
-                            modifier = Modifier
-                                // Clip image to be shaped as a circle
-                                .clip(CircleShape)
-                                .border(
-                                    2.dp,
-                                    MaterialTheme.colors.primary,
-                                    CircleShape
-                                )
-                        )
+                        if (bitmap1 != null) {
+                            Image(
+                                painter = BitmapPainter(bitmap1.asImageBitmap()),
+                                contentDescription = "Profile picture",
+                                modifier = Modifier
+                                    // Clip image to be shaped as a circle
+                                    .clip(CircleShape)
+                                    .border(
+                                        2.dp,
+                                        MaterialTheme.colors.primary,
+                                        CircleShape
+                                    )
+                            )
+                        }
 
                         IconButton(
                             onClick = { /* Azione da eseguire quando il bottone viene cliccato */ },
@@ -421,7 +426,8 @@ fun EditProfileScreen(
                                 gender = if (isEditedGender) usrGender else user?.gender,
                                 level = if (isEditedLevel) usrLevel else user?.level,
                                 sports = if(isEditedSports) usrSports else user?.sports,
-                                bio = if (isEditedBio) usrBio else user?.bio
+                                bio = if (isEditedBio) usrBio else user?.bio,
+                                image= null //da cambiare
                             )
 
                                 updateUserInDB(mContext,
@@ -523,7 +529,7 @@ fun updateUserInDB(
     user: User,
     viewModel: AppViewModel
 ) {
-    viewModel.updateUser(user.nickname!!, user.name!!,user.mail!!,user.city!!,user.age!!,user.gender!!,user.level!!,user.sports!!,user.bio!!,user.id_user!! )
+    viewModel.updateUser(user.nickname!!, user.name!!,user.mail!!,user.city!!,user.age!!,user.gender!!,user.level!!,user.sports!!,user.bio!!,user.id_user!!, user.image!! )
     //navController.popBackStack()
 }
 

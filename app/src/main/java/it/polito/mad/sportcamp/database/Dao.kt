@@ -1,6 +1,7 @@
 package it.polito.mad.sportcamp.database
 
 
+import android.media.Image
 import androidx.lifecycle.LiveData
 import androidx.room.*
 
@@ -15,9 +16,9 @@ interface Dao {
     fun getUserById(id_user: Int) : LiveData<User>
 
     @Query("UPDATE users_table SET nickname=:nickname, name=:name, mail=:mail," +
-            "city=:city, age=:age, gender=:gender, level=:level, sports=:sports, bio=:bio WHERE id_user=:id_user")
+            "city=:city, age=:age, gender=:gender, level=:level, sports=:sports, bio=:bio, image=:image WHERE id_user=:id_user")
     fun updateUser( nickname: String, name:String,mail:String, city:String,
-                        age:Int, gender:String, level:String, sports:String, bio:String, id_user:Int)
+                        age:Int, gender:String, level:String, sports:String, bio:String, id_user:Int, image: String)
 
 
 

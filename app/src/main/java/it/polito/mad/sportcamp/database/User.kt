@@ -16,4 +16,5 @@ data class User(
     @ColumnInfo(name= "level") val level: String?,
     @ColumnInfo(name= "sports") val sports: String?,
     @ColumnInfo(name= "bio") val bio: String?,
+    @ColumnInfo(name="image") val image: String?
 )

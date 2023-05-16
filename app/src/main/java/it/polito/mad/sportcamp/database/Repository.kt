@@ -13,9 +13,10 @@ class AppViewModel(private val Dao: Dao) : ViewModel() {
 
     //======================================= users ==============================================
     fun getUserById(id_user:Int) : LiveData<User> = Dao.getUserById(id_user)
-    fun updateUser( nickname: String, name:String, mail:String, city:String,
-                        age:Int, gender:String, level:String, sports:String, bio:String, id_user:Int) =
-        Dao.updateUser(nickname,name,mail,city,age,gender,level,sports,bio,id_user)
+    fun updateUser(nickname: String, name:String, mail:String, city:String,
+                   age:Int, gender:String, level:String, sports:String, bio:String, id_user:Int, image: String
+    ) =
+        Dao.updateUser(nickname,name,mail,city,age,gender,level,sports,bio,id_user,image)
 
     //=================================== reservations ==========================================
     fun getAllReservations(): LiveData<List<Reservation>> = Dao.getAllReservations()
