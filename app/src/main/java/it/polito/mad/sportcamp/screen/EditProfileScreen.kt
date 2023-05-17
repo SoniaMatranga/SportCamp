@@ -5,7 +5,6 @@ package it.polito.mad.sportcamp.screen
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
@@ -28,8 +27,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -60,6 +58,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.core.content.ContextCompat
 import it.polito.mad.sportcamp.common.BitmapConverter
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
 
 
 var usrName: String = ""
@@ -71,7 +71,7 @@ var usrGender: String = ""
 var usrLevel: String = ""
 var usrSports: String = ""
 var usrBio: String = ""
-
+var isEditedGender: Boolean = false
 
 
 
@@ -172,7 +172,6 @@ fun EditProfileScreen(
     var isEditedMail by remember { mutableStateOf(false) }
     var isEditedCity by remember { mutableStateOf(false) }
     var isEditedAge by remember { mutableStateOf(false) }
-    var isEditedGender by remember { mutableStateOf(false) }
     var isEditedLevel by remember { mutableStateOf(false) }
     var isEditedSports by remember { mutableStateOf(false) }
     var isEditedBio by remember { mutableStateOf(false) }
@@ -416,7 +415,7 @@ fun EditProfileScreen(
                             modifier = Modifier
                                 .padding(all = 10.dp)
                                 .fillMaxWidth(),
-                            labelResId = R.string.City,
+                            labelResId = R.string.Mail,
                             inputWrapper = it,
                             keyboardOptions = KeyboardOptions(
                                 capitalization = KeyboardCapitalization.None,
@@ -473,26 +472,9 @@ fun EditProfileScreen(
                             }
                         }
                     }
-                    user?.gender?.let {
-                        CustomTextField(
-                            modifier = Modifier
-                                .padding(all = 10.dp)
-                                .fillMaxWidth(),
-                            labelResId = R.string.Gender,
-                            inputWrapper = it,
-                            keyboardOptions = KeyboardOptions(
-                                capitalization = KeyboardCapitalization.None,
-                                autoCorrect = false,
-                                keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Done
-                            ),
-                            maxLength = 100,
-                            maxLines = 1
-                        ) {
-                            isEditedGender = true
-                            usrGender = it
-                        }
-                    }
+
+                    user?.gender?.let { dropDownMenu(it) }
+
                     user?.level?.let {
                         CustomTextField(
                             modifier = Modifier
@@ -618,6 +600,7 @@ fun EditProfileScreen(
         }
     )
 }
+
 
 
 
@@ -772,5 +755,91 @@ fun CustomTextField(
         )
 
     }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun dropDownMenu(userGender: String) {
+
+    var isExpanded by remember { mutableStateOf(false) }
+    var gender by remember { mutableStateOf(userGender) }
+    val suggestions = listOf("Male","Female","Other")
+    val icon = if (isExpanded)
+        Icons.Filled.ArrowDropUp //it requires androidx.compose.material:material-icons-extended
+    else
+        Icons.Filled.ArrowDropDown
+
+    Box {
+
+            OutlinedTextField(
+                value = gender,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(all = 10.dp),
+                onValueChange = { gender = it },
+                readOnly = true,
+                label = { Text("Gender") },
+                trailingIcon = {
+                    Icon(icon, "contentDescription",
+                        Modifier.clickable { isExpanded = !isExpanded })
+                }
+            )
+
+        DropdownMenu(
+            expanded = isExpanded,
+            onDismissRequest = { isExpanded = false },
+            modifier = Modifier
+                .padding(all = 10.dp)
+               // .border(BorderStroke(1.dp, Color.Gray))
+                .fillMaxWidth(),
+               // .width(with(LocalDensity.current){textfieldSize.width.toDp()}),
+        ) {
+            suggestions.forEach { label ->
+                DropdownMenuItem(onClick = {
+                    gender = label
+                    isExpanded = false
+                    isEditedGender = true
+                    usrGender = label
+                }) {
+                    Text(text = label)
+                }
+            }
+        }
+/*
+        ExposedDropdownMenuBox(
+            expanded = isExpanded,
+            onExpandedChange = { isExpanded = it }
+        ) {
+            TextField(
+                value = gender,
+                onValueChange = {},
+                label = { Text("Gender") },
+                readOnly = true,
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)
+                },
+                colors = ExposedDropdownMenuDefaults.textFieldColors(),
+                // modifier = Modifier.menuAnchor()
+            )
+
+            ExposedDropdownMenu(
+                expanded = isExpanded,
+                onDismissRequest = { isExpanded = false }
+            ) {
+                DropdownMenuItem(
+                    onClick = { gender = "Male"; isExpanded = false },
+                    content = { Text(text = "Male") })
+                DropdownMenuItem(
+                    onClick = { gender = "Female" },
+                    content = { Text(text = "Female") })
+                DropdownMenuItem(
+                    onClick = { gender = "Other" },
+                    content = { Text(text = "Other") })
+
+            }
+        }*/
+    }
+
+
 }
 

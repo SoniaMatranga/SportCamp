@@ -11,5 +11,6 @@ data class Court(
     @ColumnInfo(name="address")val address: String?,
     @ColumnInfo(name="city") val city: String?,
     @ColumnInfo(name="sport") val sport: String?,
-    @ColumnInfo(name= "court_rating") val court_rating: Int?
+    @ColumnInfo(name= "court_rating") val court_rating: Int?,
+    @ColumnInfo(name="image") val image: String?
 )
