@@ -1,6 +1,7 @@
 package it.polito.mad.sportcamp.screen
 
 import android.content.Context
+import android.graphics.Paint.Align
 import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -30,10 +31,12 @@ import it.polito.mad.sportcamp.ui.theme.SportCampTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -135,7 +138,7 @@ fun Profile(user: User, navController: NavController, context: Context = LocalCo
             items(optionsList) { item ->
                 Card(
                     elevation = 10.dp,
-                    modifier = Modifier.padding(5.dp)
+                    modifier = Modifier.padding(4.dp)
 
                 ) {
                     OptionsItemStyle(item = item, context = context)
@@ -194,6 +197,58 @@ private fun UserDetails(user: User,  navController: NavController) {
 
     Row(
         modifier = Modifier
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier
+                    .weight(weight = 3f, fill = false)
+                    .padding(start = 16.dp),
+            ) {
+
+                // User's name
+                user.nickname?.let {
+                    Text(
+                        text = it,
+                        style = TextStyle(
+                            fontSize = 22.sp,
+                        ),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                // User's bio
+                user.bio?.let {
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = it,
+                        textAlign = TextAlign.Center,
+                        style = TextStyle(
+                            fontSize = 14.sp,
+                            color = Color.Gray,
+                            letterSpacing = (0.8).sp
+                        ),
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+            }
+
+        }
+
+    }
+// ======================= TEST =========================
+    Row(
+        modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -208,22 +263,25 @@ private fun UserDetails(user: User,  navController: NavController) {
                 modifier = Modifier
                     .weight(weight = 3f, fill = false)
                     .padding(start = 16.dp)
+
             ) {
 
-                // User's name
-                user.nickname?.let {
+                // User's level
+                user.level?.let {
                     Text(
-                        text = it,
+                        text = "Level",
                         style = TextStyle(
-                            fontSize = 22.sp,
+                            fontSize = 16.sp,
                         ),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
 
-                // User's bio
-                user.bio?.let {
+                // User's level value
+                user.level?.let {
                     Text(
                         text = it,
                         style = TextStyle(
@@ -231,7 +289,84 @@ private fun UserDetails(user: User,  navController: NavController) {
                             color = Color.Gray,
                             letterSpacing = (0.8).sp
                         ),
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+            }
+
+            Column(
+                modifier = Modifier
+                    .weight(weight = 3f, fill = false)
+                    .padding(start = 16.dp)
+            ) {
+
+                // User's city
+                user.city?.let {
+                    Text(
+                        text = "City",
+                        style = TextStyle(
+                            fontSize = 16.sp,
+                        ),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                // User's city value
+                user.city?.let {
+                    Text(
+                        text = it,
+                        style = TextStyle(
+                            fontSize = 14.sp,
+                            color = Color.Gray,
+                            letterSpacing = (0.8).sp
+                        ),
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+            }
+
+            Column(
+                modifier = Modifier
+                    .weight(weight = 3f, fill = false)
+                    .padding(start = 16.dp)
+
+            ) {
+
+                // User's gender
+                user.gender?.let {
+                    Text(
+                        text = "Gender",
+                        style = TextStyle(
+                            fontSize = 16.sp,
+                        ),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                // User's gender value
+                user.gender?.let {
+                    Text(
+                        text = it,
+                        style = TextStyle(
+                            fontSize = 14.sp,
+                            color = Color.Gray,
+                            letterSpacing = (0.8).sp
+                        ),
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
 
@@ -250,7 +385,7 @@ private fun OptionsItemStyle(item: OptionsData, context: Context) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(all = 16.dp),
+            .padding(all = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
 
@@ -339,14 +474,14 @@ private fun prepareOptionsData(user: User) {
             subTitle = user.mail.toString()
         )
     )
-
+ /*
     optionsList.add(
         OptionsData(
             icon = appIcons.LocationCity,
             title = "City",
             subTitle = user.city.toString()
         )
-    )
+    )*/
 
     optionsList.add(
         OptionsData(
@@ -356,6 +491,7 @@ private fun prepareOptionsData(user: User) {
         )
     )
 
+    /*
     optionsList.add(
         OptionsData(
             icon = appIcons.Transgender,
@@ -370,7 +506,7 @@ private fun prepareOptionsData(user: User) {
             title = "Level",
             subTitle = user.level.toString()
         )
-    )
+    )*/
 
     optionsList.add(
         OptionsData(

@@ -1,21 +1,21 @@
 package it.polito.mad.sportcamp.screen
 
 
+
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import android.provider.Settings
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -39,7 +39,6 @@ import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -58,8 +57,8 @@ import kotlinx.coroutines.delay
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.core.content.ContextCompat
 import it.polito.mad.sportcamp.common.BitmapConverter
-import it.polito.mad.sportcamp.common.Permission
 import kotlinx.coroutines.launch
 
 
@@ -84,27 +83,12 @@ fun EditProfileScreen(
 ) {
 
     val mContext = LocalContext.current
-
-    // ============================= ASK FOR CAMERA PERMISSIONS ==========================
-    Permission(
-        permission = android.Manifest.permission.CAMERA,
-        rationale = "You need to provide camera permissions.",
-        permissionNotAvailableContent = {
-            Column() {
-                Text("O noes! No Camera!")
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(onClick = {
-                    mContext.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                        data = Uri.fromParts("package", mContext.packageName, null)
-                    })
-                }) {}
-            }
-        }
-    )
+    val permission = android.Manifest.permission.CAMERA
    //=========================================================================================
 
     var userId = navController.currentBackStackEntry?.arguments?.getInt(DETAIL_ARGUMENT_KEY).toString()
     val user by viewModel.getUserById(userId.toInt()).observeAsState()
+
     // The coroutine scope for event handlers calling suspend functions.
     val coroutineScope = rememberCoroutineScope()
     // True if the message about the edit feature is shown.
@@ -116,17 +100,45 @@ fun EditProfileScreen(
     val bitmap1 = user?.image?.let { BitmapConverter.converterStringToBitmap(it) }
 
     var bitmap = remember {
-        mutableStateOf<Bitmap?>(bitmap1)
+        mutableStateOf(bitmap1)
     }
 
+    var isEditedImage by remember { mutableStateOf(false) }
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         imageUri = uri
+        isEditedImage = true
     }
 
     val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) {
         bitmap.value = it
+        isEditedImage = true
+    }
+    val openCameraDialog = remember { mutableStateOf(false)  }
+
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            openCameraDialog.value = true
+        } else {
+
+        }
+    }
+
+    fun checkAndRequestCameraPermission(
+        context: Context,
+        permission: String,
+        launcher: ManagedActivityResultLauncher<String, Boolean>
+    ) {
+        val permissionCheckResult = ContextCompat.checkSelfPermission(context, permission)
+        if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
+            openCameraDialog.value = true
+        } else {
+            // Request a permission
+            launcher.launch(permission)
+        }
     }
 
     clearAll()
@@ -150,9 +162,11 @@ fun EditProfileScreen(
         }
     }
 
-    val scrollState = rememberScrollState()
-    var isEdited by remember { mutableStateOf(false) }
+    suspend fun refreshUser() {
 
+    }
+
+    val scrollState = rememberScrollState()
     var isEditedNickname by remember { mutableStateOf(false) }
     var isEditedName by remember { mutableStateOf(false) }
     var isEditedMail by remember { mutableStateOf(false) }
@@ -162,6 +176,7 @@ fun EditProfileScreen(
     var isEditedLevel by remember { mutableStateOf(false) }
     var isEditedSports by remember { mutableStateOf(false) }
     var isEditedBio by remember { mutableStateOf(false) }
+
 
     //========================= Dialog on discard ===================================
     val openDialog = remember { mutableStateOf(false)  }
@@ -203,7 +218,7 @@ fun EditProfileScreen(
     }
 
     //========================= Dialog Camera or gallery ===================================
-    val openCameraDialog = remember { mutableStateOf(false)  }
+
 
     if (openCameraDialog.value) {
 
@@ -285,8 +300,8 @@ fun EditProfileScreen(
                         bitmap.value?.let { btm ->
                             Image(
                                 bitmap = btm.asImageBitmap(),
-                                contentDescription = null,
                                 contentScale = ContentScale.Crop,
+                                contentDescription = null,
                                 modifier = Modifier
                                     .size(200.dp)
                                     .clip(CircleShape)
@@ -348,7 +363,7 @@ fun EditProfileScreen(
                                 imageVector = Icons.Filled.PhotoCamera,
                                 contentDescription = "Camera",
                                 modifier = Modifier.clickable {
-                                    openCameraDialog.value = true
+                                    checkAndRequestCameraPermission(mContext, permission, launcher)
                                 },
                                 tint = MaterialTheme.colors.secondary
                             )
@@ -401,18 +416,18 @@ fun EditProfileScreen(
                             modifier = Modifier
                                 .padding(all = 10.dp)
                                 .fillMaxWidth(),
-                            labelResId = R.string.Mail,
+                            labelResId = R.string.City,
                             inputWrapper = it,
                             keyboardOptions = KeyboardOptions(
                                 capitalization = KeyboardCapitalization.None,
                                 autoCorrect = false,
-                                keyboardType = KeyboardType.Email,
+                                keyboardType = KeyboardType.Text,
                                 imeAction = ImeAction.Done
                             ),
-                            maxLength = 5,
+                            maxLength = 100,
                             maxLines = 1
                         ) {
-                            isEditedMail = true
+                            isEditedCity = true
                             usrMail = it
                         }
                     }
@@ -558,8 +573,8 @@ fun EditProfileScreen(
                         }
                         Column() {
                             Button(onClick = {
-                                if (isEdited || isEditedAge || isEditedBio || isEditedCity || isEditedGender || isEditedLevel || isEditedMail
-                                    || isEditedMail || isEditedName || isEditedNickname) {
+                                if ( isEditedAge || isEditedBio || isEditedCity || isEditedGender || isEditedLevel || isEditedMail
+                                    || isEditedMail || isEditedName || isEditedNickname || isEditedImage) {
                                     val user = User(
                                         id_user =  userId.trim().toInt(),
                                         nickname = if (isEditedNickname) usrNickname else user?.nickname,
@@ -571,12 +586,11 @@ fun EditProfileScreen(
                                         level = if (isEditedLevel) usrLevel else user?.level,
                                         sports = if(isEditedSports) usrSports else user?.sports,
                                         bio = if (isEditedBio) usrBio else user?.bio,
-                                        image = bitmap.value?.let {
+                                        image = if(bitmap.value != null) bitmap.value?.let {
                                             BitmapConverter.converterBitmapToString(
                                                 it
                                             )
-                                        }
-                                    )
+                                        } else user?.image)
                                     updateUserInDB(user, viewModel)
                                     coroutineScope.launch {
                                         showSaveMessage()
@@ -637,7 +651,7 @@ private fun ValidationMessage(shown: Boolean) {
 
                     ) {
                     Text(
-                        text = "Please update at least one field",
+                        text = "Please update at least one field or your profile picture",
                         modifier = Modifier.padding(16.dp)
                     )
                 }
