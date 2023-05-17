@@ -144,6 +144,9 @@ fun Profile(user: User, navController: NavController, context: Context = LocalCo
                     OptionsItemStyle(item = item, context = context)
                 }
             }
+            item{
+                sportsListRow(user = user)
+            }
 
         }
 
@@ -454,6 +457,100 @@ fun CustomToolbarWithEditButton(title: String, navController: NavHostController)
 
 }
 
+
+@Composable
+fun sportsListRow(user: User){
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(all = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        // Title
+        Text(
+            text = "Sports",
+            style = TextStyle(
+                fontSize = 16.sp,
+            )
+        )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier
+                    .weight(weight = 3f, fill = false)
+                    .padding(start = 16.dp)
+            ) {
+
+                if(user.sports?.contains("Tennis") == true) {
+                    // Icon
+                    Icon(
+                        modifier = Modifier
+                            .size(25.dp),
+                        imageVector = Icons.Outlined.SportsTennis,
+                        contentDescription = "Tennis",
+                        tint = MaterialTheme.colors.primary
+                    )
+
+                    Spacer(modifier = Modifier.height(2.dp))
+
+                    // Sub title
+                    Text(
+                        text = "Tennis",
+                        style = TextStyle(
+                            fontSize = 14.sp,
+                            letterSpacing = (0.8).sp,
+                            color = Color.Gray
+
+                        )
+                    )
+                }
+
+            }
+            if(user.sports?.contains("Basketball") == true) {
+                Column(
+                    modifier = Modifier
+                        .weight(weight = 3f, fill = false)
+                        .padding(start = 16.dp)
+                ) {
+
+                    // Icon
+                    Icon(
+                        modifier = Modifier
+                            .size(25.dp),
+                        imageVector = Icons.Outlined.SportsBasketball,
+                        contentDescription = "Basketball",
+                        tint = MaterialTheme.colors.primary
+                    )
+
+                    Spacer(modifier = Modifier.height(2.dp))
+
+                    // Sub title
+                    Text(
+                        text = "Basketball",
+                        style = TextStyle(
+                            fontSize = 14.sp,
+                            letterSpacing = (0.8).sp,
+                            color = Color.Gray
+
+                        )
+                    )
+
+                }
+            }
+
+        }
+
+    }
+
+}
+
 private fun prepareOptionsData(user: User) {
 
     val appIcons = Icons.Outlined
@@ -508,13 +605,14 @@ private fun prepareOptionsData(user: User) {
         )
     )*/
 
-    optionsList.add(
+    /*optionsList.add(
         OptionsData(
             icon = appIcons.DirectionsRun,
             title = "Sports",
             subTitle = user.sports.toString()
         )
-    )
+    )*/
+
 }
 
 data class OptionsData(val icon: ImageVector, val title: String, val subTitle: String)

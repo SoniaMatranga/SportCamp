@@ -574,7 +574,7 @@ fun EditProfileScreen(
                         Column() {
                             Button(onClick = {
                                 if ( isEditedAge || isEditedBio || isEditedCity || isEditedGender || isEditedLevel || isEditedMail
-                                    || isEditedMail || isEditedName || isEditedNickname || isEditedImage) {
+                                    || isEditedMail || isEditedName || isEditedSports || isEditedNickname || isEditedImage) {
                                     val user = User(
                                         id_user =  userId.trim().toInt(),
                                         nickname = if (isEditedNickname) usrNickname else user?.nickname,
