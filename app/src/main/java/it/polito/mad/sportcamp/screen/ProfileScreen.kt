@@ -128,12 +128,15 @@ fun Profile(user: User, navController: NavController, context: Context = LocalCo
 
         // User's image, name, email
 
-        UserDetails(user = user, navController= navController)
+
 
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
         ) {
+            item{
+                UserDetails(user = user, navController= navController)
+            }
             // Show the options
             items(optionsList) { item ->
                 Card(
@@ -146,9 +149,12 @@ fun Profile(user: User, navController: NavController, context: Context = LocalCo
             }
             item{
                 sportsListRow(user = user)
+                Spacer(modifier = Modifier.height(50.dp))
             }
 
         }
+
+
 
 
     }
