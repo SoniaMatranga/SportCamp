@@ -21,8 +21,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import it.polito.mad.sportcamp.common.CustomToolBar
-import it.polito.mad.sportcamp.ui.theme.GreenActionBar
+import it.polito.mad.sportcamp.ui.theme.OrangeActionBar
 
 
 @Composable
@@ -85,7 +84,7 @@ fun AddItem(
 ){
     val selected = currentDestination?.hierarchy?.any{ it.route == screen.route} == true
 
-    val background = if(selected) GreenActionBar.copy(alpha = 0.6f) else Color.Transparent
+    val background = if(selected) OrangeActionBar.copy(alpha = 0.6f) else Color.Transparent
 
     val contentColor = if(selected) Color.White else Color.Black
 
