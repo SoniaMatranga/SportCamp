@@ -1,7 +1,9 @@
 package it.polito.mad.sportcamp.screen
 
+import android.os.Build
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -10,17 +12,24 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import com.google.android.material.datepicker.MaterialDatePicker
 import com.maxkeppeker.sheets.core.models.base.rememberSheetState
 import com.maxkeppeler.sheets.calendar.CalendarDialog
+import com.maxkeppeler.sheets.calendar.models.CalendarConfig
 import com.maxkeppeler.sheets.calendar.models.CalendarSelection
+import com.maxkeppeler.sheets.calendar.models.CalendarStyle
 import java.text.SimpleDateFormat
+import java.time.LocalDate
 import java.util.*
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddReservationsScreen(
@@ -46,10 +55,18 @@ fun AddReservationsScreen(
 
     CalendarDialog(
         state = calendarState,
+        config = CalendarConfig(
+            monthSelection = true,
+            yearSelection = true,
+            //disabledDates = listOf(LocalDate.now().plusDays(7))
+        ),
         selection = CalendarSelection.Date{ date ->
             Log.d ("SelectedDate", date.toString())
             dateFilter = date.toString()
         })
+
+
+
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -65,21 +82,25 @@ fun AddReservationsScreen(
 
         Row(modifier= Modifier.fillMaxWidth().
             padding(10.dp),
-        horizontalArrangement = Arrangement.SpaceAround) {
+        horizontalArrangement = Arrangement.SpaceBetween) {
 
+            Column(verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally) {
             Button(onClick = { calendarState.show()},
                     modifier= Modifier.padding(horizontal = 10.dp),
             ) {
-                Column(verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally) {
+
                     Icon(
                         Icons.Filled.CalendarMonth,
                         contentDescription = "Calendar",
+                        tint = Color.Black
                     )
-                    Text(dateFilter)
+
                 }
+                Text(dateFilter)
 
             }
+
             Spacer(modifier = Modifier.height(20.dp))
 
             dropDownSportsMenu()
@@ -119,7 +140,7 @@ fun dropDownSportsMenu() {
 
     Box(
         modifier= Modifier.fillMaxWidth().
-        padding(horizontal = 10.dp),
+        padding(horizontal = 10.dp, vertical = 3.dp),
 
     ) {
         ExposedDropdownMenuBox(
