@@ -14,11 +14,11 @@ sealed class Screen(
 ) {
 
     //for home
-    object AddReservations: Screen(
-        route = "addReservations",
-        title = "Add reservations",
-        icon = Icons.Outlined.DashboardCustomize,
-        icon_focused = Icons.Outlined.DashboardCustomize
+    object Favorites: Screen(
+        route = "favorites",
+        title = "Favorites",
+        icon = Icons.Outlined.Favorite,
+        icon_focused = Icons.Outlined.Favorite
     )
 
     //for reservations

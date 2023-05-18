@@ -52,7 +52,7 @@ fun NavItems(){
 fun BottomBar(navController:NavHostController)
 {
     val screens = listOf(
-        Screen.AddReservations,
+        Screen.Favorites,
         Screen.Reservations,
         Screen.Profile
     )

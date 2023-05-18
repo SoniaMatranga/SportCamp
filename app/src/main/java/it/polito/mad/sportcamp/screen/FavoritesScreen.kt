@@ -1,37 +1,25 @@
 package it.polito.mad.sportcamp.screen
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Card
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+
+import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.res.imageResource
-import androidx.compose.ui.unit.sp
-import it.polito.mad.sportcamp.R
-import androidx.compose.ui.unit.dp
 import it.polito.mad.sportcamp.common.CustomToolBar
 
 
 @Composable
-fun AddReservationsScreen() {
-
+fun FavoritesScreen() {
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        CustomToolBar(title = "Add reservations")
-        Text(text = "Add reservations screen", fontSize = 20.sp)
-       // CardComponent()
+        CustomToolBar(title = "Favorites")
+        //CustomToolbarWithCalendarButton(title = "Add reservations", calendarState = calendarState )
 
     }
 }
 
+
+/*
 
 //card that expands
 @Composable
@@ -55,4 +43,8 @@ fun CardComponent() {
         }
 
     }
-}
+}*/
+
+
+
+

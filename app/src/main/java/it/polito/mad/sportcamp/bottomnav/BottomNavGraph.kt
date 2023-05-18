@@ -17,9 +17,9 @@ fun BottomNavGraph(
         navController = navController,
         startDestination = Screen.Reservations.route
     ){
-        composable(route = Screen.AddReservations.route)
+        composable(route = Screen.Favorites.route)
         {
-            AddReservationsScreen()
+            FavoritesScreen()
         }
         composable(route = Screen.Reservations.route)
         {
