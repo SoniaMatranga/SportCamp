@@ -48,4 +48,11 @@ sealed class Screen(
         }
     }
 
+    object AddReservations: Screen(
+        route = "addReservations",
+        title = "Add reservations",
+        icon =Icons.Outlined.Add,
+        icon_focused = Icons.Outlined.Add
+    )
+
 }

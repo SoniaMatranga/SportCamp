@@ -23,7 +23,7 @@ fun BottomNavGraph(
         }
         composable(route = Screen.Reservations.route)
         {
-            ReservationsScreen()
+            ReservationsScreen(navController = navController)
         }
         composable(route = Screen.Profile.route)
         {
@@ -38,6 +38,11 @@ fun BottomNavGraph(
         {
             Log.d("Args",it.arguments?.getInt(DETAIL_ARGUMENT_KEY).toString())
             EditProfileScreen(navController = navController)
+        }
+
+        composable(route = Screen.AddReservations.route)
+        {
+            AddReservationsScreen(navController = navController)
         }
 
     }

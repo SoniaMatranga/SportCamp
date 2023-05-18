@@ -32,23 +32,20 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.*
 import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavController
 import com.maxkeppeker.sheets.core.models.base.rememberSheetState
 import com.maxkeppeler.sheets.calendar.CalendarDialog
 import com.maxkeppeler.sheets.calendar.models.CalendarSelection
+import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.CustomToolBar
 import it.polito.mad.sportcamp.ui.theme.GreenActionBar
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReservationsScreen() {
+fun ReservationsScreen(
+    navController: NavController
+) {
    val lazyListState = rememberLazyListState()
-   val calendarState = rememberSheetState()
 
-   CalendarDialog(
-       state = calendarState,
-       selection = CalendarSelection.Date{ date ->
-           Log.d ("SelectedDate", date.toString())
-       })
     
     Column(
         modifier = Modifier.fillMaxSize()
@@ -70,7 +67,7 @@ fun ReservationsScreen() {
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.End) {
                     androidx.compose.material3.FloatingActionButton(
-                        onClick = {},
+                        onClick = {navController.navigate(route = Screen.AddReservations.route)},
                         containerColor = MaterialTheme.colors.primary,
                         shape = RoundedCornerShape(16.dp),
                     ) {
@@ -200,24 +197,7 @@ fun ReservationCard(msg: Content) {
 
 }
 
-/*
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CustomToolbarWithCalendarButton(title: String, calendarState: SheetState) {
-    TopAppBar(
-        title = { Text(text = title, style = MaterialTheme.typography.h6) },
-        navigationIcon = {
-            IconButton(onClick = {
-                    calendarState.show()
-            }) {
-                Icon(
-                    Icons.Filled.CalendarMonth,
-                    contentDescription = "Calendar",
-                )
-            }
-        })
 
-}*/
 
 
 
