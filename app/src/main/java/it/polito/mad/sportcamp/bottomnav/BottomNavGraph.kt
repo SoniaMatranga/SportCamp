@@ -9,6 +9,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import androidx.navigation.navigation
 import it.polito.mad.sportcamp.profileScreens.EditProfileScreen
 import it.polito.mad.sportcamp.profileScreens.ProfileScreen
 import it.polito.mad.sportcamp.reservationsScreens.AddReservationsScreen
@@ -33,6 +34,7 @@ fun BottomNavGraph(
         {
             ReservationsScreen(navController = navController)
         }
+
         composable(route = Screen.Profile.route)
         {
             ProfileScreen(navController = navController)

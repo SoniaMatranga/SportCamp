@@ -6,8 +6,18 @@ import androidx.lifecycle.LiveData
 import androidx.room.*
 
 
-data class ReservationContent(val court_name: String, val address: String,  val city: String, val sport: String,
-                   val time_slot: String, val date: String)
+data class ReservationContent(
+    val id_reservation: Int?,
+    val equipments: String?,
+    val court_name: String?,
+    val address: String?,
+    val city: String?,
+    val sport: String?,
+    val time_slot: String?,
+    val date: String?,
+    val image: String?
+    )
+
 @androidx.room.Dao
 interface Dao {
 

@@ -9,7 +9,7 @@ import androidx.compose.ui.graphics.Color
 
 private val DarkColorPalette = darkColors(
     primary = OrangeActionBar,
-    primaryVariant = Purple700,
+    primaryVariant = ClearGreen,
     secondary = Teal200
 )
 
