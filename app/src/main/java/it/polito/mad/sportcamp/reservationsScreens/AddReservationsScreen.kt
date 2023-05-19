@@ -1,4 +1,4 @@
-package it.polito.mad.sportcamp.screen
+package it.polito.mad.sportcamp.reservationsScreens
 
 import android.os.Build
 import android.util.Log
@@ -8,6 +8,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Man
+import androidx.compose.material.icons.filled.SportsBasketball
+import androidx.compose.material.icons.filled.SportsTennis
+import androidx.compose.material.icons.filled.SportsVolleyball
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,17 +20,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
-import com.google.android.material.datepicker.MaterialDatePicker
 import com.maxkeppeker.sheets.core.models.base.rememberSheetState
 import com.maxkeppeler.sheets.calendar.CalendarDialog
 import com.maxkeppeler.sheets.calendar.models.CalendarConfig
 import com.maxkeppeler.sheets.calendar.models.CalendarSelection
-import com.maxkeppeler.sheets.calendar.models.CalendarStyle
+import it.polito.mad.sportcamp.profileScreens.CustomToolbarWithBackArrow
 import java.text.SimpleDateFormat
-import java.time.LocalDate
 import java.util.*
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -80,8 +81,9 @@ fun AddReservationsScreen(
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth())
 
-        Row(modifier= Modifier.fillMaxWidth().
-            padding(10.dp),
+        Row(modifier= Modifier
+            .fillMaxWidth()
+            .padding(10.dp),
         horizontalArrangement = Arrangement.SpaceBetween) {
 
             Column(verticalArrangement = Arrangement.Center,
@@ -103,7 +105,9 @@ fun AddReservationsScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            dropDownSportsMenu()
+
+                dropDownSportsMenu()
+
 
         }
 
@@ -134,13 +138,17 @@ fun CustomToolbarWithCalendarButton(title: String, calendarState: com.maxkeppeke
 @Composable
 fun dropDownSportsMenu() {
     val context = LocalContext.current
-    val coffeeDrinks = arrayOf("Tennis", "Volleyball", "Basketball")
+    val sports = arrayOf("Tennis", "Volleyball", "Basketball")
     var expanded by remember { mutableStateOf(false) }
-    var selectedText by remember { mutableStateOf(coffeeDrinks[0]) }
-
+    var selectedText by remember { mutableStateOf(sports[0]) }
+    var selectedIcon by remember {mutableStateOf(Icons.Filled.SportsTennis) }
+    when (selectedText) {
+        "Tennis" -> selectedIcon = Icons.Filled.SportsTennis
+        "Volleyball" -> selectedIcon = Icons.Filled.SportsVolleyball
+        "Basketball" -> selectedIcon = Icons.Filled.SportsBasketball
+        else -> {selectedIcon = Icons.Filled.Man}
+    }
     Box(
-        modifier= Modifier.fillMaxWidth().
-        padding(horizontal = 10.dp, vertical = 3.dp),
 
     ) {
         ExposedDropdownMenuBox(
@@ -149,18 +157,31 @@ fun dropDownSportsMenu() {
                 expanded = !expanded
             }
         ) {
-            TextField(
+            /*TextField(
                 value = selectedText,
                 onValueChange = {},
                 readOnly = true,
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            )
+            )*/
+            Column(verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally) {
+                Button(onClick = {  },
+                        modifier= Modifier.padding(horizontal = 10.dp),) {
 
+                    Icon(
+                        selectedIcon,
+                        contentDescription = "Sport",
+                        tint = Color.Black
+                    )
+                }
+                Text(selectedText)
+            }
             ExposedDropdownMenu(
                 expanded = expanded,
+                modifier = Modifier.fillMaxWidth(),
                 onDismissRequest = { expanded = false }
             ) {
-                coffeeDrinks.forEach { item ->
+                sports.forEach { item ->
                     DropdownMenuItem(
                         content = { Text(text = item) },
                         onClick = {

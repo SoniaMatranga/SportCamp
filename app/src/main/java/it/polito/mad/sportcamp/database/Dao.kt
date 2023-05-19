@@ -5,6 +5,9 @@ import android.media.Image
 import androidx.lifecycle.LiveData
 import androidx.room.*
 
+
+data class ReservationContent(val court_name: String, val address: String,  val city: String, val sport: String,
+                   val time_slot: String, val date: String)
 @androidx.room.Dao
 interface Dao {
 
@@ -28,8 +31,10 @@ interface Dao {
     fun getAllReservations(): LiveData<List<Reservation>>
 
     @Query("SELECT * FROM reservations_table WHERE id_user=:id_user")
-    fun getReservationByUser(id_user: Int): Reservation
+    fun getReservationsByUser(id_user: Int): LiveData<List<Reservation>>
 
+    @Query("SELECT * FROM reservations_table, courts_table WHERE id_user=:id_user AND date=:date AND reservations_table.id_court=courts_table.id_court")
+    fun getReservationsByUserAndDate(id_user: Int, date:String): LiveData<List<ReservationContent>>
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun addReservation(reservation: Reservation)
 

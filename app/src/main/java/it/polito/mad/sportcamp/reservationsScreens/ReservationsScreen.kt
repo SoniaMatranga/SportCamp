@@ -1,4 +1,4 @@
-package it.polito.mad.sportcamp.screen
+package it.polito.mad.sportcamp.reservationsScreens
 
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -12,18 +12,24 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import it.polito.mad.sportcamp.Calendar.Calendar
 import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.CustomToolBar
+import it.polito.mad.sportcamp.database.AppViewModel
 
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ReservationsScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: AppViewModel = viewModel(factory = AppViewModel.factory)
 ) {
    val lazyListState = rememberLazyListState()
+
+   val reservations by viewModel.getReservationsByUser(1).observeAsState()
 
     
     Column(
@@ -31,21 +37,12 @@ fun ReservationsScreen(
     ) {
         SportCampTheme{
             CustomToolBar(title = "Reservations")
+            Spacer(modifier = Modifier.height(10.dp))
             Column( modifier =Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.SpaceBetween
                 ){
+                reservations?.let { Calendar(navController =navController, reservationsList = it) }
 
-                Calendar()
-                /*Surface (modifier = Modifier.fillMaxWidth()) {
-                    ReservationsList(mutableListOf(
-                        Content("Reservation name 1", "Info \n Info2 \n Info 3"),
-                        Content("Reservation name 2", "Info"),
-                        Content("Reservation name 3", "Info"),
-                        Content("Reservation name 4", "Info"),
-                    ))
-                    //ReservationCard(Content("Author name", "Info"))
-
-                }*/
                 Row(modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),

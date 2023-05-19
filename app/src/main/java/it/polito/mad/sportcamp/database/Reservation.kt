@@ -13,4 +13,5 @@ data class Reservation(
     @ColumnInfo(name= "date") val date: String?,
     @ColumnInfo(name= "equipments") val equipments: String?,
     @ColumnInfo(name= "options")val options: String?
-)
+) {
+}

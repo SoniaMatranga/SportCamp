@@ -14,17 +14,21 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavController
 
 import io.github.boguszpawlowski.composecalendar.CalendarState
 import io.github.boguszpawlowski.composecalendar.SelectableCalendar
 import io.github.boguszpawlowski.composecalendar.header.MonthState
 import io.github.boguszpawlowski.composecalendar.selection.DynamicSelectionState
+import it.polito.mad.sportcamp.database.Reservation
 import java.time.LocalDate
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CalendarScreenPortrait(
     state: CalendarState<DynamicSelectionState>,
+    navController: NavController,
+    reservationsList: List<Reservation>
 ) {
 
 
@@ -36,6 +40,8 @@ fun CalendarScreenPortrait(
                 dayContent = { dayState ->
                     EventDay(
                         state = dayState,
+                        navController = navController,
+                        reservationsList = reservationsList
                     )
                 },
                 showAdjacentMonths = true,

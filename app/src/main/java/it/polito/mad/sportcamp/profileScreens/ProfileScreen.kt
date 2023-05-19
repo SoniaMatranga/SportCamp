@@ -1,4 +1,4 @@
-package it.polito.mad.sportcamp.screen
+package it.polito.mad.sportcamp.profileScreens
 
 import android.content.Context
 import androidx.compose.foundation.*
@@ -130,7 +130,7 @@ fun Profile(user: User, navController: NavController, context: Context = LocalCo
             items(optionsList) { item ->
                 Card(
                     elevation = 10.dp,
-                    modifier = Modifier.padding(4.dp)
+                    modifier = Modifier.padding(horizontal = 30.dp)
 
                 ) {
                     OptionsItemStyle(item = item, context = context)
@@ -382,7 +382,6 @@ private fun OptionsItemStyle(item: OptionsData, context: Context) {
 
     Row(
         modifier = Modifier
-            .fillMaxWidth()
             .padding(all = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -459,7 +458,7 @@ fun sportsListRow(user: User){
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(all = 12.dp),
+            .padding(all = 30.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
 

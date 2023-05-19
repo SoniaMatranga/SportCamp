@@ -1,4 +1,4 @@
-package it.polito.mad.sportcamp.screen
+package it.polito.mad.sportcamp.profileScreens
 
 
 
@@ -14,12 +14,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
 import androidx.annotation.StringRes
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.FastOutLinearInEasing
-import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -60,11 +54,12 @@ import it.polito.mad.sportcamp.common.BitmapConverter
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
+import it.polito.mad.sportcamp.common.SaveMessage
+import it.polito.mad.sportcamp.common.ValidationMessage
 
 
 var usrName: String = ""
 var usrNickname: String = ""
-var usrMail: String = ""
 var usrCity: String = ""
 var usrAge: String = ""
 var usrGender: String = ""
@@ -72,6 +67,10 @@ var usrLevel: String = ""
 var usrSports: String = ""
 var usrBio: String = ""
 var isEditedGender: Boolean = false
+var isEditedLevel: Boolean = false
+var isEditedSports :Boolean = false
+var isEditedCity :Boolean = false
+
 
 
 
@@ -169,11 +168,7 @@ fun EditProfileScreen(
     val scrollState = rememberScrollState()
     var isEditedNickname by remember { mutableStateOf(false) }
     var isEditedName by remember { mutableStateOf(false) }
-    var isEditedMail by remember { mutableStateOf(false) }
-    var isEditedCity by remember { mutableStateOf(false) }
     var isEditedAge by remember { mutableStateOf(false) }
-    var isEditedLevel by remember { mutableStateOf(false) }
-    var isEditedSports by remember { mutableStateOf(false) }
     var isEditedBio by remember { mutableStateOf(false) }
 
 
@@ -193,7 +188,6 @@ fun EditProfileScreen(
                     onClick = {
                         usrName = user?.name.toString()
                         usrNickname = user?.nickname.toString()
-                        usrMail = user?.mail.toString()
                         usrCity = user?.city.toString()
                         usrAge = user?.age.toString()
                         usrGender = user?.city.toString()
@@ -410,46 +404,9 @@ fun EditProfileScreen(
                             usrName = it
                         }
                     }
-                    user?.mail?.let {
-                        CustomTextField(
-                            modifier = Modifier
-                                .padding(all = 10.dp)
-                                .fillMaxWidth(),
-                            labelResId = R.string.Mail,
-                            inputWrapper = it,
-                            keyboardOptions = KeyboardOptions(
-                                capitalization = KeyboardCapitalization.None,
-                                autoCorrect = false,
-                                keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Done
-                            ),
-                            maxLength = 100,
-                            maxLines = 1
-                        ) {
-                            isEditedCity = true
-                            usrMail = it
-                        }
-                    }
-                    user?.city?.let {
-                        CustomTextField(
-                            modifier = Modifier
-                                .padding(all = 10.dp)
-                                .fillMaxWidth(),
-                            labelResId = R.string.City,
-                            inputWrapper = it,
-                            keyboardOptions = KeyboardOptions(
-                                capitalization = KeyboardCapitalization.None,
-                                autoCorrect = false,
-                                keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Done
-                            ),
-                            maxLength = 100,
-                            maxLines = 1
-                        ) {
-                            isEditedCity = true
-                            usrCity = it
-                        }
-                    }
+
+                    user?.city?.let { dropDownMenu(it, "City") }
+
                     user?.age?.toString().let {
                         if (it != null) {
                             CustomTextField(
@@ -473,48 +430,10 @@ fun EditProfileScreen(
                         }
                     }
 
-                    user?.gender?.let { dropDownMenu(it) }
+                    user?.gender?.let { dropDownMenu(it, "Gender") }
+                    user?.level?.let { dropDownMenu(it, "Level") }
+                    user?.sports?.let { dropDownMenu(it, "Sports") }
 
-                    user?.level?.let {
-                        CustomTextField(
-                            modifier = Modifier
-                                .padding(all = 10.dp)
-                                .fillMaxWidth(),
-                            labelResId = R.string.Level,
-                            inputWrapper = it,
-                            keyboardOptions = KeyboardOptions(
-                                capitalization = KeyboardCapitalization.None,
-                                autoCorrect = false,
-                                keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Done,
-                            ),
-                            maxLength = 10,
-                            maxLines = 1
-                        ) {
-                            isEditedLevel = true
-                            usrLevel = it
-                        }
-                    }
-                    user?.sports?.let {
-                        CustomTextField(
-                            modifier = Modifier
-                                .padding(all = 10.dp)
-                                .fillMaxWidth(),
-                            labelResId = R.string.Sports,
-                            inputWrapper = it,
-                            keyboardOptions = KeyboardOptions(
-                                capitalization = KeyboardCapitalization.None,
-                                autoCorrect = false,
-                                keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Done
-                            ),
-                            maxLength = 100,
-                            maxLines = 1
-                        ) {
-                            isEditedSports = true
-                            usrSports = it
-                        }
-                    }
                     user?.bio?.let {
                         CustomTextField(
                             modifier = Modifier
@@ -555,13 +474,13 @@ fun EditProfileScreen(
                         }
                         Column() {
                             Button(onClick = {
-                                if ( isEditedAge || isEditedBio || isEditedCity || isEditedGender || isEditedLevel || isEditedMail
-                                    || isEditedMail || isEditedName || isEditedSports || isEditedNickname || isEditedImage) {
+                                if ( isEditedAge || isEditedBio || isEditedCity || isEditedGender || isEditedLevel
+                                    || isEditedName || isEditedSports || isEditedNickname || isEditedImage) {
                                     val user = User(
                                         id_user =  userId.trim().toInt(),
                                         nickname = if (isEditedNickname) usrNickname else user?.nickname,
                                         name = if (isEditedName) usrName else user?.name,
-                                        mail = if (isEditedMail) usrMail else user?.mail,
+                                        mail =  user?.mail,
                                         city = if (isEditedCity) usrCity else user?.city,
                                         age = if (isEditedAge) usrAge.toInt() else user?.age,
                                         gender = if (isEditedGender) usrGender else user?.gender,
@@ -601,92 +520,9 @@ fun EditProfileScreen(
     )
 }
 
-
-
-
-@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
-@Composable
-private fun ValidationMessage(shown: Boolean) {
-
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        AnimatedVisibility(
-            visible = shown,
-            enter = slideInVertically(
-                // Enters by sliding in from offset -fullHeight to 0.
-                initialOffsetY = { fullHeight -> -fullHeight },
-                animationSpec = tween(durationMillis = 150, easing = LinearOutSlowInEasing)
-            ),
-            exit = slideOutVertically(
-                // Exits by sliding out from offset 0 to -fullHeight.
-                targetOffsetY = { fullHeight -> -fullHeight },
-                animationSpec = tween(durationMillis = 250, easing = FastOutLinearInEasing)
-            )
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    color = MaterialTheme.colors.secondary,
-                    elevation = 4.dp,
-
-                    ) {
-                    Text(
-                        text = "Please update at least one field or your profile picture",
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
-            }
-
-        }
-    }
-}
-
-@Composable
-private fun SaveMessage(shown: Boolean) {
-
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        AnimatedVisibility(
-            visible = shown,
-            enter = slideInVertically(
-                // Enters by sliding in from offset -fullHeight to 0.
-                initialOffsetY = { fullHeight -> -fullHeight },
-                animationSpec = tween(durationMillis = 150, easing = LinearOutSlowInEasing)
-            ),
-            exit = slideOutVertically(
-                // Exits by sliding out from offset 0 to -fullHeight.
-                targetOffsetY = { fullHeight -> -fullHeight },
-                animationSpec = tween(durationMillis = 250, easing = FastOutLinearInEasing)
-            )
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    color = MaterialTheme.colors.primaryVariant,
-                    elevation = 4.dp,
-
-                    ) {
-                    Text(
-                        text = "Profile successfully updated!",
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
-            }
-
-        }
-    }
-}
-
 fun clearAll() {
     usrName = ""
     usrNickname = ""
-    usrMail = ""
     usrCity = ""
     usrAge = ""
     usrGender = ""
@@ -699,7 +535,8 @@ fun updateUserInDB(
     user: User,
     viewModel: AppViewModel
 ) {
-    viewModel.updateUser(user.nickname!!, user.name!!,user.mail!!,user.city!!,user.age!!,user.gender!!,user.level!!,user.sports!!,user.bio!!,user.id_user!!, user.image!! )
+    viewModel.updateUser(user.nickname!!, user.name!!,user.mail!!,user.city!!,
+        user.age!!,user.gender!!,user.level!!,user.sports!!,user.bio!!,user.id_user!!, user.image!! )
 }
 
 @Composable
@@ -757,13 +594,24 @@ fun CustomTextField(
     }
 }
 
+
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun dropDownMenu(userGender: String) {
+fun dropDownMenu(userOption: String, type: String) {
 
     var isExpanded by remember { mutableStateOf(false) }
-    var gender by remember { mutableStateOf(userGender) }
-    val suggestions = listOf("Male","Female","Other")
+    var userInitialValue by remember { mutableStateOf(userOption) } //male
+    var suggestions = emptyList<String>()
+
+    if (type == "Gender")
+        suggestions = listOf("Male","Female","Other")
+    if (type == "Level")
+        suggestions = listOf ("Beginner", "Intermediate", "Advanced")
+    if (type == "Sports")
+        suggestions = listOf("Tennis", "Basketball")
+    if (type == "City")
+        suggestions = listOf("Torino", "Milano", "Roma", "Venezia", "Verona", "Padova")
+
     val icon = if (isExpanded)
         Icons.Filled.ArrowDropUp //it requires androidx.compose.material:material-icons-extended
     else
@@ -771,75 +619,95 @@ fun dropDownMenu(userGender: String) {
 
     Box {
 
-            OutlinedTextField(
-                value = gender,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(all = 10.dp),
-                onValueChange = { gender = it },
-                readOnly = true,
-                label = { Text("Gender") },
-                trailingIcon = {
-                    Icon(icon, "contentDescription",
-                        Modifier.clickable { isExpanded = !isExpanded })
-                }
-            )
+        OutlinedTextField(
+            value = userInitialValue,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(all = 10.dp),
+            onValueChange = { userInitialValue = it },
+            readOnly = true,
+            label = { type },
+            trailingIcon = {
+                Icon(icon, "contentDescription",
+                    Modifier.clickable { isExpanded = !isExpanded })
+            }
+        )
 
         DropdownMenu(
             expanded = isExpanded,
             onDismissRequest = { isExpanded = false },
             modifier = Modifier
                 .padding(all = 10.dp)
-               // .border(BorderStroke(1.dp, Color.Gray))
+                // .border(BorderStroke(1.dp, Color.Gray))
                 .fillMaxWidth(),
-               // .width(with(LocalDensity.current){textfieldSize.width.toDp()}),
+            // .width(with(LocalDensity.current){textfieldSize.width.toDp()}),
         ) {
             suggestions.forEach { label ->
                 DropdownMenuItem(onClick = {
-                    gender = label
+                    userInitialValue = label
                     isExpanded = false
-                    isEditedGender = true
-                    usrGender = label
+                    if(type == "Gender") {
+                        isEditedGender = true
+                        usrGender = label
+                    }
+                    if(type == "Level") {
+                        isEditedLevel = true
+                        usrLevel = label
+                    }
+                    if(type == "Sports") {
+                        isEditedSports = true
+                        usrSports = label
+                    }
+                    if(type == "City") {
+                        isEditedCity = true
+                        usrCity = label
+                    }
                 }) {
                     Text(text = label)
                 }
             }
         }
-/*
-        ExposedDropdownMenuBox(
-            expanded = isExpanded,
-            onExpandedChange = { isExpanded = it }
-        ) {
-            TextField(
-                value = gender,
-                onValueChange = {},
-                label = { Text("Gender") },
-                readOnly = true,
-                trailingIcon = {
-                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)
-                },
-                colors = ExposedDropdownMenuDefaults.textFieldColors(),
-                // modifier = Modifier.menuAnchor()
-            )
+        /*
+                ExposedDropdownMenuBox(
+                    expanded = isExpanded,
+                    onExpandedChange = { isExpanded = it }
+                ) {
+                    TextField(
+                        value = gender,
+                        onValueChange = {},
+                        label = { Text("Gender") },
+                        readOnly = true,
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)
+                        },
+                        colors = ExposedDropdownMenuDefaults.textFieldColors(),
+                        // modifier = Modifier.menuAnchor()
+                    )
 
-            ExposedDropdownMenu(
-                expanded = isExpanded,
-                onDismissRequest = { isExpanded = false }
-            ) {
-                DropdownMenuItem(
-                    onClick = { gender = "Male"; isExpanded = false },
-                    content = { Text(text = "Male") })
-                DropdownMenuItem(
-                    onClick = { gender = "Female" },
-                    content = { Text(text = "Female") })
-                DropdownMenuItem(
-                    onClick = { gender = "Other" },
-                    content = { Text(text = "Other") })
+                    ExposedDropdownMenu(
+                        expanded = isExpanded,
+                        onDismissRequest = { isExpanded = false }
+                    ) {
+                        DropdownMenuItem(
+                            onClick = { gender = "Male"; isExpanded = false },
+                            content = { Text(text = "Male") })
+                        DropdownMenuItem(
+                            onClick = { gender = "Female" },
+                            content = { Text(text = "Female") })
+                        DropdownMenuItem(
+                            onClick = { gender = "Other" },
+                            content = { Text(text = "Other") })
 
-            }
-        }*/
+                    }
+                }*/
     }
 
 
 }
+
+
+
+
+
+
 

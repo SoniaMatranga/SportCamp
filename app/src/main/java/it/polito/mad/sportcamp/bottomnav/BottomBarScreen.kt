@@ -55,4 +55,15 @@ sealed class Screen(
         icon_focused = Icons.Outlined.Add
     )
 
+    object ReservationDetails: Screen(
+        route = "reservationDetails/{$DETAIL_ARGUMENT_KEY}",
+        title = "Reservation details",
+        icon =Icons.Outlined.Details,
+        icon_focused = Icons.Outlined.Details
+    ){
+        fun passDate(date: String): String {
+            return this.route.replace(oldValue = "{$DETAIL_ARGUMENT_KEY}", newValue = date)
+        }
+    }
+
 }

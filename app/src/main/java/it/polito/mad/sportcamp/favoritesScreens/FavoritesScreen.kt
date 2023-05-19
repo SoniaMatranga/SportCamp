@@ -1,4 +1,4 @@
-package it.polito.mad.sportcamp.screen
+package it.polito.mad.sportcamp.favoritesScreens
 
 
 import androidx.compose.foundation.layout.*

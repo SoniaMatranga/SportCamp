@@ -20,7 +20,9 @@ class AppViewModel(private val Dao: Dao) : ViewModel() {
 
     //=================================== reservations ==========================================
     fun getAllReservations(): LiveData<List<Reservation>> = Dao.getAllReservations()
-    fun getReservationsByUse(id_user: Int): Reservation = Dao.getReservationByUser(id_user)
+    fun getReservationsByUser(id_user: Int): LiveData<List<Reservation>> = Dao.getReservationsByUser(id_user)
+
+    fun getReservationsByUserAndDate(id_user: Int, date: String): LiveData<List<ReservationContent>> = Dao.getReservationsByUserAndDate(id_user, date)
     suspend fun addReservation(reservation: Reservation)=Dao.addReservation(reservation)
     fun updateReservationById( id_reservation: Int, time_slot: String, equipments: String) =
         Dao.updateReservationById(id_reservation,time_slot,equipments)

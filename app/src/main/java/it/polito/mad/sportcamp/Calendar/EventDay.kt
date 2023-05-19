@@ -1,6 +1,7 @@
 package it.polito.mad.sportcamp.Calendar
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -16,8 +17,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import io.github.boguszpawlowski.composecalendar.day.DayState
 import io.github.boguszpawlowski.composecalendar.selection.DynamicSelectionState
+import it.polito.mad.sportcamp.bottomnav.Screen
+import it.polito.mad.sportcamp.database.Reservation
 import it.polito.mad.sportcamp.ui.theme.OrangeActionBar
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -25,6 +29,8 @@ import it.polito.mad.sportcamp.ui.theme.OrangeActionBar
 fun EventDay(
     state: DayState<DynamicSelectionState>,
     modifier: Modifier = Modifier,
+    navController: NavController,
+    reservationsList: List<Reservation>
 ) {
     val date = state.date
     val selectionState = state.selectionState
@@ -55,28 +61,49 @@ fun EventDay(
     ) {
         Column(
             modifier = Modifier
-                .clickable {  },
+                .clickable { },
             horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceEvenly
         ) {
             Text(text = date.dayOfMonth.toString(),
             color = Color.Black)
-            if (date.dayOfMonth.toString() == "18" || date.dayOfMonth.toString() == "15") {
-                Row() {
-                    Spacer(modifier = Modifier.height(5.dp))
-                    Box(
-                        modifier = Modifier
-                            .size(10.dp)
-                            .clip(CircleShape)
-                            .background(Color.Black)
-                    )
 
+            Row() {
+                reservationsList.forEach {
+                    if (date.toString() == it.date.toString()) {
+                        Row(
+                            modifier = Modifier
+                                .clickable {
+                                    navController.navigate(
+                                        route = Screen.ReservationDetails.passDate(
+                                            date.toString()
+                                        )
+                                    )
+                                    Log.d("SelectedDate", date.toString())
+                                }.padding(0.5.dp),
+
+                        ) {
+                            //Spacer(modifier = Modifier.height(10.dp))
+                            Box(
+                                modifier = Modifier
+                                    .size(10.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.Black)
+                            )
+
+                        }
+                    } else {
+                        /*Text(
+                        text = "Sport", //text inside calendar day
+                        fontSize = 8.sp,
+                        textAlign = TextAlign.Center
+                    )*/
+                    }
                 }
-                /*Text(
-                    text = "Sport", //text inside calendar day
-                    fontSize = 8.sp,
-                    textAlign = TextAlign.Center
-                )*/
             }
+
+
+
         }
     }
 }
