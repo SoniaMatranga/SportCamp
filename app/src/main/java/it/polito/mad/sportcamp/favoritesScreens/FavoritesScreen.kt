@@ -1,10 +1,8 @@
 package it.polito.mad.sportcamp.favoritesScreens
 
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
@@ -23,11 +21,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -39,7 +35,7 @@ import androidx.compose.material.icons.outlined.Star
 
 data class ChipsModel(
     val name: String,
-    val subList: List<String>? = null,
+    //val subList: List<String>? = null,
     val textExpanded: String? = null,
     val leadingIcon: ImageVector? = null,
     val trailingIcon: ImageVector? = null,
@@ -52,17 +48,85 @@ fun FavoritesScreen(
     viewModel: AppViewModel = viewModel(factory = AppViewModel.factory)
 ) {
     val courtsList: List<Court> by viewModel.getAllCourts().observeAsState(listOf())
-    var filteredList by remember { mutableStateOf(courtsList) }
+    var sportFilter by remember { mutableStateOf("") }
+    var all: Boolean by remember { mutableStateOf(true) }
+    val courts: List<Court> by viewModel.getCourtsBySport(sportFilter).observeAsState(listOf())
 
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
         CustomToolBar(title = "Favorites")
-        FilterChip(courtsList)
+
+        val filterList = listOf(
+          /*  ChipsModel(
+                name = "Order by",
+                subList = listOf("Most starred", "Ascending A-Z", "Descending Z-A"),
+                trailingIcon = Icons.Default.ArrowDropDown,
+                leadingIcon = Icons.Default.Check
+            ),*/
+            ChipsModel(
+                name = "Tennis",
+                leadingIcon = Icons.Default.SportsTennis,
+                trailingIcon = Icons.Default.Close
+            ),
+            ChipsModel(
+                name = "Football",
+                leadingIcon = Icons.Default.SportsSoccer,
+                trailingIcon = Icons.Default.Close
+            ),
+            ChipsModel(
+                name = "Basketball",
+                leadingIcon = Icons.Default.SportsBasketball,
+                trailingIcon = Icons.Default.Close
+            ),
+            ChipsModel(
+                name = "Volleyball",
+                leadingIcon = Icons.Default.SportsVolleyball,
+                trailingIcon = Icons.Default.Close
+            ),
+        )
+
+        var selectedItem by remember { mutableStateOf("") }
+        var isSelected by remember { mutableStateOf(false) }
+
+        LazyRow {
+            items(filterList) { item ->
+                isSelected = selectedItem==item.name
+                Spacer(modifier = Modifier.padding(5.dp))
+              //  if (item.subList != null) {
+                    //ChipWithSubItems(chipLabel = item.name, chipItems = item.subList, courtsList=courtsList)
+               // } else {
+                    FilterChip(
+                        selected = isSelected,
+                        onClick = {
+                            when (selectedItem==item.name) {
+                                true -> {selectedItem="";  all=true }
+                                false -> {selectedItem=item.name; all=false; sportFilter=item.name }
+                            }
+                        },
+                        label = { Text(text = item.name) },
+                        leadingIcon = {
+                            val isCheckIcon = item.leadingIcon == Icons.Default.Check
+                            if (item.leadingIcon != null && isCheckIcon && isSelected) {
+                                Icon(item.leadingIcon, contentDescription = item.name)
+                            }
+                            if (item.leadingIcon != null && !isCheckIcon) {
+                                Icon(item.leadingIcon, contentDescription = item.name)
+                            }
+                        },
+                       /* trailingIcon = {
+                            if (item.trailingIcon != null && isSelected)
+                                Icon(item.trailingIcon, contentDescription = item.name)
+                        }*/
+                    )
+                //}
+            }
+        }
+        //FilterChip(if(all) courtsList else filteredList, sportFilter, all)
         LazyColumn(
             modifier = Modifier.padding(vertical = 2.dp, horizontal = 4.dp),
         ) {
-                items(items = courtsList) { court ->
+                items(items = if(all) courtsList else courts) { court ->
                     CourtCard(court = court, navController = navController)
             }
 
@@ -77,27 +141,27 @@ fun CourtCard(court: Court, navController: NavController) {
     val bitmap = court.image?.let { BitmapConverter.converterStringToBitmap(it) }
 
 
-    Card(
+    ElevatedCard (
         modifier = Modifier
             .clickable { expanded = !expanded }
             .padding(5.dp)
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .background(Color.White),
         shape = RoundedCornerShape(10.dp),
         elevation =  CardDefaults.cardElevation(
             defaultElevation = 5.dp
+        ),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
         )
     ) {
         Column(
             modifier = Modifier
-                .padding(10.dp)
-              /*  .animateContentSize(
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessLow
-                    )
-                )*/
+                .padding(2.dp)
+                .background(Color.White)
         ) {
-            Row {
+            Row(modifier = Modifier
+                .padding(horizontal = 10.dp)) {
 
                 if (bitmap != null) {
                     Image(
@@ -108,12 +172,11 @@ fun CourtCard(court: Court, navController: NavController) {
                             .clip(shape = RectangleShape)
                             .fillMaxWidth()
                             .height(210.dp)
-                            .padding(10.dp)
                     )
                 }
             }
             Row {
-                Column(modifier = Modifier.padding(horizontal = 5.dp)) {
+                Column(modifier = Modifier.padding(horizontal = 10.dp)) {
                     court.court_name?.let {
                         Text(
                             text = it,
@@ -145,76 +208,7 @@ fun CourtCard(court: Court, navController: NavController) {
         }
     }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun FilterChip(courtsList: List<Court>) {
-    val filterList = listOf(
-        ChipsModel(
-            name = "Order by",
-            subList = listOf("Most starred", "Ascending A-Z", "Descending Z-A"),
-            trailingIcon = Icons.Default.ArrowDropDown,
-            leadingIcon = Icons.Default.Check
-        ),
-        ChipsModel(
-            name = "Tennis",
-            leadingIcon = Icons.Default.SportsTennis,
-            trailingIcon = Icons.Default.Close
-        ),
-        ChipsModel(
-            name = "Football",
-            leadingIcon = Icons.Default.SportsSoccer,
-            trailingIcon = Icons.Default.Close
-        ),
-        ChipsModel(
-            name = "Basketball",
-            leadingIcon = Icons.Default.SportsBasketball,
-            trailingIcon = Icons.Default.Close
-        ),
-        ChipsModel(
-            name = "Volleyball",
-            leadingIcon = Icons.Default.SportsVolleyball,
-            trailingIcon = Icons.Default.Close
-        ),
-    )
-
-    val selectedItems = remember { mutableStateListOf<String>() }
-    var isSelected by remember { mutableStateOf(false) }
-
-    LazyRow {
-        items(filterList) { item ->
-            isSelected = selectedItems.contains(item.name)
-            Spacer(modifier = Modifier.padding(5.dp))
-            if (item.subList != null) {
-                ChipWithSubItems(chipLabel = item.name, chipItems = item.subList, courtsList=courtsList)
-            } else {
-                FilterChip(
-                    selected = isSelected,
-                    onClick = {
-                        when (selectedItems.contains(item.name)) {
-                            true -> {selectedItems.remove(item.name); courtsList.map { court ->  court.sport!=item.name} }
-                            false -> {selectedItems.add(item.name); courtsList.map { court ->  court.sport==item.name} }
-                        }
-                    },
-                    label = { Text(text = item.name) },
-                    leadingIcon = {
-                        val isCheckIcon = item.leadingIcon == Icons.Default.Check
-                        if (item.leadingIcon != null && isCheckIcon && isSelected) {
-                            Icon(item.leadingIcon, contentDescription = item.name)
-                        }
-                        if (item.leadingIcon != null && !isCheckIcon) {
-                            Icon(item.leadingIcon, contentDescription = item.name)
-                        }
-                    },
-                    trailingIcon = {
-                        if (item.trailingIcon != null && isSelected)
-                            Icon(item.trailingIcon, contentDescription = item.name)
-                    }
-                )
-            }
-        }
-    }
-}
-
+/*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChipWithSubItems(chipLabel: String, chipItems: List<String>, courtsList: List<Court>) {
@@ -263,13 +257,11 @@ fun ChipWithSubItems(chipLabel: String, chipItems: List<String>, courtsList: Lis
             }
         }
     }
-}
+}*/
 
 @Composable
 private fun RatingBar(
-    modifier: Modifier = Modifier,
-    rating: Float,
-    spaceBetween: Dp = 0.dp
+    rating: Float
 ) {
     var rat = rating
     Row{
@@ -299,7 +291,7 @@ private fun RatingBar(
                    tint = androidx.compose.material.MaterialTheme.colors.primary
                )
            }
-            rat=rat-1
+            rat -= 1
         }
     }
 }
