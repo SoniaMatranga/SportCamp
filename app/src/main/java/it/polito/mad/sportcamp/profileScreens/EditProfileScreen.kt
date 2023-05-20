@@ -286,7 +286,7 @@ fun EditProfileScreen(
                                     .size(200.dp)
                                     .border(
                                         2.dp,
-                                        MaterialTheme.colors.primary,
+                                        MaterialTheme.colors.secondary,
                                         CircleShape
                                     )
                             )
@@ -301,7 +301,7 @@ fun EditProfileScreen(
                                     .clip(CircleShape)
                                     .border(
                                         2.dp,
-                                        MaterialTheme.colors.primary,
+                                        MaterialTheme.colors.secondary,
                                         CircleShape
                                     )
                             )
@@ -327,7 +327,7 @@ fun EditProfileScreen(
                                         .clip(CircleShape)
                                         .border(
                                             2.dp,
-                                            MaterialTheme.colors.primary,
+                                            MaterialTheme.colors.secondary,
                                             CircleShape
                                         )
                                 )
@@ -349,7 +349,7 @@ fun EditProfileScreen(
                                     CircleShape
                                 )
                                 .background(
-                                    color = MaterialTheme.colors.primary,
+                                    color = MaterialTheme.colors.secondary,
                                     shape = CircleShape
                                 ),
                         ) {
@@ -359,7 +359,7 @@ fun EditProfileScreen(
                                 modifier = Modifier.clickable {
                                     checkAndRequestCameraPermission(mContext, permission, launcher)
                                 },
-                                tint = MaterialTheme.colors.secondary
+                                tint = MaterialTheme.colors.background
                             )
                         }
                     }

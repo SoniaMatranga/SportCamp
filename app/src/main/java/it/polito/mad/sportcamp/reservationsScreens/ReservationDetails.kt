@@ -244,14 +244,24 @@ fun ReservationCard(reservation: ReservationContent, viewModel: AppViewModel, na
                                     }
                                 }
 
+
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+
                                 Button(
                                     shape = RoundedCornerShape(5.dp),
-                                    onClick = { reservation.id_reservation?.let {
-                                        viewModel.deleteReservationById(
-                                            it
-                                        )
-                                    }
-                                        navController.navigate(route = Screen.Reservations.route) }) {
+                                    onClick = {
+                                        reservation.id_reservation?.let {
+                                            viewModel.deleteReservationById(
+                                                it
+                                            )
+                                        }
+                                        navController.navigate(route = Screen.Reservations.route)
+                                    }) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text(
                                             text = "Delete",

@@ -2,7 +2,7 @@
 <resources>
     <color name="green_bottombar">#227126</color>
     <color name="green_actionbar">#227126</color>
-    <color name="green_statusbar">#D84703</color>
+    <color name="green_statusbar">#003049</color>
     <color name="titles">#FF000000</color>
     <color name="body">#383939</color>
     <color name="black">#FF000000</color>

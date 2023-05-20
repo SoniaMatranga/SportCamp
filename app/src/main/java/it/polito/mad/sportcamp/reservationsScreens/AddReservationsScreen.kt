@@ -4,6 +4,7 @@ import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -90,6 +91,8 @@ fun AddReservationsScreen(
                 horizontalAlignment = Alignment.CenterHorizontally) {
             Button(onClick = { calendarState.show()},
                     modifier= Modifier.padding(horizontal = 10.dp),
+                colors = ButtonDefaults.buttonColors(backgroundColor = Color.White),
+                border = BorderStroke(2.dp, MaterialTheme.colors.primary)
             ) {
 
                     Icon(
@@ -148,7 +151,9 @@ fun dropDownSportsMenu() {
             Column(verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally) {
                 Button(onClick = {  },
-                        modifier= Modifier.padding(horizontal = 10.dp),) {
+                        modifier= Modifier.padding(horizontal = 10.dp),
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.White),
+                    border = BorderStroke(2.dp, MaterialTheme.colors.primary)) {
 
                     Icon(
                         selectedIcon,

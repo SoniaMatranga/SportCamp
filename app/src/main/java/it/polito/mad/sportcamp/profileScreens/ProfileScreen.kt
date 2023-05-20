@@ -183,7 +183,7 @@ private fun UserDetails(user: User,  navController: NavController) {
                     .size(200.dp)
                     .border(
                         2.dp,
-                        MaterialTheme.colors.primary,
+                        MaterialTheme.colors.secondary,
                         CircleShape
                     )
             )
@@ -533,52 +533,60 @@ private fun prepareOptionsData(user: User) {
 
     optionsList.add(
         OptionsData(
-            icon = appIcons.Mail,
-            title = "Mail",
-            subTitle = user.mail.toString()
-        )
-    )
- /*
-    optionsList.add(
-        OptionsData(
-            icon = appIcons.LocationCity,
-            title = "City",
-            subTitle = user.city.toString()
-        )
-    )*/
-
-    optionsList.add(
-        OptionsData(
             icon = appIcons.CalendarMonth,
             title = "Age",
             subTitle = user.age.toString()
         )
     )
 
-    /*
     optionsList.add(
         OptionsData(
-            icon = appIcons.Transgender,
-            title = "Gender",
-            subTitle = user.gender.toString()
+            icon = appIcons.Mail,
+            title = "Mail",
+            subTitle = user.mail.toString()
         )
     )
 
-    optionsList.add(
-        OptionsData(
-            icon = appIcons.TrendingUp,
-            title = "Level",
-            subTitle = user.level.toString()
-        )
-    )*/
 
-    /*optionsList.add(
-        OptionsData(
-            icon = appIcons.DirectionsRun,
-            title = "Sports",
-            subTitle = user.sports.toString()
-        )
-    )*/
+    /*
+       optionsList.add(
+           OptionsData(
+               icon = appIcons.LocationCity,
+               title = "City",
+               subTitle = user.city.toString()
+           )
+       )
+
+
+
+
+
+       optionsList.add(
+           OptionsData(
+               icon = appIcons.Transgender,
+               title = "Gender",
+               subTitle = user.gender.toString()
+           )
+       )
+
+       optionsList.add(
+           OptionsData(
+               icon = appIcons.TrendingUp,
+               title = "Level",
+               subTitle = user.level.toString()
+           )
+       )
+
+
+       optionsList.add(
+           OptionsData(
+               icon = appIcons.DirectionsRun,
+               title = "Sports",
+               subTitle = user.sports.toString()
+           )
+       )
+
+        */
 
 }
 

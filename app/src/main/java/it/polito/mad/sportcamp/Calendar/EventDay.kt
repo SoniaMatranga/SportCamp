@@ -23,6 +23,8 @@ import io.github.boguszpawlowski.composecalendar.selection.DynamicSelectionState
 import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.database.Reservation
 import it.polito.mad.sportcamp.ui.theme.OrangeActionBar
+import java.time.LocalDate
+import java.util.Date
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -35,75 +37,80 @@ fun EventDay(
     val date = state.date
     val selectionState = state.selectionState
     val isSelected = selectionState.isDateSelected(date)
+    val today: LocalDate = LocalDate.now()
 
-    Card(
-        modifier = modifier
-            .aspectRatio(1f)
-            .padding(2.dp),
-        elevation = if (state.isFromCurrentMonth) 6.dp else 0.dp,
-        border = if (state.isCurrentDay) {
-            BorderStroke(3.dp, MaterialTheme.colors.primary)
-        } else if (isSelected) {
-            BorderStroke(1.dp, MaterialTheme.colors.primary)
-        } else {
-            null
-        },
-        backgroundColor = if (state.isFromCurrentMonth) {
-            MaterialTheme.colors.secondary
-        } else {
-            Color.Gray
-        },
-        contentColor = if (isSelected) {
-            MaterialTheme.colors.onPrimary
-        } else {
-            OrangeActionBar
-        }
-    ) {
-        Column(
-            modifier = Modifier
-                .clickable { },
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceEvenly
+    if (state.isFromCurrentMonth) {
+
+        Card(
+            modifier = modifier
+                .aspectRatio(1f)
+                .padding(2.dp),
+            elevation = if (state.isFromCurrentMonth) 6.dp else 0.dp,
+            border = if (state.isCurrentDay) {
+                BorderStroke(3.dp, MaterialTheme.colors.secondary)
+            } else if (isSelected) {
+                BorderStroke(1.dp, MaterialTheme.colors.secondary)
+            } else {
+                null
+            },
+            backgroundColor = if (state.date.isBefore(today)) {
+                Color.Gray
+            } else {
+                MaterialTheme.colors.background
+            },
+            contentColor = if (isSelected) {
+                MaterialTheme.colors.onPrimary
+            } else {
+                OrangeActionBar
+            }
         ) {
-            Text(text = date.dayOfMonth.toString(),
-            color = Color.Black)
+            Column(
+                modifier = Modifier
+                    .clickable { },
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Text(
+                    text = date.dayOfMonth.toString(),
+                    color = Color.Black
+                )
 
-            Row() {
-                reservationsList.forEach {
-                    if (date.toString() == it.date.toString()) {
-                        Row(
-                            modifier = Modifier
-                                .clickable {
-                                    navController.navigate(
-                                        route = Screen.ReservationDetails.passDate(
-                                            date.toString()
-                                        )
-                                    )
-                                    Log.d("SelectedDate", date.toString())
-                                }.padding(0.5.dp),
-
-                        ) {
-                            //Spacer(modifier = Modifier.height(10.dp))
-                            Box(
+                Row() {
+                    reservationsList.forEach {
+                        if (date.toString() == it.date.toString()) {
+                            Row(
                                 modifier = Modifier
-                                    .size(10.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.Black)
-                            )
+                                    .clickable {
+                                        navController.navigate(
+                                            route = Screen.ReservationDetails.passDate(
+                                                date.toString()
+                                            )
+                                        )
+                                        Log.d("SelectedDate", date.toString())
+                                    }.padding(0.5.dp),
 
-                        }
-                    } else {
-                        /*Text(
+                                ) {
+                                //Spacer(modifier = Modifier.height(10.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .size(10.dp)
+                                        .clip(CircleShape)
+                                        .background(Color.Black)
+                                )
+
+                            }
+                        } else {
+                            /*Text(
                         text = "Sport", //text inside calendar day
                         fontSize = 8.sp,
                         textAlign = TextAlign.Center
                     )*/
+                        }
                     }
                 }
+
+
             }
-
-
-
         }
     }
 }

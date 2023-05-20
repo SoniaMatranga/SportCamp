@@ -37,7 +37,7 @@ fun ReservationsScreen(
         modifier = Modifier.fillMaxSize()
     ) {
         SportCampTheme{
-            CustomToolBar(title = "Reservations")
+            CustomToolBar(title = "My reservations")
             Spacer(modifier = Modifier.height(3.dp))
             Column( modifier =Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.SpaceBetween
@@ -59,7 +59,7 @@ fun ReservationsScreen(
                             Icon(
                                 Icons.Filled.Add,
                                 contentDescription = "Add button",
-                                tint = MaterialTheme.colors.secondary
+                                tint = MaterialTheme.colors.background
                             )
                             // Toggle the visibility of the content with animation.
                            /* AnimatedVisibility(visible = !lazyListState.isScrollingUp()) {
