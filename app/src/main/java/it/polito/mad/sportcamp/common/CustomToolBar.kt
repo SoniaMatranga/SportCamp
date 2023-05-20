@@ -6,12 +6,13 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import it.polito.mad.sportcamp.ui.theme.OrangeActionBar
+import it.polito.mad.sportcamp.ui.theme.*
 
 
 @Composable
 fun CustomToolBar(title: String) {
     TopAppBar(
-        title = { Text(text = title, style = MaterialTheme.typography.h6) },
+        title = { Text(text = title, fontFamily = fonts) },
         modifier = Modifier
             .fillMaxWidth()
             .background(OrangeActionBar)

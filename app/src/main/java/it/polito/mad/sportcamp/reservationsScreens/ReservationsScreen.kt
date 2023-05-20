@@ -19,6 +19,7 @@ import it.polito.mad.sportcamp.Calendar.Calendar
 import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.CustomToolBar
 import it.polito.mad.sportcamp.database.AppViewModel
+import it.polito.mad.sportcamp.ui.theme.*
 
 
 @RequiresApi(Build.VERSION_CODES.O)

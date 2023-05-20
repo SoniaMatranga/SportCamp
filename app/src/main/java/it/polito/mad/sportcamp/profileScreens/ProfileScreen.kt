@@ -35,8 +35,7 @@ import androidx.navigation.NavHostController
 import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.BitmapConverter
 import it.polito.mad.sportcamp.database.User
-
-
+import it.polito.mad.sportcamp.ui.theme.*
 
 @Composable
 fun ProfileScreen(
@@ -214,9 +213,7 @@ private fun UserDetails(user: User,  navController: NavController) {
                 user.nickname?.let {
                     Text(
                         text = it,
-                        style = TextStyle(
-                            fontSize = 22.sp,
-                        ),
+                        fontSize = 27.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Center,
@@ -230,11 +227,9 @@ private fun UserDetails(user: User,  navController: NavController) {
                         modifier = Modifier.fillMaxWidth(),
                         text = it,
                         textAlign = TextAlign.Center,
-                        style = TextStyle(
-                            fontSize = 14.sp,
-                            color = Color.Gray,
-                            letterSpacing = (0.8).sp
-                        ),
+                        fontSize = 14.sp,
+                        color = Color.Gray,
+                        letterSpacing = (0.8).sp,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
@@ -268,9 +263,7 @@ private fun UserDetails(user: User,  navController: NavController) {
                 user.level?.let {
                     Text(
                         text = "Level",
-                        style = TextStyle(
-                            fontSize = 16.sp,
-                        ),
+                        fontSize = 16.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Center,
@@ -282,11 +275,9 @@ private fun UserDetails(user: User,  navController: NavController) {
                 user.level?.let {
                     Text(
                         text = it,
-                        style = TextStyle(
-                            fontSize = 14.sp,
-                            color = Color.Gray,
-                            letterSpacing = (0.8).sp
-                        ),
+                        fontSize = 14.sp,
+                        color = Color.Gray,
+                        letterSpacing = (0.8).sp,
                         overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
@@ -305,9 +296,7 @@ private fun UserDetails(user: User,  navController: NavController) {
                 user.city?.let {
                     Text(
                         text = "City",
-                        style = TextStyle(
-                            fontSize = 16.sp,
-                        ),
+                        fontSize = 16.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Center,
@@ -319,11 +308,9 @@ private fun UserDetails(user: User,  navController: NavController) {
                 user.city?.let {
                     Text(
                         text = it,
-                        style = TextStyle(
-                            fontSize = 14.sp,
-                            color = Color.Gray,
-                            letterSpacing = (0.8).sp
-                        ),
+                        fontSize = 14.sp,
+                        color = Color.Gray,
+                        letterSpacing = (0.8).sp,
                         overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
@@ -343,9 +330,7 @@ private fun UserDetails(user: User,  navController: NavController) {
                 user.gender?.let {
                     Text(
                         text = "Gender",
-                        style = TextStyle(
-                            fontSize = 16.sp,
-                        ),
+                        fontSize = 16.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Center,
@@ -357,11 +342,9 @@ private fun UserDetails(user: User,  navController: NavController) {
                 user.gender?.let {
                     Text(
                         text = it,
-                        style = TextStyle(
-                            fontSize = 14.sp,
-                            color = Color.Gray,
-                            letterSpacing = (0.8).sp
-                        ),
+                        fontSize = 14.sp,
+                        color = Color.Gray,
+                        letterSpacing = (0.8).sp,
                         overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
@@ -410,9 +393,8 @@ private fun OptionsItemStyle(item: OptionsData, context: Context) {
                 // Title
                 Text(
                     text = item.title,
-                    style = TextStyle(
-                        fontSize = 16.sp,
-                    )
+                    fontSize = 16.sp,
+
                 )
 
                 Spacer(modifier = Modifier.height(2.dp))
@@ -420,12 +402,10 @@ private fun OptionsItemStyle(item: OptionsData, context: Context) {
                 // Sub title
                 Text(
                     text = item.subTitle,
-                    style = TextStyle(
-                        fontSize = 14.sp,
-                        letterSpacing = (0.8).sp,
-                        color = Color.Gray
+                    fontSize = 14.sp,
+                    letterSpacing = (0.8).sp,
+                    color = Color.Gray
 
-                    )
                 )
 
             }
@@ -438,7 +418,7 @@ private fun OptionsItemStyle(item: OptionsData, context: Context) {
 @Composable
 fun CustomToolbarWithEditButton(title: String, navController: NavHostController) {
     TopAppBar(
-        title = { Text(text = title, style = MaterialTheme.typography.h6) },
+        title = { Text(text = title, fontFamily = fonts) },
         actions = {
             IconButton(onClick = {navController.navigate(route = Screen.EditProfile.passId(1))}) {
                 Icon(Icons.Filled.Edit,
@@ -465,9 +445,7 @@ fun sportsListRow(user: User){
         // Title
         Text(
             text = "Sports",
-            style = TextStyle(
-                fontSize = 16.sp,
-            )
+            fontSize = 16.sp,
         )
 
         Row(
@@ -497,12 +475,9 @@ fun sportsListRow(user: User){
                     // Sub title
                     Text(
                         text = "Tennis",
-                        style = TextStyle(
-                            fontSize = 14.sp,
-                            letterSpacing = (0.8).sp,
-                            color = Color.Gray
-
-                        )
+                        fontSize = 14.sp,
+                        letterSpacing = (0.8).sp,
+                        color = Color.Gray
                     )
                 }
 
@@ -528,12 +503,10 @@ fun sportsListRow(user: User){
                     // Sub title
                     Text(
                         text = "Basketball",
-                        style = TextStyle(
-                            fontSize = 14.sp,
-                            letterSpacing = (0.8).sp,
-                            color = Color.Gray
+                        fontSize = 14.sp,
+                        letterSpacing = (0.8).sp,
+                        color = Color.Gray
 
-                        )
                     )
 
                 }

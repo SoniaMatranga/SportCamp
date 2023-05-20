@@ -56,6 +56,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import it.polito.mad.sportcamp.common.SaveMessage
 import it.polito.mad.sportcamp.common.ValidationMessage
+import it.polito.mad.sportcamp.ui.theme.*
 
 
 var usrName: String = ""
@@ -542,7 +543,7 @@ fun updateUserInDB(
 @Composable
 fun CustomToolbarWithBackArrow(title: String, navController: NavHostController) {
     TopAppBar(
-        title = { Text(text = title, style = MaterialTheme.typography.h6) },
+        title = { Text(text = title, fontFamily = fonts) },
         navigationIcon = {
             IconButton(onClick = { navController.popBackStack() }) {
                 Icon(

@@ -116,24 +116,6 @@ fun AddReservationsScreen(
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CustomToolbarWithCalendarButton(title: String, calendarState: com.maxkeppeker.sheets.core.models.base.SheetState) {
-    TopAppBar(
-        title = { Text(text = title, style = MaterialTheme.typography.h6) },
-        navigationIcon = {
-            IconButton(onClick = {
-                    calendarState.show()
-            }) {
-                Icon(
-                    Icons.Filled.CalendarMonth,
-                    contentDescription = "Calendar",
-                )
-            }
-        })
-
-}
-
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun dropDownSportsMenu() {
