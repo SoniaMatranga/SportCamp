@@ -10,7 +10,9 @@ import androidx.compose.ui.graphics.Color
 private val DarkColorPalette = darkColors(
     primary = OrangeActionBar,
     primaryVariant = Blue,
-    secondary = Orange
+    secondary = Orange,
+    onPrimary = Color.White,
+    onSecondary = Color.Black
 )
 
 private val LightColorPalette = lightColors(
