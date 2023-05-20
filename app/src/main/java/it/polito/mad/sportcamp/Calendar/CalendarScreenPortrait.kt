@@ -22,6 +22,7 @@ import io.github.boguszpawlowski.composecalendar.SelectableCalendar
 import io.github.boguszpawlowski.composecalendar.header.MonthState
 import io.github.boguszpawlowski.composecalendar.selection.DynamicSelectionState
 import it.polito.mad.sportcamp.database.Reservation
+import it.polito.mad.sportcamp.database.ReservationTimed
 import java.time.LocalDate
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -29,7 +30,7 @@ import java.time.LocalDate
 fun CalendarScreenPortrait(
     state: CalendarState<DynamicSelectionState>,
     navController: NavController,
-    reservationsList: List<Reservation>
+    reservationsList: List<ReservationTimed>
 ) {
 
 

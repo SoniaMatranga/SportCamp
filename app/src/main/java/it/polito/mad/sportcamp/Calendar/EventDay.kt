@@ -22,6 +22,7 @@ import io.github.boguszpawlowski.composecalendar.day.DayState
 import io.github.boguszpawlowski.composecalendar.selection.DynamicSelectionState
 import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.database.Reservation
+import it.polito.mad.sportcamp.database.ReservationTimed
 import it.polito.mad.sportcamp.ui.theme.OrangeActionBar
 import java.time.LocalDate
 import java.util.Date
@@ -32,7 +33,7 @@ fun EventDay(
     state: DayState<DynamicSelectionState>,
     modifier: Modifier = Modifier,
     navController: NavController,
-    reservationsList: List<Reservation>
+    reservationsList: List<ReservationTimed>
 ) {
     val date = state.date
     val selectionState = state.selectionState

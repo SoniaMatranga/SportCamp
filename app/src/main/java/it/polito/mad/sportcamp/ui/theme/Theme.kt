@@ -19,6 +19,7 @@ private val LightColorPalette = lightColors(
     primary = OrangeActionBar,
     primaryVariant = Blue,
     secondary = Orange,
+    secondaryVariant = Color.Gray,
     background = Color.White,
     onPrimary = Color.White,
     onSecondary = Color.Black

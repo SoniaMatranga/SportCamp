@@ -183,7 +183,7 @@ private fun UserDetails(user: User,  navController: NavController) {
                     .size(200.dp)
                     .border(
                         2.dp,
-                        MaterialTheme.colors.secondary,
+                        MaterialTheme.colors.secondaryVariant,
                         CircleShape
                     )
             )
@@ -375,7 +375,7 @@ private fun OptionsItemStyle(item: OptionsData, context: Context) {
                 .size(25.dp),
             imageVector = item.icon,
             contentDescription = item.title,
-            tint = MaterialTheme.colors.primary
+            tint = MaterialTheme.colors.secondary
         )
 
         Row(

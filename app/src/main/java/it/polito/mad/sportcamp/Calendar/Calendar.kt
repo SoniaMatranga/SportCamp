@@ -12,12 +12,13 @@ import androidx.navigation.NavController
 import io.github.boguszpawlowski.composecalendar.rememberSelectableCalendarState
 import io.github.boguszpawlowski.composecalendar.selection.SelectionMode
 import it.polito.mad.sportcamp.database.Reservation
+import it.polito.mad.sportcamp.database.ReservationTimed
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun Calendar(
     navController: NavController,
-    reservationsList: List<Reservation>
+    reservationsList: List<ReservationTimed>
 ) {
 
     //val context = LocalContext.current
