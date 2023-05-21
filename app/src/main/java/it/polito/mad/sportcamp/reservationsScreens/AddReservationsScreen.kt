@@ -206,7 +206,7 @@ private fun CourtCard(court: Court, dateFilter: String , navController: NavHostC
         elevation = 10.dp,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(all = 10.dp),
+            .padding(all = 5.dp),
         shape = RoundedCornerShape(10.dp),
     ) {
 
@@ -240,9 +240,9 @@ private fun CourtCard(court: Court, dateFilter: String , navController: NavHostC
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.Start
                     ) {
-                        Column(modifier = Modifier.padding(4.dp)) {
+                        Column(modifier = Modifier.padding(horizontal = 4.dp)) {
                             Row() {
                                 court.court_name?.let {
                                     Text(
@@ -260,7 +260,14 @@ private fun CourtCard(court: Court, dateFilter: String , navController: NavHostC
                             }
                         }
 
-                        Column( modifier = Modifier.fillMaxHeight(),
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+
+                        Column(
+                            modifier = Modifier.fillMaxHeight(),
                             verticalArrangement = Arrangement.Center,
                         ) {
                             Button(
