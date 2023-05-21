@@ -598,7 +598,7 @@ fun dropDownMenu(userOption: String, type: String) {
     if (type == "Sports")
         suggestions = listOf("Basketball", "Football", "Tennis", "Volleyball" )
     if (type == "City")
-        suggestions = listOf("Torino", "Milano", "Roma", "Venezia", "Verona", "Padova")
+        suggestions = listOf("Turin", "Milan", "Rome", "Venice", "Naples", "Padua","Genoa")
 
     val icon = if (isExpanded)
         Icons.Filled.ArrowDropUp //it requires androidx.compose.material:material-icons-extended

@@ -12,12 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Man
-import androidx.compose.material.icons.filled.SportsBasketball
-import androidx.compose.material.icons.filled.SportsFootball
-import androidx.compose.material.icons.filled.SportsTennis
-import androidx.compose.material.icons.filled.SportsVolleyball
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,9 +39,9 @@ import com.maxkeppeler.sheets.calendar.models.CalendarConfig
 import com.maxkeppeler.sheets.calendar.models.CalendarSelection
 import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.BitmapConverter
+import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
 import it.polito.mad.sportcamp.database.AppViewModel
 import it.polito.mad.sportcamp.database.Court
-import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -70,12 +65,12 @@ fun AddReservationsScreen(
 
 
     val context = LocalContext.current
-    val sports = arrayOf( "Basketball","Football", "Tennis", "Volleyball")
+    val sports = arrayOf("Volleyball", "Basketball","Football", "Tennis")
     var expanded by remember { mutableStateOf(false) }
     var selectedIcon by remember {mutableStateOf(Icons.Filled.SportsFootball) }
 
     when (sportFilter) {
-        "Football" -> selectedIcon = Icons.Filled.SportsFootball
+        "Football" -> selectedIcon = Icons.Filled.SportsSoccer
         "Tennis" -> selectedIcon = Icons.Filled.SportsTennis
         "Volleyball" -> selectedIcon = Icons.Filled.SportsVolleyball
         "Basketball" -> selectedIcon = Icons.Filled.SportsBasketball
