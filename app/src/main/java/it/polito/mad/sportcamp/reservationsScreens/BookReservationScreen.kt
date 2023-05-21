@@ -1,23 +1,33 @@
 package it.polito.mad.sportcamp.reservationsScreens
 
 import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ExposedDropdownMenuBox
 import androidx.compose.material.ExposedDropdownMenuDefaults
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,7 +37,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,6 +54,7 @@ import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
 
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY2
 import it.polito.mad.sportcamp.bottomnav.Screen
+import it.polito.mad.sportcamp.common.BitmapConverter
 
 
 var isEditedTimeSlot: Boolean = false
@@ -65,6 +81,7 @@ fun BookReservationScreen(
     var selectedTimeSlot by remember { mutableStateOf("Select time slot") }
 
     val equipments = listOf("Not requested", "Requested")
+    val bitmap = courtDetails?.image?.let { BitmapConverter.converterStringToBitmap(it) }
 
     //val reservations by viewModel.getReservationsByUserAndDate(1, selectedDate).observeAsState()
 
@@ -79,8 +96,63 @@ fun BookReservationScreen(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        Text(text = "Date: $date")
-        Text(text = "CourtDetails: ${courtDetails?.address + courtDetails?.court_name}")
+        //Text(text = "Date: $date")
+        Text(text = "Choose details to complete your booking for ${courtDetails?.court_name}",
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth())
+
+        Column() {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                if (bitmap != null) {
+                    Image(
+                        painter = BitmapPainter(bitmap.asImageBitmap()),
+                        contentDescription = "Court Picture",
+                        contentScale = ContentScale.FillWidth,
+                        modifier = Modifier
+                            // Clip image to be shaped as a rectangle
+                            .clip(shape = RectangleShape)
+                            .fillMaxWidth()
+                            .height(210.dp)
+                            .padding(10.dp)
+                    )
+                }
+            }
+
+
+            Row(modifier = Modifier.padding(horizontal = 10.dp)) {
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                        Column(modifier = Modifier.padding(4.dp)) {
+                            Row() {
+                                    Text(text = "Date: $date")
+                            }
+                            Row() {
+                                courtDetails?.address?.let {
+                                    Text(
+                                        text = "Address: $it",
+                                    )
+                                }
+                            }
+                            Row(){
+                                courtDetails?.city?.let {
+                                    Text(
+                                        text = "City: $it",
+                                    )
+                                }
+                            }
+
+                        }
+
+
+                }
+            }
+        }
         
 
         Column() {
