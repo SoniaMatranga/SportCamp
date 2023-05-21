@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
@@ -43,6 +44,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,6 +66,17 @@ import it.polito.mad.sportcamp.database.AppViewModel
 import it.polito.mad.sportcamp.database.Reservation
 import it.polito.mad.sportcamp.database.ReservationContent
 import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
+import it.polito.mad.sportcamp.common.SaveMessage
+import it.polito.mad.sportcamp.profileScreens.usrAge
+import it.polito.mad.sportcamp.profileScreens.usrBio
+import it.polito.mad.sportcamp.profileScreens.usrCity
+import it.polito.mad.sportcamp.profileScreens.usrGender
+import it.polito.mad.sportcamp.profileScreens.usrLevel
+import it.polito.mad.sportcamp.profileScreens.usrName
+import it.polito.mad.sportcamp.profileScreens.usrNickname
+import it.polito.mad.sportcamp.profileScreens.usrSports
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun ReservationDetails(
@@ -115,7 +128,45 @@ fun ReservationCard(reservation: ReservationContent, viewModel: AppViewModel, na
     // We keep track if the message is expanded or not in this
     // variable
     var isExpanded by remember { mutableStateOf(false) }
-    //val surfaceColor = MaterialTheme.colors.background,
+
+
+
+    //========================= Dialog on discard ===================================
+    val openDialog = remember { mutableStateOf(false)  }
+
+    if (openDialog.value) {
+        AlertDialog(
+            onDismissRequest = {
+                openDialog.value = false
+            },
+            text = {
+                Text("This reservation will be deleted permanently. Are you sure you want to delete it anyway? ")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        reservation.id_reservation?.let {
+                            viewModel.deleteReservationById(
+                                it
+                            )
+                        }
+                        openDialog.value = false
+                        //navController.navigate(route = Screen.Reservations.route)
+
+                    }) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = {
+                        openDialog.value = false
+                    }) {
+                    Text("Don't delete")
+                }
+            }
+        )
+    }
 
 
     Card(
@@ -201,6 +252,8 @@ fun ReservationCard(reservation: ReservationContent, viewModel: AppViewModel, na
 
                     if (isExpanded) {
 
+
+
                         Column(modifier = Modifier.padding(4.dp)) {
 
 
@@ -255,12 +308,7 @@ fun ReservationCard(reservation: ReservationContent, viewModel: AppViewModel, na
                                 Button(
                                     shape = RoundedCornerShape(5.dp),
                                     onClick = {
-                                        reservation.id_reservation?.let {
-                                            viewModel.deleteReservationById(
-                                                it
-                                            )
-                                        }
-                                        navController.navigate(route = Screen.Reservations.route)
+                                        openDialog.value = true
                                     }) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text(
@@ -276,37 +324,7 @@ fun ReservationCard(reservation: ReservationContent, viewModel: AppViewModel, na
                                 }
                             }
                         }
-
                     }
-
-
-                    /*
-                    // Add a vertical space between the author and message texts
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    Surface(
-                        shape = MaterialTheme.shapes.medium, elevation = 5.dp,
-                        // surfaceColor color will be changing gradually from primary to surface
-                        color = MaterialTheme.colors.background,
-                        // animateContentSize will change the Surface size gradually
-                        modifier = Modifier
-                            .animateContentSize()
-                            .padding(1.dp)
-                    ) {
-                        reservation.time_slot?.let {
-                            Text(
-                                text = it,
-                                style = MaterialTheme.typography.body1,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(all = 4.dp),
-                                // If the message is expanded, we display all its content
-                                // otherwise we only display the first line
-                                maxLines = if (isExpanded) Int.MAX_VALUE else 1,
-                            )
-                        }
-                    }
-*/
                 }
             }
         }

@@ -3,37 +3,31 @@ package it.polito.mad.sportcamp.reservationsScreens
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ExposedDropdownMenuBox
 import androidx.compose.material.ExposedDropdownMenuDefaults
-import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,10 +49,11 @@ import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY2
 import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.BitmapConverter
+import it.polito.mad.sportcamp.common.ValidationBookingMessage
+import it.polito.mad.sportcamp.common.ValidationMessage
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
-
-var isEditedTimeSlot: Boolean = false
-var isEditedEquipments: Boolean = false
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -82,21 +77,29 @@ fun BookReservationScreen(
 
     val equipments = listOf("Not requested", "Requested")
     val bitmap = courtDetails?.image?.let { BitmapConverter.converterStringToBitmap(it) }
+    val coroutineScope = rememberCoroutineScope()
+    var validationMessageShown by remember { mutableStateOf(false) }
 
-    //val reservations by viewModel.getReservationsByUserAndDate(1, selectedDate).observeAsState()
+    // Shows the validation message.
+    suspend fun showEditMessage() {
+        if (!validationMessageShown) {
+            validationMessageShown = true
+            delay(2000L)
+            validationMessageShown = false
+        }
+    }
+
+
+
 
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        //CustomToolbarBookReservation(title = "Book reservation", navController = navController)
-        //CustomToolbarWithCalendarButton(title = "Add reservations", calendarState = calendarState )
-        // Text( text = reservations.toString())
+
         CustomToolbarWithBackArrow(title = "Book court", navController = navController)
-        //reservations?.let { ReservationsList(reservations = it, viewModel = viewModel, navController = navController) }
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        //Text(text = "Date: $date")
         Text(text = "Choose details to complete your booking for ${courtDetails?.court_name}",
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth())
@@ -153,130 +156,153 @@ fun BookReservationScreen(
                 }
             }
         }
-        
-
-        Column() {
 
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 45.dp, vertical = 10.dp)
-                    .background(Color.White)
-            ) {
+        if(timeSlots?.isNotEmpty() == true) {
 
-                Box(
-                    modifier = Modifier.background(Color.White)
+
+            Column() {
+
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 45.dp, vertical = 10.dp)
+                        .background(Color.White)
                 ) {
-                    ExposedDropdownMenuBox(
-                        expanded = expandedTimeSlot,
-                        onExpandedChange = {
-                            expandedTimeSlot = !expandedTimeSlot
-                        }
+
+                    Box(
+                        modifier = Modifier.background(Color.White)
                     ) {
-                        TextField(
-                            value = selectedTimeSlot,
-                            onValueChange = {},
-                            readOnly = true,
-                            modifier = Modifier.fillMaxWidth(),
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedTimeSlot) },
-                        )
-                        ExposedDropdownMenu(
+                        ExposedDropdownMenuBox(
                             expanded = expandedTimeSlot,
-                            onDismissRequest = { expandedTimeSlot = false }
+                            onExpandedChange = {
+                                expandedTimeSlot = !expandedTimeSlot
+                            }
                         ) {
-                            timeSlots?.forEach { item ->
-                                DropdownMenuItem(
-                                    content = { Text(text = item) },
-                                    onClick = {
-                                        expandedTimeSlot = false
-                                        selectedTimeSlot = item
-                                    }
-                                )
+                            TextField(
+                                value = selectedTimeSlot,
+                                onValueChange = {},
+                                readOnly = true,
+                                modifier = Modifier.fillMaxWidth(),
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedTimeSlot) },
+                            )
+                            ExposedDropdownMenu(
+                                expanded = expandedTimeSlot,
+                                onDismissRequest = { expandedTimeSlot = false }
+                            ) {
+                                timeSlots?.forEach { item ->
+                                    DropdownMenuItem(
+                                        content = { Text(text = item) },
+                                        onClick = {
+                                            expandedTimeSlot = false
+                                            selectedTimeSlot = item
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
+
+
                 }
-
-
-
-            }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 45.dp, vertical = 10.dp)
-                    .background(Color.White)
-            ) {
-
-                Box(
-                    modifier = Modifier.background(Color.White)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 45.dp, vertical = 10.dp)
+                        .background(Color.White)
                 ) {
-                    ExposedDropdownMenuBox(
-                        expanded = expandedEquipments,
-                        onExpandedChange = {
-                            expandedEquipments = !expandedEquipments
-                        }
+
+                    Box(
+                        modifier = Modifier.background(Color.White)
                     ) {
-                        TextField(
-                            value = selectedEquipments,
-                            onValueChange = {},
-                            readOnly = true,
-                            modifier = Modifier.fillMaxWidth(),
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedEquipments) },
-                        )
-                        ExposedDropdownMenu(
+                        ExposedDropdownMenuBox(
                             expanded = expandedEquipments,
-                            onDismissRequest = { expandedEquipments = false }
+                            onExpandedChange = {
+                                expandedEquipments = !expandedEquipments
+                            }
                         ) {
-                            equipments.forEach { item ->
-                                DropdownMenuItem(
-                                    content = { Text(text = item) },
-                                    onClick = {
-                                        expandedEquipments = false
-                                        selectedEquipments = item
-                                    }
-                                )
+                            TextField(
+                                value = selectedEquipments,
+                                onValueChange = {},
+                                readOnly = true,
+                                modifier = Modifier.fillMaxWidth(),
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedEquipments) },
+                            )
+                            ExposedDropdownMenu(
+                                expanded = expandedEquipments,
+                                onDismissRequest = { expandedEquipments = false }
+                            ) {
+                                equipments.forEach { item ->
+                                    DropdownMenuItem(
+                                        content = { Text(text = item) },
+                                        onClick = {
+                                            expandedEquipments = false
+                                            selectedEquipments = item
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
+
                 }
 
-            }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+                if(validationMessageShown){
+                    ValidationBookingMessage(validationMessageShown)
+                }
 
-                Button(
-                    shape = RoundedCornerShape(5.dp),
-                    onClick = {
-                        if(selectedTimeSlot!= "Select time slot" && selectedEquipments!="Select equipments") {
-                            Log.d ("Found", "Everything selected")
-                           /* val reservation_court  = courtDetails?.id_court
-                            viewModel.addReservation(Reservation(null,1,1,1,date,selectedEquipments,""))*/
-                            courtDetails?.id_court?.let {
-                                viewModel.addReservation(null,1,
-                                    it,selectedTimeSlot,date,selectedEquipments,"")
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+
+                    Button(
+                        shape = RoundedCornerShape(5.dp),
+                        onClick = {
+                            if (selectedTimeSlot != "Select time slot" && selectedEquipments != "Select equipments") {
+                                courtDetails?.id_court?.let {
+                                    viewModel.addReservation(
+                                        null, 1,
+                                        it, selectedTimeSlot, date, selectedEquipments, ""
+                                    )
+                                }
+
+                                navController.navigate(route = Screen.Reservations.route)
+
+                            } else {
+                                //dialog please chose timeslot and equipments
+                                coroutineScope.launch {
+                                    showEditMessage()
+                                }
                             }
-
-                            navController.navigate(route = Screen.Reservations.route)
-
-                        }else{
-                            Log.d ("Not added", "not added")
-                            //dialog please chose timeslot and equipments
+                        }) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "Book court",
+                                fontSize = 15.sp,
+                                textAlign = TextAlign.Center
+                            )
                         }
-                    }) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "Book court",
-                            fontSize = 15.sp,
-                            textAlign = TextAlign.Center
-                        )
                     }
                 }
             }
+        }
+        else{
+            Box(contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(40.dp),) {
+                Text(
+                    text = "No available time slot for this day, sorry!",
+                    fontSize = 20.sp,
+                    textAlign = TextAlign.Center,
+                    color=MaterialTheme.colors.primary
+                )
+            }
+
         }
 
 

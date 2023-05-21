@@ -50,7 +50,7 @@ fun ValidationMessage(shown: Boolean) {
 
                     ) {
                     Text(
-                        text = "Please update at least one field or your profile picture",
+                        text = "Please, update at least one field or your profile picture",
                         modifier = Modifier.padding(16.dp)
                     )
                 }
@@ -90,6 +90,45 @@ fun SaveMessage(shown: Boolean) {
                     ) {
                     Text(
                         text = "Profile successfully updated!",
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
+
+        }
+    }
+}
+
+@Composable
+fun ValidationBookingMessage(shown: Boolean) {
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        AnimatedVisibility(
+            visible = shown,
+            enter = slideInVertically(
+                // Enters by sliding in from offset -fullHeight to 0.
+                initialOffsetY = { fullHeight -> -fullHeight },
+                animationSpec = tween(durationMillis = 150, easing = LinearOutSlowInEasing)
+            ),
+            exit = slideOutVertically(
+                // Exits by sliding out from offset 0 to -fullHeight.
+                targetOffsetY = { fullHeight -> -fullHeight },
+                animationSpec = tween(durationMillis = 250, easing = FastOutLinearInEasing)
+            )
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    color = MaterialTheme.colors.primaryVariant,
+                    elevation = 4.dp,
+
+                    ) {
+                    Text(
+                        text = "Please, select both time slot and equipments",
                         modifier = Modifier.padding(16.dp)
                     )
                 }

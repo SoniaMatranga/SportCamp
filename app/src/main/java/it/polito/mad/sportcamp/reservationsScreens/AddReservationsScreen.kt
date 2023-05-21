@@ -6,15 +6,12 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -83,7 +80,6 @@ fun AddReservationsScreen(
         config = CalendarConfig(
             monthSelection = true,
             yearSelection = true,
-            //disabledDates = listOf(LocalDate.now().plusDays(7))
         ),
         selection = CalendarSelection.Date{ date ->
             Log.d ("SelectedDate", date.toString())
@@ -95,15 +91,12 @@ fun AddReservationsScreen(
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-       // CustomToolBar(title = "Favorites")
-        //CustomToolbarWithCalendarButton(title = "Add reservations", calendarState = calendarState )
         CustomToolbarWithBackArrow(title = "Add Reservations", navController = navController as NavHostController)
-       // CustomToolbarWithCalendarButton(title = "Add Res", calendarState = calendarState)
 
         Spacer(modifier = Modifier.height(10.dp))
-        Text(text="Select a date and a sport:",
+        Text(text="Select a date and a sport, then click info to book the court",
             textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth())
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 40.dp))
 
         Row(modifier= Modifier
             .fillMaxWidth()
@@ -205,10 +198,6 @@ private fun CourtsList(courts: List<Court>, dateFilter: String , viewModel: AppV
 private fun CourtCard(court: Court, dateFilter: String , viewModel: AppViewModel, navController: NavHostController) {
 
     val bitmap = court.image?.let { BitmapConverter.converterStringToBitmap(it) }
-    // We keep track if the message is expanded or not in this
-    // variable
-    var isExpanded by remember { mutableStateOf(false) }
-    //val surfaceColor = MaterialTheme.colors.background,
 
 
     Card(
@@ -253,12 +242,6 @@ private fun CourtCard(court: Court, dateFilter: String , viewModel: AppViewModel
                     ) {
                         Column(modifier = Modifier.padding(4.dp)) {
                             Row() {
-                                Icon(
-                                    modifier = Modifier
-                                        .size(25.dp),
-                                    imageVector = Icons.Outlined.LocationOn,
-                                    contentDescription = "Location",
-                                )
                                 court.court_name?.let {
                                     Text(
                                         text = it,
@@ -266,10 +249,9 @@ private fun CourtCard(court: Court, dateFilter: String , viewModel: AppViewModel
                                 }
                             }
                             Row() {
-                                Spacer(modifier = Modifier.width(25.dp))
                                 court.address?.let {
                                     Text(
-                                        text = it,
+                                        text = "$it, ${court.city}",
                                         fontSize = 14.sp,
                                     )
                                 }
@@ -279,106 +261,26 @@ private fun CourtCard(court: Court, dateFilter: String , viewModel: AppViewModel
                         Column( modifier = Modifier.fillMaxHeight(),
                             verticalArrangement = Arrangement.Center,
                         ) {
-                            Row() {
-                                Icon(
-                                    modifier = Modifier
-                                        .size(25.dp)
-                                        .clickable { isExpanded = !isExpanded },
-                                    imageVector = Icons.Outlined.Info,
-                                    contentDescription = "Info",
-                                )
-                            }
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    if (isExpanded) {
-
-                        Column(modifier = Modifier.padding(4.dp)) {
-
-
-                            Row(){
-                                court.city?.let {
+                            Button(
+                                shape = RoundedCornerShape(5.dp),
+                                onClick = {
+                                    navController.navigate(
+                                        route = Screen.BookReservation.passValues(
+                                            court.id_court, dateFilter
+                                        )
+                                    )
+                                }) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
-                                        text = "City: $it",
+                                        text = "Book now",
+                                        fontSize = 13.sp,
+                                        textAlign = TextAlign.Center
                                     )
                                 }
                             }
-
-
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-
-                                Column() {
-                                    court.sport?.let {
-                                        Text(
-                                            text = "Sport: $it",
-                                        )
-                                    }
-                                }
-
-
-                            }
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.End,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-
-                                Button(
-                                    shape = RoundedCornerShape(5.dp),
-                                    onClick = {
-                                        navController.navigate(
-                                            route = Screen.BookReservation.passValues(
-                                               court.id_court, dateFilter
-                                            )
-                                        )
-                                    }) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(
-                                            text = "Book now",
-                                            fontSize = 13.sp,
-                                            textAlign = TextAlign.Center
-                                        )
-                                    }
-                                }
-                            }
-                        }
-
-                    }
-
-
-                    /*
-                    // Add a vertical space between the author and message texts
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    Surface(
-                        shape = MaterialTheme.shapes.medium, elevation = 5.dp,
-                        // surfaceColor color will be changing gradually from primary to surface
-                        color = MaterialTheme.colors.background,
-                        // animateContentSize will change the Surface size gradually
-                        modifier = Modifier
-                            .animateContentSize()
-                            .padding(1.dp)
-                    ) {
-                        reservation.time_slot?.let {
-                            Text(
-                                text = it,
-                                style = MaterialTheme.typography.body1,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(all = 4.dp),
-                                // If the message is expanded, we display all its content
-                                // otherwise we only display the first line
-                                maxLines = if (isExpanded) Int.MAX_VALUE else 1,
-                            )
                         }
                     }
-*/
+
                 }
             }
         }
