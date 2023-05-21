@@ -35,7 +35,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY
 import it.polito.mad.sportcamp.database.AppViewModel
-import it.polito.mad.sportcamp.profileScreens.CustomToolbarWithBackArrow
+import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
 
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY2
 import it.polito.mad.sportcamp.bottomnav.Screen

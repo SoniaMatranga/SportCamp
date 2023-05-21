@@ -63,7 +63,7 @@ import it.polito.mad.sportcamp.common.BitmapConverter
 import it.polito.mad.sportcamp.database.AppViewModel
 import it.polito.mad.sportcamp.database.Reservation
 import it.polito.mad.sportcamp.database.ReservationContent
-import it.polito.mad.sportcamp.profileScreens.CustomToolbarWithBackArrow
+import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
 
 @Composable
 fun ReservationDetails(

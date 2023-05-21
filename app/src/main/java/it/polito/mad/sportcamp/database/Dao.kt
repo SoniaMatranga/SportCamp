@@ -1,7 +1,6 @@
 package it.polito.mad.sportcamp.database
 
 
-import android.media.Image
 import androidx.lifecycle.LiveData
 import androidx.room.*
 

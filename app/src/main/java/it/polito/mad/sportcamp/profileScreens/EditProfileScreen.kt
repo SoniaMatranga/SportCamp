@@ -57,6 +57,7 @@ import androidx.compose.runtime.mutableStateOf
 import it.polito.mad.sportcamp.common.SaveMessage
 import it.polito.mad.sportcamp.common.ValidationMessage
 import it.polito.mad.sportcamp.ui.theme.*
+import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
 
 
 var usrName: String = ""
@@ -540,21 +541,7 @@ fun updateUserInDB(
         user.age!!,user.gender!!,user.level!!,user.sports!!,user.bio!!,user.id_user!!, user.image!! )
 }
 
-@Composable
-fun CustomToolbarWithBackArrow(title: String, navController: NavHostController) {
-    TopAppBar(
-        title = { Text(text = title, fontFamily = fonts) },
-        navigationIcon = {
-            IconButton(onClick = { navController.popBackStack() }) {
-                Icon(
-                    Icons.Filled.ArrowBack,
-                    contentDescription = "arrowBack",
-                    tint = Color.White
-                )
-            }
-        }
-    )
-}
+
 
 @Composable
 fun CustomTextField(
@@ -609,7 +596,7 @@ fun dropDownMenu(userOption: String, type: String) {
     if (type == "Level")
         suggestions = listOf ("Beginner", "Intermediate", "Advanced")
     if (type == "Sports")
-        suggestions = listOf("Tennis", "Basketball")
+        suggestions = listOf("Basketball", "Football", "Tennis", "Volleyball" )
     if (type == "City")
         suggestions = listOf("Torino", "Milano", "Roma", "Venezia", "Verona", "Padova")
 

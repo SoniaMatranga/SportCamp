@@ -511,6 +511,64 @@ fun sportsListRow(user: User){
 
                 }
             }
+            if(user.sports?.contains("Football") == true) {
+                Column(
+                    modifier = Modifier
+                        .weight(weight = 3f, fill = false)
+                        .padding(start = 16.dp)
+                ) {
+
+                    // Icon
+                    Icon(
+                        modifier = Modifier
+                            .size(25.dp),
+                        imageVector = Icons.Outlined.SportsFootball,
+                        contentDescription = "Football",
+                        tint = MaterialTheme.colors.primary
+                    )
+
+                    Spacer(modifier = Modifier.height(2.dp))
+
+                    // Sub title
+                    Text(
+                        text = "Football",
+                        fontSize = 14.sp,
+                        letterSpacing = (0.8).sp,
+                        color = Color.Gray
+
+                    )
+
+                }
+            }
+            if(user.sports?.contains("Volleyball") == true) {
+                Column(
+                    modifier = Modifier
+                        .weight(weight = 3f, fill = false)
+                        .padding(start = 16.dp)
+                ) {
+
+                    // Icon
+                    Icon(
+                        modifier = Modifier
+                            .size(25.dp),
+                        imageVector = Icons.Outlined.SportsVolleyball,
+                        contentDescription = "Volleyball",
+                        tint = MaterialTheme.colors.primary
+                    )
+
+                    Spacer(modifier = Modifier.height(2.dp))
+
+                    // Sub title
+                    Text(
+                        text = "Volleyball",
+                        fontSize = 14.sp,
+                        letterSpacing = (0.8).sp,
+                        color = Color.Gray
+
+                    )
+
+                }
+            }
 
         }
 

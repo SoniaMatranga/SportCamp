@@ -14,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination
@@ -24,7 +23,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import it.polito.mad.sportcamp.ui.theme.Blue
-import it.polito.mad.sportcamp.ui.theme.OrangeActionBar
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -33,9 +31,6 @@ fun NavItems(){
     val navController = rememberNavController()
 
     Scaffold (
-        /*topBar = { CustomToolBar(title = "SportCamp", modifier = Modifier
-            .fillMaxWidth()
-            .background(GreenActionBar))},*/
         bottomBar = {BottomBar(navController = navController)}
 
     )

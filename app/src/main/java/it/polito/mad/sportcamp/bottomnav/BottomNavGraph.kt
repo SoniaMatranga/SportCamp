@@ -1,18 +1,13 @@
 package it.polito.mad.sportcamp.bottomnav
 
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import androidx.navigation.navDeepLink
-import androidx.navigation.navigation
-import com.google.accompanist.navigation.animation.navigation
 import it.polito.mad.sportcamp.profileScreens.EditProfileScreen
 import it.polito.mad.sportcamp.profileScreens.ProfileScreen
 import it.polito.mad.sportcamp.reservationsScreens.AddReservationsScreen

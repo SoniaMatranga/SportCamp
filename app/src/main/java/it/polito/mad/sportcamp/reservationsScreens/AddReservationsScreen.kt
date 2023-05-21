@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Man
 import androidx.compose.material.icons.filled.SportsBasketball
 import androidx.compose.material.icons.filled.SportsFootball
 import androidx.compose.material.icons.filled.SportsTennis
+import androidx.compose.material.icons.filled.SportsVolleyball
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -45,7 +46,7 @@ import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.BitmapConverter
 import it.polito.mad.sportcamp.database.AppViewModel
 import it.polito.mad.sportcamp.database.Court
-import it.polito.mad.sportcamp.profileScreens.CustomToolbarWithBackArrow
+import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -69,14 +70,14 @@ fun AddReservationsScreen(
 
 
     val context = LocalContext.current
-    val sports = arrayOf("Badminton", "Basketball","Football", "Padel")
+    val sports = arrayOf( "Basketball","Football", "Tennis", "Volleyball")
     var expanded by remember { mutableStateOf(false) }
     var selectedIcon by remember {mutableStateOf(Icons.Filled.SportsFootball) }
 
     when (sportFilter) {
         "Football" -> selectedIcon = Icons.Filled.SportsFootball
-        "Padel" -> selectedIcon = Icons.Filled.SportsTennis
-        "Badminton" -> selectedIcon = Icons.Filled.SportsTennis
+        "Tennis" -> selectedIcon = Icons.Filled.SportsTennis
+        "Volleyball" -> selectedIcon = Icons.Filled.SportsVolleyball
         "Basketball" -> selectedIcon = Icons.Filled.SportsBasketball
         else -> {selectedIcon = Icons.Filled.Man}
     }

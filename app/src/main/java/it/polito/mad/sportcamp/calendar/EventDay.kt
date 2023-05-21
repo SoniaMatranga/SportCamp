@@ -1,7 +1,6 @@
-package it.polito.mad.sportcamp.Calendar
+package it.polito.mad.sportcamp.calendar
 
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -21,11 +20,9 @@ import androidx.navigation.NavController
 import io.github.boguszpawlowski.composecalendar.day.DayState
 import io.github.boguszpawlowski.composecalendar.selection.DynamicSelectionState
 import it.polito.mad.sportcamp.bottomnav.Screen
-import it.polito.mad.sportcamp.database.Reservation
 import it.polito.mad.sportcamp.database.ReservationTimed
 import it.polito.mad.sportcamp.ui.theme.OrangeActionBar
 import java.time.LocalDate
-import java.util.Date
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
