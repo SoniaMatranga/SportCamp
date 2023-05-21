@@ -1,5 +1,6 @@
 package it.polito.mad.sportcamp.reservationsScreens
 
+import android.annotation.SuppressLint
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
@@ -42,6 +43,7 @@ import it.polito.mad.sportcamp.database.Court
 import java.text.SimpleDateFormat
 import java.util.*
 
+@SuppressLint("SimpleDateFormat")
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
@@ -49,7 +51,7 @@ fun AddReservationsScreen(
     navController: NavController,
     viewModel: AppViewModel = viewModel(factory = AppViewModel.factory)
 ) {
-    var sportFilter by remember { mutableStateOf("Football") }
+    var sportFilter by remember { mutableStateOf("Basketball") }
     val courts by viewModel.getCourtsBySport(sportFilter).observeAsState()
 
     val sdf = SimpleDateFormat("yyyy-MM-dd")
@@ -62,7 +64,7 @@ fun AddReservationsScreen(
 
 
     val context = LocalContext.current
-    val sports = arrayOf("Volleyball", "Basketball","Football", "Tennis")
+    val sports = arrayOf( "Basketball","Football", "Tennis", "Volleyball")
     var expanded by remember { mutableStateOf(false) }
     var selectedIcon by remember {mutableStateOf(Icons.Filled.SportsFootball) }
 
@@ -175,7 +177,7 @@ fun AddReservationsScreen(
             }
 
         }
-        courts?.let { CourtsList(courts = it, dateFilter = dateFilter, viewModel = viewModel, navController = navController as NavHostController) }
+        courts?.let { CourtsList(courts = it, dateFilter = dateFilter,  navController = navController) }
     }
 
 
@@ -183,11 +185,11 @@ fun AddReservationsScreen(
 }
 
 @Composable
-private fun CourtsList(courts: List<Court>, dateFilter: String , viewModel: AppViewModel, navController: NavHostController) {
+private fun CourtsList(courts: List<Court>, dateFilter: String , navController: NavHostController) {
     LazyColumn {
         item {
             courts.forEach { courtContent ->
-                CourtCard(courtContent, dateFilter,  viewModel, navController)
+                CourtCard(courtContent, dateFilter,  navController)
             }
         }
     }
@@ -195,7 +197,7 @@ private fun CourtsList(courts: List<Court>, dateFilter: String , viewModel: AppV
 
 
 @Composable
-private fun CourtCard(court: Court, dateFilter: String , viewModel: AppViewModel, navController: NavHostController) {
+private fun CourtCard(court: Court, dateFilter: String , navController: NavHostController) {
 
     val bitmap = court.image?.let { BitmapConverter.converterStringToBitmap(it) }
 

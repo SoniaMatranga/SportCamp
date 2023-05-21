@@ -1,10 +1,6 @@
 package it.polito.mad.sportcamp.reservationsScreens
 
-import android.graphics.drawable.shapes.Shape
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,38 +14,26 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.DeleteOutline
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.LocationOn
-import androidx.compose.material.icons.outlined.Navigation
-import androidx.compose.material.icons.outlined.Timelapse
-import androidx.compose.material.icons.outlined.Timer
-import androidx.compose.material3.CardElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
@@ -60,23 +44,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY
-import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.BitmapConverter
 import it.polito.mad.sportcamp.database.AppViewModel
-import it.polito.mad.sportcamp.database.Reservation
 import it.polito.mad.sportcamp.database.ReservationContent
 import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
-import it.polito.mad.sportcamp.common.SaveMessage
-import it.polito.mad.sportcamp.profileScreens.usrAge
-import it.polito.mad.sportcamp.profileScreens.usrBio
-import it.polito.mad.sportcamp.profileScreens.usrCity
-import it.polito.mad.sportcamp.profileScreens.usrGender
-import it.polito.mad.sportcamp.profileScreens.usrLevel
-import it.polito.mad.sportcamp.profileScreens.usrName
-import it.polito.mad.sportcamp.profileScreens.usrNickname
-import it.polito.mad.sportcamp.profileScreens.usrSports
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+
 
 @Composable
 fun ReservationDetails(
@@ -91,8 +63,6 @@ fun ReservationDetails(
         modifier = Modifier.fillMaxSize()
     ) {
         CustomToolbarWithBackArrow(title = "Reservations details", navController = navController)
-        //CustomToolbarWithCalendarButton(title = "Add reservations", calendarState = calendarState )
-       // Text( text = reservations.toString())
 
         reservations?.let { ReservationsList(reservations = it, viewModel = viewModel, navController = navController) }
 
@@ -130,9 +100,8 @@ fun ReservationCard(reservation: ReservationContent, viewModel: AppViewModel, na
     var isExpanded by remember { mutableStateOf(false) }
 
 
-
     //========================= Dialog on discard ===================================
-    val openDialog = remember { mutableStateOf(false)  }
+    val openDialog = remember { mutableStateOf(false) }
 
     if (openDialog.value) {
         AlertDialog(
@@ -211,12 +180,6 @@ fun ReservationCard(reservation: ReservationContent, viewModel: AppViewModel, na
                     ) {
                         Column(modifier = Modifier.padding(4.dp)) {
                             Row() {
-                                Icon(
-                                    modifier = Modifier
-                                        .size(25.dp),
-                                    imageVector = Icons.Outlined.LocationOn,
-                                    contentDescription = "Location",
-                                )
                                 reservation.court_name?.let {
                                     Text(
                                         text = it,
@@ -234,10 +197,12 @@ fun ReservationCard(reservation: ReservationContent, viewModel: AppViewModel, na
                             }
                         }
 
-                        Column( modifier = Modifier.fillMaxHeight(),
+                        Column(
+                            modifier = Modifier.fillMaxHeight(),
                             verticalArrangement = Arrangement.Center,
                         ) {
                             Row() {
+
                                 Icon(
                                     modifier = Modifier
                                         .size(25.dp)
@@ -253,7 +218,6 @@ fun ReservationCard(reservation: ReservationContent, viewModel: AppViewModel, na
                     if (isExpanded) {
 
 
-
                         Column(modifier = Modifier.padding(4.dp)) {
 
 
@@ -267,7 +231,7 @@ fun ReservationCard(reservation: ReservationContent, viewModel: AppViewModel, na
 
                             }
 
-                            Row(){
+                            Row() {
                                 reservation.city?.let {
                                     Text(
                                         text = "City: $it",
@@ -299,30 +263,55 @@ fun ReservationCard(reservation: ReservationContent, viewModel: AppViewModel, na
 
 
                             }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.End,
-                                verticalAlignment = Alignment.CenterVertically
+                                horizontalArrangement = Arrangement.SpaceEvenly
                             ) {
 
-                                Button(
-                                    shape = RoundedCornerShape(5.dp),
-                                    onClick = {
-                                        openDialog.value = true
-                                    }) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(
-                                            text = "Delete",
-                                            fontSize = 13.sp,
-                                            textAlign = TextAlign.Center
-                                        )
-                                        Icon(
-                                            Icons.Outlined.Delete,
-                                            contentDescription = "Delete"
-                                        )
+                                Column() {
+
+                                    Button(
+                                        shape = RoundedCornerShape(5.dp),
+                                        onClick = {
+                                            //openDialog.value = true
+                                        }) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Text(
+                                                text = "Edit",
+                                                fontSize = 15.sp,
+                                            )
+                                            Icon(
+                                                Icons.Outlined.Edit,
+                                                contentDescription = "Edit"
+                                            )
+                                        }
+                                    }
+                                }
+
+                                Column() {
+                                    Button(
+                                        shape = RoundedCornerShape(5.dp),
+                                        onClick = {
+                                            openDialog.value = true
+                                        }) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Text(
+                                                text = "Delete",
+                                                fontSize = 15.sp,
+                                            )
+                                            Icon(
+                                                Icons.Outlined.Delete,
+                                                contentDescription = "Delete"
+                                            )
+                                        }
                                     }
                                 }
                             }
+
                         }
                     }
                 }

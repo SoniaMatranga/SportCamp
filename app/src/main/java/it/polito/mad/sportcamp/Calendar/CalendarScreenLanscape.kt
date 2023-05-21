@@ -1,4 +1,4 @@
-package it.polito.mad.sportcamp.calendar
+package it.polito.mad.sportcamp.Calendar
 
 import android.os.Build
 import androidx.annotation.RequiresApi

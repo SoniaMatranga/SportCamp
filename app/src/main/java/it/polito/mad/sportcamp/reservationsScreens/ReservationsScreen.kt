@@ -15,7 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import it.polito.mad.sportcamp.calendar.Calendar
+import it.polito.mad.sportcamp.Calendar.Calendar
 import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.CustomToolBar
 import it.polito.mad.sportcamp.database.AppViewModel

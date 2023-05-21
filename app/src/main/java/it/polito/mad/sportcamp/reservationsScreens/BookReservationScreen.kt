@@ -49,6 +49,7 @@ import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY2
 import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.BitmapConverter
+import it.polito.mad.sportcamp.common.BookingCompletedMessage
 import it.polito.mad.sportcamp.common.ValidationBookingMessage
 import it.polito.mad.sportcamp.common.ValidationMessage
 import kotlinx.coroutines.delay
@@ -79,6 +80,7 @@ fun BookReservationScreen(
     val bitmap = courtDetails?.image?.let { BitmapConverter.converterStringToBitmap(it) }
     val coroutineScope = rememberCoroutineScope()
     var validationMessageShown by remember { mutableStateOf(false) }
+    var bookingMessageShown by remember { mutableStateOf(false) }
 
     // Shows the validation message.
     suspend fun showEditMessage() {
@@ -86,6 +88,15 @@ fun BookReservationScreen(
             validationMessageShown = true
             delay(2000L)
             validationMessageShown = false
+        }
+    }
+
+    // Shows the bookingmessage.
+    suspend fun showBookingMessage() {
+        if (!bookingMessageShown) {
+            bookingMessageShown = true
+            delay(2000L)
+            bookingMessageShown = false
         }
     }
 
@@ -253,6 +264,10 @@ fun BookReservationScreen(
                     ValidationBookingMessage(validationMessageShown)
                 }
 
+                if(bookingMessageShown){
+                    BookingCompletedMessage(bookingMessageShown)
+                }
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
@@ -270,7 +285,9 @@ fun BookReservationScreen(
                                     )
                                 }
 
-                                navController.navigate(route = Screen.Reservations.route)
+                                coroutineScope.launch {
+                                    showBookingMessage()
+                                }
 
                             } else {
                                 //dialog please chose timeslot and equipments
