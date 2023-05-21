@@ -87,7 +87,7 @@ fun EventDay(
                                                 date.toString()
                                             )
                                         )
-                                        Log.d("SelectedDate", date.toString())
+                                       // Log.d("SelectedDate", date.toString())
                                     }.padding(0.5.dp),
 
                                 ) {

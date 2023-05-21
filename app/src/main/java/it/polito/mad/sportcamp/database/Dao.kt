@@ -65,9 +65,14 @@ interface Dao {
 
     @Query("SELECT * FROM reservations_table, courts_table, time_slots_table WHERE id_user=:id_user AND date=:date AND reservations_table.id_court=courts_table.id_court AND reservations_table.id_time_slot == time_slots_table.id_time_slot")
     fun getReservationsByUserAndDate(id_user: Int, date:String): LiveData<List<ReservationContent>>
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun addReservation(reservation: Reservation)
 
+
+
+
+    @Query("INSERT INTO reservations_table (id_reservation, id_user, id_court, id_time_slot, date, equipments, options) " +
+            "SELECT :id_reservation , :id_user, :id_court, time_slots_table.id_time_slot, :date, :equipments, :options " +
+            "FROM time_slots_table WHERE time_slots_table.time_slot = :time_slot")
+    fun addReservation(id_reservation: Int?, id_user: Int, id_court: Int, time_slot: String, date: String, equipments: String, options: String)
     @Query("UPDATE reservations_table SET id_time_slot=:id_time_slot, equipments=:equipments WHERE id_reservation=:id_reservation")
     fun updateReservationById( id_reservation: Int, id_time_slot: String, equipments: String)
 
@@ -88,6 +93,9 @@ interface Dao {
     @Query("SELECT * FROM courts_table WHERE sport=:sport") //sport filter
     fun getCourtsBySport(sport: String): LiveData<List<Court>>
 
+    @Query("SELECT * FROM courts_table WHERE id_court=:id_court") //sport filter
+    fun getCourtById(id_court: Int): LiveData<Court>
+
     @Query("SELECT * FROM courts_table, reservations_table, time_slots_table" +
             " WHERE courts_table.sport=:sport " +
             "AND reservations_table.date!=:date " +
@@ -95,11 +103,10 @@ interface Dao {
     fun getCourtsBySportAndDate(sport: String, date:String): LiveData<List<CourtContent>>
 
 
-    @Query("SELECT * FROM time_slots_table WHERE id_time_slot NOT IN (SELECT id_time_slot FROM reservations_table WHERE id_court = :courtId)")
-    fun getAvailableTimeSlots(courtId: Int): List<TimeSlot>
-
-    @Query("SELECT * FROM time_slots_table WHERE id_time_slot NOT IN (SELECT id_time_slot FROM reservations_table WHERE id_court = :courtId AND date = :date)")
-    fun getAvailableTimeSlots(courtId: Int, date: String): List<TimeSlot>
+    @Query("SELECT time_slot FROM time_slots_table WHERE" +
+            " id_time_slot NOT IN (" +
+            "SELECT id_time_slot FROM reservations_table WHERE id_court = :courtId AND date = :date)")
+    fun getAvailableTimeSlots(courtId: Int, date: String): LiveData<List<String>>
    /* @Query("SELECT * FROM courts_table, reservations_table WHERE date=:date AND sport=:sport ORDER BY court_rating DESC") //calendar date filter
     fun getCourtsByDateAndSport(date: String): LiveData<List<Court>>*/
 

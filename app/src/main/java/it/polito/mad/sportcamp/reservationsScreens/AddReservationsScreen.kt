@@ -17,8 +17,6 @@ import androidx.compose.material.icons.filled.Man
 import androidx.compose.material.icons.filled.SportsBasketball
 import androidx.compose.material.icons.filled.SportsFootball
 import androidx.compose.material.icons.filled.SportsTennis
-import androidx.compose.material.icons.filled.SportsVolleyball
-import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -47,7 +45,6 @@ import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.BitmapConverter
 import it.polito.mad.sportcamp.database.AppViewModel
 import it.polito.mad.sportcamp.database.Court
-import it.polito.mad.sportcamp.database.ReservationContent
 import it.polito.mad.sportcamp.profileScreens.CustomToolbarWithBackArrow
 import java.text.SimpleDateFormat
 import java.util.*
@@ -68,6 +65,8 @@ fun AddReservationsScreen(
     val calendarState = rememberSheetState()
 
     var dateFilter by remember { mutableStateOf(currentDate) }
+
+
 
     val context = LocalContext.current
     val sports = arrayOf("Badminton", "Basketball","Football", "Padel")
@@ -187,7 +186,7 @@ fun AddReservationsScreen(
             }
 
         }
-        courts?.let { CourtsList(courts = it, viewModel = viewModel, navController = navController as NavHostController) }
+        courts?.let { CourtsList(courts = it, dateFilter = dateFilter, viewModel = viewModel, navController = navController as NavHostController) }
     }
 
 
@@ -195,11 +194,11 @@ fun AddReservationsScreen(
 }
 
 @Composable
-private fun CourtsList(courts: List<Court>, viewModel: AppViewModel, navController: NavHostController) {
+private fun CourtsList(courts: List<Court>, dateFilter: String , viewModel: AppViewModel, navController: NavHostController) {
     LazyColumn {
         item {
             courts.forEach { courtContent ->
-                CourtCard(courtContent, viewModel, navController)
+                CourtCard(courtContent, dateFilter,  viewModel, navController)
             }
         }
     }
@@ -207,7 +206,7 @@ private fun CourtsList(courts: List<Court>, viewModel: AppViewModel, navControll
 
 
 @Composable
-private fun CourtCard(court: Court, viewModel: AppViewModel, navController: NavHostController) {
+private fun CourtCard(court: Court, dateFilter: String , viewModel: AppViewModel, navController: NavHostController) {
 
     val bitmap = court.image?.let { BitmapConverter.converterStringToBitmap(it) }
     // We keep track if the message is expanded or not in this
@@ -337,6 +336,11 @@ private fun CourtCard(court: Court, viewModel: AppViewModel, navController: NavH
                                 Button(
                                     shape = RoundedCornerShape(5.dp),
                                     onClick = {
+                                        navController.navigate(
+                                            route = Screen.BookReservation.passValues(
+                                               court.id_court, dateFilter
+                                            )
+                                        )
                                     }) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text(

@@ -5,6 +5,7 @@ import androidx.compose.material.icons.outlined.*
 import androidx.compose.ui.graphics.vector.ImageVector
 
 const val DETAIL_ARGUMENT_KEY = "id"
+const val DETAIL_ARGUMENT_KEY2 = "date"
 
 sealed class Screen(
     val route: String,
@@ -55,6 +56,20 @@ sealed class Screen(
         icon_focused = Icons.Outlined.Add
     )
 
+    object BookReservation: Screen(
+        route = "bookReservation/{$DETAIL_ARGUMENT_KEY}/{$DETAIL_ARGUMENT_KEY2}",
+        title = "Book reservation",
+        icon =Icons.Outlined.Book,
+        icon_focused = Icons.Outlined.Book
+    ) {
+       /* fun passDate(values: String): String {
+            return this.route.replace(oldValue = "{$DETAIL_ARGUMENT_KEY}", newValue = values)
+        }*/
+        fun passValues(id: Int?, date: String?): String {
+            return "bookReservation/$id/$date"
+        }
+    }
+
     object ReservationDetails: Screen(
         route = "reservationDetails/{$DETAIL_ARGUMENT_KEY}",
         title = "Reservation details",
@@ -65,5 +80,6 @@ sealed class Screen(
             return this.route.replace(oldValue = "{$DETAIL_ARGUMENT_KEY}", newValue = date)
         }
     }
+
 
 }

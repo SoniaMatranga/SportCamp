@@ -70,7 +70,7 @@ fun ReservationDetails(
     navController: NavHostController,
     viewModel: AppViewModel = viewModel(factory = AppViewModel.factory)
 ) {
-    var selectedDate = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY).toString()
+    val selectedDate = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY).toString()
 
     val reservations by viewModel.getReservationsByUserAndDate(1, selectedDate).observeAsState()
 

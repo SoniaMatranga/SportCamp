@@ -4,17 +4,21 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import androidx.navigation.navigation
+import com.google.accompanist.navigation.animation.navigation
 import it.polito.mad.sportcamp.profileScreens.EditProfileScreen
 import it.polito.mad.sportcamp.profileScreens.ProfileScreen
 import it.polito.mad.sportcamp.reservationsScreens.AddReservationsScreen
 import it.polito.mad.sportcamp.reservationsScreens.ReservationsScreen
 import it.polito.mad.sportcamp.favoritesScreens.*
+import it.polito.mad.sportcamp.reservationsScreens.BookReservationScreen
 import it.polito.mad.sportcamp.reservationsScreens.ReservationDetails
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -49,12 +53,6 @@ fun BottomNavGraph(
            // Log.d("Args",it.arguments?.getInt(DETAIL_ARGUMENT_KEY).toString())
             EditProfileScreen(navController = navController)
         }
-
-        composable(route = Screen.AddReservations.route)
-        {
-            AddReservationsScreen(navController = navController)
-        }
-
         composable(route = Screen.ReservationDetails.route,
             arguments = listOf(navArgument(DETAIL_ARGUMENT_KEY){
                 type= NavType.StringType
@@ -62,6 +60,24 @@ fun BottomNavGraph(
         {
             ReservationDetails(navController = navController)
         }
+
+        composable(route = Screen.AddReservations.route)
+        {
+            AddReservationsScreen(navController = navController)
+        }
+
+        composable(route = Screen.BookReservation.route,
+            arguments = listOf(navArgument(DETAIL_ARGUMENT_KEY){
+                type= NavType.IntType
+            },
+                navArgument(DETAIL_ARGUMENT_KEY2){
+                    type= NavType.StringType
+                },
+            ))
+        {
+            BookReservationScreen(navController = navController)
+        }
+
 
     }
 }
