@@ -68,12 +68,14 @@ fun AddReservationsScreen(
     var expanded by remember { mutableStateOf(false) }
     var selectedIcon by remember {mutableStateOf(Icons.Filled.SportsFootball) }
 
-    when (sportFilter) {
-        "Football" -> selectedIcon = Icons.Filled.SportsSoccer
-        "Tennis" -> selectedIcon = Icons.Filled.SportsTennis
-        "Volleyball" -> selectedIcon = Icons.Filled.SportsVolleyball
-        "Basketball" -> selectedIcon = Icons.Filled.SportsBasketball
-        else -> {selectedIcon = Icons.Filled.Man}
+    selectedIcon = when (sportFilter) {
+        "Football" -> Icons.Filled.SportsSoccer
+        "Tennis" -> Icons.Filled.SportsTennis
+        "Volleyball" -> Icons.Filled.SportsVolleyball
+        "Basketball" -> Icons.Filled.SportsBasketball
+        else -> {
+            Icons.Filled.Man
+        }
     }
 
 
@@ -127,9 +129,7 @@ fun AddReservationsScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
 
-            Box(
-
-            ) {
+            Box {
                 ExposedDropdownMenuBox(
                     expanded = expanded,
                     onExpandedChange = {
@@ -210,7 +210,7 @@ private fun CourtCard(court: Court, dateFilter: String , navController: NavHostC
         shape = RoundedCornerShape(10.dp),
     ) {
 
-        Column() {
+        Column {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -243,14 +243,14 @@ private fun CourtCard(court: Court, dateFilter: String , navController: NavHostC
                         horizontalArrangement = Arrangement.Start
                     ) {
                         Column(modifier = Modifier.padding(horizontal = 4.dp)) {
-                            Row() {
+                            Row {
                                 court.court_name?.let {
                                     Text(
                                         text = it,
                                     )
                                 }
                             }
-                            Row() {
+                            Row {
                                 court.address?.let {
                                     Text(
                                         text = "$it, ${court.city}",

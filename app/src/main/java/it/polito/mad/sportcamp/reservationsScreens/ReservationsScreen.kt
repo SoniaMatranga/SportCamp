@@ -6,7 +6,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.*
 import androidx.compose.ui.unit.dp
 import it.polito.mad.sportcamp.ui.theme.SportCampTheme
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -28,7 +27,6 @@ fun ReservationsScreen(
     navController: NavController,
     viewModel: AppViewModel = viewModel(factory = AppViewModel.factory)
 ) {
-   val lazyListState = rememberLazyListState()
 
    val reservations by viewModel.getReservationsByUser(1).observeAsState()
 
@@ -61,16 +59,6 @@ fun ReservationsScreen(
                                 contentDescription = "Add button",
                                 tint = MaterialTheme.colors.background
                             )
-                            // Toggle the visibility of the content with animation.
-                           /* AnimatedVisibility(visible = !lazyListState.isScrollingUp()) {
-                                Text(
-                                    text = "Add",
-                                    modifier = Modifier
-                                        .padding(start = 8.dp, top = 3.dp),
-                                    color= MaterialTheme.colors.secondary
-
-                                )
-                            }*/
 
                         }
 
@@ -83,105 +71,7 @@ fun ReservationsScreen(
         }
     }
 }
-data class Content(val author: String, val body: String)
 
-
-/*
-
-@Composable
-private fun LazyListState.isScrollingUp(): Boolean {
-    var previousIndex by remember(this) { mutableStateOf(firstVisibleItemIndex) }
-    var previousScrollOffset by remember(this) { mutableStateOf(firstVisibleItemScrollOffset) }
-    return remember(this) {
-        derivedStateOf {
-            if (previousIndex != firstVisibleItemIndex) {
-                previousIndex > firstVisibleItemIndex
-            } else {
-                previousScrollOffset >= firstVisibleItemScrollOffset
-            }.also {
-                previousIndex = firstVisibleItemIndex
-                previousScrollOffset = firstVisibleItemScrollOffset
-            }
-        }
-    }.value
-}
-
-@Composable
-fun ReservationsList(reservations: List<Content>) {
-    LazyColumn {
-        items(reservations) { reservationContent ->
-            ReservationCard(reservationContent)
-        }
-    }
-}
-
-
-
-@Composable
-fun ReservationCard(msg: Content) {
-
-
-        Row(modifier = Modifier.padding(all = 8.dp)) {
-            /*Image(
-                painter = painterResource(R.drawable.sport_camp_logo),
-                contentDescription = "Court picture",
-                modifier = Modifier
-                    // Set image size to 40 dp
-                    .size(40.dp)
-                    // Clip image to be shaped as a circle
-                    .clip(CircleShape)
-                    .border(1.5.dp, MaterialTheme.colors.primary, CircleShape)
-            )*/
-            // Add a horizontal space between the image and the column
-
-
-            Spacer(modifier = Modifier.width(10.dp))
-
-            // We keep track if the message is expanded or not in this
-            // variable
-            var isExpanded by remember { mutableStateOf(false) }
-
-            // surfaceColor will be updated gradually from one color to the other
-            val surfaceColor by animateColorAsState(
-                if (isExpanded) MaterialTheme.colors.secondary else MaterialTheme.colors.background,
-            )
-
-            Column(modifier = Modifier
-                .fillMaxWidth()
-                .clickable { isExpanded = !isExpanded }) {
-
-                Text(text = msg.author,
-                    modifier = Modifier.fillMaxWidth())
-
-                // Add a vertical space between the author and message texts
-                Spacer(modifier = Modifier.height(4.dp))
-
-                    Surface(shape = MaterialTheme.shapes.medium, elevation = 5.dp,
-                        // surfaceColor color will be changing gradually from primary to surface
-                        color = surfaceColor,
-                        // animateContentSize will change the Surface size gradually
-                        modifier = Modifier
-                            .animateContentSize()
-                            .padding(1.dp)) {
-                        Text(
-                            text = msg.body,
-                            style = MaterialTheme.typography.body1,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(all = 4.dp),
-                            // If the message is expanded, we display all its content
-                            // otherwise we only display the first line
-                            maxLines = if (isExpanded) Int.MAX_VALUE else 1,
-                        )
-                    }
-
-            }
-        }
-
-
-
-}
-*/
 
 
 

@@ -24,7 +24,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -38,7 +37,6 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -64,7 +62,7 @@ fun ReservationDetails(
     ) {
         CustomToolbarWithBackArrow(title = "Reservations details", navController = navController)
 
-        reservations?.let { ReservationsList(reservations = it, viewModel = viewModel, navController = navController) }
+        reservations?.let { ReservationsList(reservations = it, viewModel = viewModel) }
 
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -77,11 +75,11 @@ fun ReservationDetails(
 
 
 @Composable
-fun ReservationsList(reservations: List<ReservationContent>, viewModel: AppViewModel, navController: NavHostController) {
+fun ReservationsList(reservations: List<ReservationContent>, viewModel: AppViewModel) {
     LazyColumn {
         item {
             reservations.forEach { reservationContent ->
-                ReservationCard(reservationContent, viewModel, navController)
+                ReservationCard(reservationContent, viewModel)
             }
 
         }
@@ -92,7 +90,7 @@ fun ReservationsList(reservations: List<ReservationContent>, viewModel: AppViewM
 
 
 @Composable
-fun ReservationCard(reservation: ReservationContent, viewModel: AppViewModel, navController: NavHostController) {
+fun ReservationCard(reservation: ReservationContent, viewModel: AppViewModel) {
 
     val bitmap = reservation.image?.let { BitmapConverter.converterStringToBitmap(it) }
     // We keep track if the message is expanded or not in this
@@ -146,7 +144,7 @@ fun ReservationCard(reservation: ReservationContent, viewModel: AppViewModel, na
         shape = RoundedCornerShape(10.dp),
     ) {
 
-        Column() {
+        Column {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -179,14 +177,14 @@ fun ReservationCard(reservation: ReservationContent, viewModel: AppViewModel, na
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Column(modifier = Modifier.padding(4.dp)) {
-                            Row() {
+                            Row {
                                 reservation.court_name?.let {
                                     Text(
                                         text = it,
                                     )
                                 }
                             }
-                            Row() {
+                            Row {
                                 Spacer(modifier = Modifier.width(25.dp))
                                 reservation.time_slot?.let {
                                     Text(
@@ -201,7 +199,7 @@ fun ReservationCard(reservation: ReservationContent, viewModel: AppViewModel, na
                             modifier = Modifier.fillMaxHeight(),
                             verticalArrangement = Arrangement.Center,
                         ) {
-                            Row() {
+                            Row {
 
                                 Icon(
                                     modifier = Modifier
@@ -221,7 +219,7 @@ fun ReservationCard(reservation: ReservationContent, viewModel: AppViewModel, na
                         Column(modifier = Modifier.padding(4.dp)) {
 
 
-                            Row() {
+                            Row {
                                 reservation.address?.let {
                                     Text(
                                         text = "Address: $it",
@@ -231,7 +229,7 @@ fun ReservationCard(reservation: ReservationContent, viewModel: AppViewModel, na
 
                             }
 
-                            Row() {
+                            Row {
                                 reservation.city?.let {
                                     Text(
                                         text = "City: $it",
@@ -247,7 +245,7 @@ fun ReservationCard(reservation: ReservationContent, viewModel: AppViewModel, na
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
 
-                                Column() {
+                                Column {
                                     reservation.equipments?.let {
                                         Text(
                                             text = "Equipments: $it",
@@ -272,7 +270,7 @@ fun ReservationCard(reservation: ReservationContent, viewModel: AppViewModel, na
                                 horizontalArrangement = Arrangement.SpaceEvenly
                             ) {
 
-                                Column() {
+                                Column {
 
                                     Button(
                                         shape = RoundedCornerShape(5.dp),
@@ -292,7 +290,7 @@ fun ReservationCard(reservation: ReservationContent, viewModel: AppViewModel, na
                                     }
                                 }
 
-                                Column() {
+                                Column {
                                     Button(
                                         shape = RoundedCornerShape(5.dp),
                                         onClick = {

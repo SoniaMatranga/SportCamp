@@ -1,6 +1,5 @@
 package it.polito.mad.sportcamp.reservationsScreens
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
@@ -45,13 +43,10 @@ import androidx.navigation.NavHostController
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY
 import it.polito.mad.sportcamp.database.AppViewModel
 import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
-
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY2
-import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.BitmapConverter
 import it.polito.mad.sportcamp.common.BookingCompletedMessage
 import it.polito.mad.sportcamp.common.ValidationBookingMessage
-import it.polito.mad.sportcamp.common.ValidationMessage
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -63,8 +58,8 @@ fun BookReservationScreen(
     viewModel: AppViewModel = viewModel(factory = AppViewModel.factory)
 ) {
 
-    var idCourt = navController.currentBackStackEntry?.arguments?.getInt(DETAIL_ARGUMENT_KEY).toString()
-    var date = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY2).toString()
+    val idCourt = navController.currentBackStackEntry?.arguments?.getInt(DETAIL_ARGUMENT_KEY).toString()
+    val date = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY2).toString()
 
 
     val timeSlots by viewModel.getAvailableTimeSlots(idCourt.toInt(), date).observeAsState()
@@ -115,7 +110,7 @@ fun BookReservationScreen(
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth())
 
-        Column() {
+        Column {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -143,17 +138,17 @@ fun BookReservationScreen(
                         .fillMaxWidth()
                 ) {
                         Column(modifier = Modifier.padding(4.dp)) {
-                            Row() {
+                            Row {
                                     Text(text = "Date: $date")
                             }
-                            Row() {
+                            Row {
                                 courtDetails?.address?.let {
                                     Text(
                                         text = "Address: $it",
                                     )
                                 }
                             }
-                            Row(){
+                            Row {
                                 courtDetails?.city?.let {
                                     Text(
                                         text = "City: $it",
@@ -172,7 +167,7 @@ fun BookReservationScreen(
         if(timeSlots?.isNotEmpty() == true) {
 
 
-            Column() {
+            Column {
 
 
                 Row(
