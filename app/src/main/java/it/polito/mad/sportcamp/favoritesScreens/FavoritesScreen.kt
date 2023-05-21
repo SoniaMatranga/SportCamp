@@ -2,6 +2,7 @@ package it.polito.mad.sportcamp.favoritesScreens
 
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.foundation.Image
+import androidx.compose.ui.graphics.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,7 +18,6 @@ import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.*
@@ -38,6 +38,8 @@ import androidx.compose.material.icons.outlined.Star
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.max
+import androidx.compose.ui.unit.min
 import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.ui.theme.Blue
 
@@ -231,6 +233,12 @@ fun CourtCard(court: Court, navController: NavController) {
                                 court.court_rating?.let {
                                     RatingBar(rating = it)
                                 }
+                                court.court_rating?.let {
+                                    Text(
+                                        text = "($it)",
+                                        modifier = Modifier.padding(start = 2.dp)
+                                    )
+                                }
                             }
 
                         }
@@ -298,12 +306,11 @@ fun CourtCard(court: Court, navController: NavController) {
                                 androidx.compose.material.Button(
                                     shape = RoundedCornerShape(5.dp),
                                     onClick = {
-                                   /*     court.id_reservation?.let {
-                                            viewModel.deleteReservationById(
-                                                it
+                                            navController.navigate(
+                                                route = Screen.CourtReview.passIdCourt(
+                                                    court!!.id_court!!
+                                                )
                                             )
-                                        }
-                                        navController.navigate(route = Screen.Reservations.route)*/
                                     }) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         androidx.compose.material.Text(
@@ -377,38 +384,27 @@ fun ChipWithSubItems(chipLabel: String, chipItems: List<String>, courtsList: Lis
 }
 
 @Composable
-private fun RatingBar(
-    rating: Float
-) {
-    var rat = rating
-    Row{
-        for(i in 0 until 5){
-           if (rat>=1){
-               androidx.compose.material.Icon(
-                   modifier = Modifier
-                       .size(20.dp),
-                   imageVector = Icons.Filled.Star,
-                   contentDescription = null,
-                   tint = androidx.compose.material.MaterialTheme.colors.primary
-               )
-           } else if(rat>=0) {
-               androidx.compose.material.Icon(
-                   modifier = Modifier
-                       .size(20.dp),
-                   imageVector = Icons.Default.StarHalf,
-                   contentDescription = null,
-                   tint = androidx.compose.material.MaterialTheme.colors.primary
-               )
-           } else if(rat<0){
-               androidx.compose.material.Icon(
-                   modifier = Modifier
-                       .size(20.dp),
-                   imageVector = Icons.Outlined.Star,
-                   contentDescription = null,
-                   tint = androidx.compose.material.MaterialTheme.colors.primary
-               )
-           }
-            rat -= 1
+fun RatingBar(rating: Float) {
+    val filledStars = rating.toInt()
+    val hasHalfStar = rating - filledStars >= 0.5f
+
+    Row {
+        repeat(filledStars) {
+            androidx.compose.material.Icon(
+                modifier = Modifier.size(20.dp),
+                imageVector = Icons.Filled.Star,
+                contentDescription = null,
+                tint = androidx.compose.material.MaterialTheme.colors.primary
+            )
+        }
+
+        if (hasHalfStar) {
+            androidx.compose.material.Icon(
+                modifier = Modifier.size(20.dp),
+                imageVector = Icons.Default.StarHalf,
+                contentDescription = null,
+                tint = androidx.compose.material.MaterialTheme.colors.primary
+            )
         }
     }
 }
