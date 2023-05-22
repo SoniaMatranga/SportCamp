@@ -20,11 +20,13 @@ class AppViewModel(private val Dao: Dao) : ViewModel() {
     //=================================== reservations ==========================================
     //fun getAllReservations(): LiveData<List<ReservationTimed>> = Dao.getAllReservations()
     fun getReservationsByUser(id_user: Int): LiveData<List<ReservationTimed>> = Dao.getReservationsByUser(id_user)
+    fun getReservationAndCourt(id_reservation: Int): LiveData<ReservationContent> = Dao.getReservationAndCourt(id_reservation)
+    fun getReservationById(id_reservation: Int): LiveData<Reservation> = Dao.getReservationById(id_reservation)
 
     fun getReservationsByUserAndDate(id_user: Int, date: String): LiveData<List<ReservationContent>> = Dao.getReservationsByUserAndDate(id_user, date)
 
-    //fun updateReservationById( id_reservation: Int, id_time_slot: String, equipments: String) =
-    //    Dao.updateReservationById(id_reservation,id_time_slot,equipments)
+    fun updateReservationById(id_reservation: Int, time_slot: String, equipments: String) =
+       Dao.updateReservationById(id_reservation, time_slot, equipments)
 
     fun addReservation(id_reservation: Int?, id_user: Int, id_court: Int, time_slot: String, date: String, equipments: String, options: String)=
         Dao.addReservation(id_reservation,id_user,id_court,time_slot,date,equipments, options)
@@ -35,9 +37,10 @@ class AppViewModel(private val Dao: Dao) : ViewModel() {
     //====================================== courts =============================================
     fun getAllCourts(): LiveData<List<Court>> = Dao.getAllCourts()
     fun getCourtsBySport(sport: String): LiveData<List<Court>> = Dao.getCourtsBySport(sport)
+    fun getCourtByName(name: String): LiveData<Court> = Dao.getCourtByName(name)
     fun getCourtById(id_court: Int): LiveData<Court> = Dao.getCourtById(id_court)
 
-    fun getAvailableTimeSlots(courtId: Int, date: String): LiveData<List<String>> = Dao.getAvailableTimeSlots(courtId, date)
+    fun getAvailableTimeSlots(courtId: Int?, date: String?): LiveData<List<String>> = Dao.getAvailableTimeSlots(courtId, date)
 
 
 

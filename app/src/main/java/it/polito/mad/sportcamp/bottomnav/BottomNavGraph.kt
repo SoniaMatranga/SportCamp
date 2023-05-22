@@ -15,6 +15,7 @@ import it.polito.mad.sportcamp.reservationsScreens.ReservationsScreen
 import it.polito.mad.sportcamp.favoritesScreens.*
 import it.polito.mad.sportcamp.reservationsScreens.BookReservationScreen
 import it.polito.mad.sportcamp.reservationsScreens.ReservationDetails
+import it.polito.mad.sportcamp.reservationsScreens.ReservationEditScreen
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -81,6 +82,22 @@ fun BottomNavGraph(
         )
         {
             CourtReviewScreen(navController = navController)
+        }
+
+        composable(
+            route = Screen.ReservationEdit.route,
+            arguments = listOf(navArgument(DETAIL_ARGUMENT_KEY4){
+                type= NavType.IntType
+            }, navArgument(DETAIL_ARGUMENT_KEY3){
+                type= NavType.IntType
+            }
+                , navArgument(DETAIL_ARGUMENT_KEY2){
+                    type= NavType.StringType
+                }
+            )
+        )
+        {
+            ReservationEditScreen(navController = navController)
         }
 
 

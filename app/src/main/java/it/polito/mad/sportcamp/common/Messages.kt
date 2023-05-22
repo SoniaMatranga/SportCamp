@@ -176,3 +176,42 @@ fun BookingCompletedMessage(shown: Boolean) {
         }
     }
 }
+
+@Composable
+fun BookingUpdatedMessage(shown: Boolean) {
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        AnimatedVisibility(
+            visible = shown,
+            enter = slideInVertically(
+                // Enters by sliding in from offset -fullHeight to 0.
+                initialOffsetY = { fullHeight -> -fullHeight },
+                animationSpec = tween(durationMillis = 150, easing = LinearOutSlowInEasing)
+            ),
+            exit = slideOutVertically(
+                // Exits by sliding out from offset 0 to -fullHeight.
+                targetOffsetY = { fullHeight -> -fullHeight },
+                animationSpec = tween(durationMillis = 250, easing = FastOutLinearInEasing)
+            )
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    color = MaterialTheme.colors.primaryVariant,
+                    elevation = 4.dp,
+
+                    ) {
+                    Text(
+                        text = "Booking successfully modified!",
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
+
+        }
+    }
+}

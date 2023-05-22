@@ -7,6 +7,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 const val DETAIL_ARGUMENT_KEY = "id"
 const val DETAIL_ARGUMENT_KEY2 = "date"
 const val DETAIL_ARGUMENT_KEY3 = "id_court"
+const val DETAIL_ARGUMENT_KEY4 = "id_reservation"
+const val DETAIL_ARGUMENT_KEY5 = "court_name"
 
 sealed class Screen(
     val route: String,
@@ -90,6 +92,17 @@ sealed class Screen(
     ) {
         fun passIdCourt(id: Int): String {
             return this.route.replace(oldValue = "{$DETAIL_ARGUMENT_KEY3}", newValue = id.toString())
+        }
+    }
+
+    object ReservationEdit: Screen(
+        route = "reservationEdit/{$DETAIL_ARGUMENT_KEY4}/{$DETAIL_ARGUMENT_KEY3}/{$DETAIL_ARGUMENT_KEY2}",
+        title = "reservationEdit",
+        icon =Icons.Outlined.Edit,
+        icon_focused = Icons.Outlined.Edit
+    ) {
+        fun passValues(id_reservation: Int?, id_court: Int?, date: String?): String {
+            return "reservationEdit/$id_reservation/$id_court/$date"
         }
     }
 

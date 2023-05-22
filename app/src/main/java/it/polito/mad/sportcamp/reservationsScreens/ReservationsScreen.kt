@@ -35,7 +35,7 @@ fun ReservationsScreen(
         modifier = Modifier.fillMaxSize()
     ) {
         SportCampTheme{
-            CustomToolBar(title = "My reservations")
+            CustomToolBar(title = "My reservations calendar")
             Spacer(modifier = Modifier.height(3.dp))
             Column( modifier =Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.SpaceBetween

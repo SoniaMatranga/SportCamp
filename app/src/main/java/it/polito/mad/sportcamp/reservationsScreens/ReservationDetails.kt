@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY
+import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.BitmapConverter
 import it.polito.mad.sportcamp.database.AppViewModel
 import it.polito.mad.sportcamp.database.ReservationContent
@@ -60,9 +61,9 @@ fun ReservationDetails(
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        CustomToolbarWithBackArrow(title = "Reservations details", navController = navController)
+        CustomToolbarWithBackArrow(title = "My reservations details", navController = navController)
 
-        reservations?.let { ReservationsList(reservations = it, viewModel = viewModel) }
+        reservations?.let { ReservationsList(reservations = it, selectedDate= selectedDate, viewModel = viewModel, navController=navController) }
 
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -75,11 +76,11 @@ fun ReservationDetails(
 
 
 @Composable
-fun ReservationsList(reservations: List<ReservationContent>, viewModel: AppViewModel) {
+fun ReservationsList(reservations: List<ReservationContent>, selectedDate:String, viewModel: AppViewModel, navController :NavHostController) {
     LazyColumn {
         item {
             reservations.forEach { reservationContent ->
-                ReservationCard(reservationContent, viewModel)
+                ReservationCard(reservationContent, selectedDate,  viewModel, navController)
             }
 
         }
@@ -90,7 +91,7 @@ fun ReservationsList(reservations: List<ReservationContent>, viewModel: AppViewM
 
 
 @Composable
-fun ReservationCard(reservation: ReservationContent, viewModel: AppViewModel) {
+fun ReservationCard(reservation: ReservationContent, selectedDate:String, viewModel: AppViewModel, navController :NavHostController) {
 
     val bitmap = reservation.image?.let { BitmapConverter.converterStringToBitmap(it) }
     // We keep track if the message is expanded or not in this
@@ -275,7 +276,11 @@ fun ReservationCard(reservation: ReservationContent, viewModel: AppViewModel) {
                                     Button(
                                         shape = RoundedCornerShape(5.dp),
                                         onClick = {
-                                            //openDialog.value = true
+                                            navController.navigate(
+                                                route = Screen.ReservationEdit.passValues(
+                                                    reservation.id_reservation!!, reservation.id_court!!, selectedDate
+                                                )
+                                            )
                                         }) {
                                         Row(verticalAlignment = Alignment.CenterVertically) {
                                             Text(
