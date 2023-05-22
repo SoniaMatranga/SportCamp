@@ -2,16 +2,20 @@ package it.polito.mad.sportcamp.favoritesScreens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.StarHalf
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
@@ -20,12 +24,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import com.gowtham.ratingbar.RatingBar
+import com.gowtham.ratingbar.RatingBarConfig
+import com.gowtham.ratingbar.RatingBarStyle
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY3
 import it.polito.mad.sportcamp.common.BitmapConverter
 import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
 import it.polito.mad.sportcamp.database.AppViewModel
+import it.polito.mad.sportcamp.ui.theme.Blue
 
 @Composable
 fun CourtReviewScreen(
@@ -35,8 +42,15 @@ fun CourtReviewScreen(
     var idCourt = navController.currentBackStackEntry?.arguments?.getInt(DETAIL_ARGUMENT_KEY3)
     val courtDetails by viewModel.getCourtById(idCourt!!).observeAsState()
     val bitmap = courtDetails?.image?.let { BitmapConverter.converterStringToBitmap(it) }
+    var initialRating = 0f
+    var rating: Float by remember { mutableStateOf(initialRating) }
+    var ratingText by remember { mutableStateOf(false) }
+    var text by remember { mutableStateOf("") }
+    val maxLength = 500
+    val scrollState = rememberScrollState()
+
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize().verticalScroll(state = scrollState)
     ) {
 
         CustomToolbarWithBackArrow(title = "Review Court", navController = navController)
@@ -71,7 +85,7 @@ fun CourtReviewScreen(
                         .fillMaxWidth()
                 ) {
                     Column(modifier = Modifier.padding(4.dp)) {
-                        Row(){
+                        Row{
                             courtDetails?.court_name?.let {
                                 Text(
                                     text= it,
@@ -85,7 +99,7 @@ fun CourtReviewScreen(
                         }
                         Row(modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center){
-                            courtDetails?.court_rating?.let { RatingBar(rating = it)
+                            courtDetails?.court_rating?.let { RatingStar(rating = it)
                                 courtDetails?.court_rating?.let {
                                     androidx.compose.material3.Text(
                                         text = "($it)",
@@ -118,12 +132,123 @@ fun CourtReviewScreen(
 
                     }
 
+                    Spacer(modifier = Modifier.height(50.dp))
 
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Row {
+                            Text(
+                                text="Rate this court",
+                                fontSize = 18.sp
+                            )
+                        }
+                        Row {
+                            Text(
+                                text="Tell others what you think",
+                                fontSize = 14.sp,
+                                color = Color.Gray
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(20.dp))
+                        Row {
+                        RatingBar(
+                            value = rating,
+                            config = RatingBarConfig()
+                                .style(RatingBarStyle.HighLighted).padding(6.dp),
+                            onValueChange = {
+                                rating = it
+                            },
+                            onRatingChanged = {
+                                ratingText=true
+                            }
+                        )
+                    }
+                        if(ratingText){
+                            Spacer(modifier = Modifier.height(5.dp))
+                            Row{
+                                if (rating==5f)
+                                Text(
+                                    text="Awesome",
+                                    fontSize = 14.sp,
+                                    color = Color.Gray
+
+                                )
+                                if(rating==4f)
+                                    Text(
+                                        text ="Good",
+                                        fontSize = 14.sp,
+                                        color = Color.Gray
+                                    )
+                                if(rating==3f)
+                                    Text(
+                                        text ="Average",
+                                        fontSize = 14.sp,
+                                        color = Color.Gray
+                                    )
+                                if(rating==2f)
+                                    Text(
+                                        text ="Poor",
+                                        fontSize = 14.sp,
+                                        color = Color.Gray
+                                    )
+                                if(rating==1f)
+                                    Text(
+                                        text ="Bad",
+                                        fontSize = 14.sp,
+                                        color = Color.Gray
+                                    )
+                                if(rating==0f)
+                                    Text(
+                                        text ="Unrated",
+                                        fontSize = 14.sp,
+                                        color = Color.Gray
+                                    )
+                            }
+                        }
+
+                        Row {
+
+                            androidx.compose.material.OutlinedTextField(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 10.dp, end = 10.dp, top = 30.dp),
+                                value = text,
+                                onValueChange = {
+                                    if (it.length <= maxLength) text = it
+                                },
+                               // label = { Text(text = "Your review") },
+                                placeholder = { Text(text = "Describe your experience (optional)", color = Color.Gray) },
+                                colors = TextFieldDefaults.textFieldColors(
+                                    backgroundColor = Color.Transparent,
+                                    focusedLabelColor= Blue.copy(alpha = 0.6f),
+                                    focusedIndicatorColor = Blue.copy(alpha = 0.6f),
+                                    unfocusedIndicatorColor = Blue.copy(alpha = 0.6f)
+                                )
+                            )
+                        }
+                        Row {
+                            Text(
+                                text = "${text.length} / $maxLength",
+                                fontSize = 14.sp,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 4.dp, end = 10.dp),
+                                textAlign = TextAlign.End,
+                                color = Blue.copy(alpha = 0.6f)
+                            )
+                        }
+                    }
                 }
+
+
             }
         }
 
     }
 }
+
+
 
 

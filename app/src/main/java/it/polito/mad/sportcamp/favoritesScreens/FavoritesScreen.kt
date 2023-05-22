@@ -231,7 +231,7 @@ fun CourtCard(court: Court, navController: NavController) {
                             Row {
                                 Spacer(modifier = Modifier.width(25.dp))
                                 court.court_rating?.let {
-                                    RatingBar(rating = it)
+                                    RatingStar(rating = it)
                                 }
                                 court.court_rating?.let {
                                     Text(
@@ -384,7 +384,7 @@ fun ChipWithSubItems(chipLabel: String, chipItems: List<String>, courtsList: Lis
 }
 
 @Composable
-fun RatingBar(rating: Float) {
+fun RatingStar(rating: Float) {
     val filledStars = rating.toInt()
     val hasHalfStar = rating - filledStars >= 0.5f
 
