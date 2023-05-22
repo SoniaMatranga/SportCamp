@@ -54,10 +54,15 @@ import it.polito.mad.sportcamp.common.BitmapConverter
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.ViewModel
 import it.polito.mad.sportcamp.common.SaveMessage
 import it.polito.mad.sportcamp.common.ValidationMessage
 import it.polito.mad.sportcamp.ui.theme.*
 import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+
+
 
 
 var usrName: String = ""
@@ -74,7 +79,21 @@ var isEditedSports :Boolean = false
 var isEditedCity :Boolean = false
 
 
+class EditProfileViewModel() : ViewModel() {
 
+    private val _usrName = MutableStateFlow("")
+    val productName = _usrName.asStateFlow()
+
+    fun onUsrNameChange(it: String) {
+        _usrName.value = it
+    }
+
+    fun getUsrName(){
+        _usrName.value
+    }
+
+
+}
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
@@ -82,6 +101,8 @@ fun EditProfileScreen(
     viewModel: AppViewModel = viewModel(factory = AppViewModel.factory),
     navController: NavController
 ) {
+
+    val vm = EditProfileViewModel()
 
     val mContext = LocalContext.current
     val permission = android.Manifest.permission.CAMERA
@@ -188,7 +209,7 @@ fun EditProfileScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        usrName = user?.name.toString()
+                        vm.onUsrNameChange(user?.name.toString())
                         usrNickname = user?.nickname.toString()
                         usrCity = user?.city.toString()
                         usrAge = user?.age.toString()
@@ -403,7 +424,7 @@ fun EditProfileScreen(
                             maxLines = 1
                         ) {
                             isEditedName = true
-                            usrName = it
+                            vm.onUsrNameChange(it)
                         }
                     }
 
@@ -434,7 +455,7 @@ fun EditProfileScreen(
 
                     user?.gender?.let { dropDownMenu(it, "Gender") }
                     user?.level?.let { dropDownMenu(it, "Level") }
-                    user?.sports?.let { dropDownMenu(it, "Sports") }
+                    user?.sports?.let { dropDownMenuSports(it) }
 
                     user?.bio?.let {
                         CustomTextField(
@@ -481,7 +502,7 @@ fun EditProfileScreen(
                                     val user = User(
                                         id_user =  userId.trim().toInt(),
                                         nickname = if (isEditedNickname) usrNickname else user?.nickname,
-                                        name = if (isEditedName) usrName else user?.name,
+                                        name = if (isEditedName) {vm.getUsrName().toString()} else user?.name,
                                         mail =  user?.mail,
                                         city = if (isEditedCity) usrCity else user?.city,
                                         age = if (isEditedAge) usrAge.toInt() else user?.age,
@@ -523,7 +544,7 @@ fun EditProfileScreen(
 }
 
 fun clearAll() {
-    usrName = ""
+    //usrName = ""
     usrNickname = ""
     usrCity = ""
     usrAge = ""
@@ -691,6 +712,79 @@ fun dropDownMenu(userOption: String, type: String) {
     }
 
 
+}
+
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun dropDownMenuSports(userOption: String) {
+    var isExpanded by remember { mutableStateOf(false) }
+    var userInitialValue by remember { mutableStateOf(userOption) }
+    var suggestions = listOf("Basketball", "Football", "Tennis", "Volleyball")
+
+    val icon = if (isExpanded)
+        Icons.Filled.ArrowDropUp
+    else
+        Icons.Filled.ArrowDropDown
+
+    Box {
+        OutlinedTextField(
+            value = userInitialValue,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(all = 10.dp),
+            onValueChange = { userInitialValue = it },
+            readOnly = true,
+            label = { Text("Sports") },
+            trailingIcon = {
+                Icon(
+                    icon, "contentDescription",
+                    Modifier.clickable { isExpanded = !isExpanded }
+                )
+            }
+        )
+
+        DropdownMenu(
+            expanded = isExpanded,
+            onDismissRequest = { isExpanded = false
+                isEditedSports = true
+                usrSports = userInitialValue},
+            modifier = Modifier
+                .padding(all = 10.dp)
+                .fillMaxWidth(),
+        ) {
+            val selectedCheckboxes = remember { mutableStateListOf<String>() }
+
+            suggestions.forEach { labelRow ->
+                val isChecked = remember { mutableStateOf(false) }
+
+                DropdownMenuItem(onClick = {
+                    isChecked.value = !isChecked.value
+
+                    if (isChecked.value) {
+                        selectedCheckboxes.add(labelRow)
+                    } else {
+                        selectedCheckboxes.remove(labelRow)
+                    }
+
+                    userInitialValue = selectedCheckboxes.joinToString(", ")
+                }) {
+                    Row(
+                        modifier = Modifier.padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = isChecked.value,
+                            onCheckedChange = null, // Leave this null to handle the click in DropdownMenuItem
+                            enabled = true,
+                            colors = CheckboxDefaults.colors(Color.Blue)
+                        )
+                        Text(text = labelRow)
+                    }
+                }
+            }
+        }
+    }
 }
 
 
