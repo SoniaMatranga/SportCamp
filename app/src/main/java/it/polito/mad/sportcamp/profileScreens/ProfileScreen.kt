@@ -457,7 +457,8 @@ fun sportsListRow(user: User){
             Column(
                 modifier = Modifier
                     .weight(weight = 3f, fill = false)
-                    .padding(start = 16.dp)
+                    .padding(start = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
                 if(user.sports?.contains("Tennis") == true) {
@@ -486,7 +487,8 @@ fun sportsListRow(user: User){
                 Column(
                     modifier = Modifier
                         .weight(weight = 3f, fill = false)
-                        .padding(start = 16.dp)
+                        .padding(start = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
 
                     // Icon
@@ -515,7 +517,8 @@ fun sportsListRow(user: User){
                 Column(
                     modifier = Modifier
                         .weight(weight = 3f, fill = false)
-                        .padding(start = 16.dp)
+                        .padding(start = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
 
                     // Icon
@@ -544,7 +547,8 @@ fun sportsListRow(user: User){
                 Column(
                     modifier = Modifier
                         .weight(weight = 3f, fill = false)
-                        .padding(start = 16.dp)
+                        .padding(start = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
 
                     // Icon

@@ -15,7 +15,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import io.github.boguszpawlowski.composecalendar.day.DayState
 import io.github.boguszpawlowski.composecalendar.selection.DynamicSelectionState
@@ -38,6 +40,8 @@ fun EventDay(
     val today: LocalDate = LocalDate.now()
 
     if (state.isFromCurrentMonth) {
+        val reservationsWithSameDate = reservationsList.filter { it.date.toString() == date.toString() }
+        val numReservations = reservationsWithSameDate.size
 
         Card(
             modifier = modifier
@@ -74,35 +78,72 @@ fun EventDay(
                 )
 
                 Row() {
-                    reservationsList.forEach {
-                        if (date.toString() == it.date.toString()) {
-                            Row(
-                                modifier = Modifier
-                                    .clickable {
-                                        navController.navigate(
-                                            route = Screen.ReservationDetails.passDate(
-                                                date.toString()
-                                            )
+
+                    if (numReservations > 2) {
+                        Row(
+                            modifier = Modifier
+                                .clickable {
+                                    navController.navigate(
+                                        route = Screen.ReservationDetails.passDate(
+                                            date.toString()
                                         )
-                                       // Log.d("SelectedDate", date.toString())
-                                    }.padding(0.5.dp),
+                                    )
+                                    // Log.d("SelectedDate", date.toString())
+                                }.padding(0.5.dp),
+                            verticalAlignment = Alignment.CenterVertically
 
-                                ) {
-                                //Spacer(modifier = Modifier.height(10.dp))
-                                Box(
+                            ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(10.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.Black)
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .size(10.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.Black)
+                            )
+
+                            Text(
+                                text = "+", //text inside calendar day
+                                fontSize = 13.sp,
+                                color = MaterialTheme.colors.onSecondary
+                            )
+                        }
+                    }
+                    else {
+                        reservationsWithSameDate.forEach {
+                            if (date.toString() == it.date.toString()) {
+                                Row(
                                     modifier = Modifier
-                                        .size(10.dp)
-                                        .clip(CircleShape)
-                                        .background(Color.Black)
-                                )
+                                        .clickable {
+                                            navController.navigate(
+                                                route = Screen.ReservationDetails.passDate(
+                                                    date.toString()
+                                                )
+                                            )
+                                            // Log.d("SelectedDate", date.toString())
+                                        }.padding(0.5.dp),
 
-                            }
-                        } else {
-                            /*Text(
+                                    ) {
+                                    //Spacer(modifier = Modifier.height(10.dp))
+                                    Box(
+                                        modifier = Modifier
+                                            .size(10.dp)
+                                            .clip(CircleShape)
+                                            .background(Color.Black)
+                                    )
+
+                                }
+                            } else {
+                                /*Text(
                         text = "Sport", //text inside calendar day
                         fontSize = 8.sp,
                         textAlign = TextAlign.Center
                     )*/
+                            }
                         }
                     }
                 }
