@@ -9,6 +9,6 @@ data class Rating(
     @PrimaryKey(autoGenerate = true) val id: Int?,
     @ColumnInfo(name="id_user") val id_user: Int?,
     @ColumnInfo(name="id_court")val id_court: Int?,
-    @ColumnInfo(name="rating") val rating: Int?,
-    @ColumnInfo(name="favourite") val favourite: String?
+    @ColumnInfo(name="rating") val rating: Float?,
+    @ColumnInfo(name="review") val review: String?
 )

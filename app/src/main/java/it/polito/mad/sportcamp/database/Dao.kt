@@ -122,4 +122,13 @@ interface Dao {
    /* @Query("SELECT * FROM courts_table, reservations_table WHERE date=:date AND sport=:sport ORDER BY court_rating DESC") //calendar date filter
     fun getCourtsByDateAndSport(date: String): LiveData<List<Court>>*/
 
+    @Query("SELECT * from ratings_table WHERE id_user=:id_user AND id_court=:id_court")
+    fun getCourtReviewById(id_court: Int, id_user: Int): LiveData<Rating>
+
+    @Query("UPDATE ratings_table SET rating=:rating, review=:review WHERE id=:id")
+    fun updateReview(id: Int, rating: Float, review: String)
+
+    @Query("INSERT INTO ratings_table (id, id_user, id_court, rating, review) VALUES (:id, :id_user, :id_court, :rating, :review) ")
+    fun insertReview(id: Int?, id_user: Int, id_court: Int, rating: Float, review: String?)
+
 }

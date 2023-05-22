@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -39,18 +40,34 @@ fun CourtReviewScreen(
     navController: NavHostController,
     viewModel: AppViewModel = viewModel(factory = AppViewModel.factory)
 ) {
-    var idCourt = navController.currentBackStackEntry?.arguments?.getInt(DETAIL_ARGUMENT_KEY3)
+    val idCourt = navController.currentBackStackEntry?.arguments?.getInt(DETAIL_ARGUMENT_KEY3)
     val courtDetails by viewModel.getCourtById(idCourt!!).observeAsState()
-    val bitmap = courtDetails?.image?.let { BitmapConverter.converterStringToBitmap(it) }
-    var initialRating = 0f
-    var rating: Float by remember { mutableStateOf(initialRating) }
-    var ratingText by remember { mutableStateOf(false) }
+    val feedback by viewModel.getCourtReviewById(idCourt!!, 1).observeAsState()
+    var alreadyRated by remember { mutableStateOf(true) }
+    var alreadyReviewed by remember { mutableStateOf(true) }
+    var initialRating: Float by remember { mutableStateOf(0f) }
     var text by remember { mutableStateOf("") }
+
+    if (alreadyRated) {
+        feedback?.rating?.let {
+            initialRating = feedback!!.rating!!
+        }
+    }
+
+    if(alreadyReviewed){
+        feedback?.review?.let {
+            text = feedback!!.review!!
+        }
+    }
+
+    val bitmap = courtDetails?.image?.let { BitmapConverter.converterStringToBitmap(it) }
     val maxLength = 500
     val scrollState = rememberScrollState()
 
     Column(
-        modifier = Modifier.fillMaxSize().verticalScroll(state = scrollState)
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(state = scrollState)
     ) {
 
         CustomToolbarWithBackArrow(title = "Review Court", navController = navController)
@@ -58,6 +75,32 @@ fun CourtReviewScreen(
         Spacer(modifier = Modifier.height(10.dp))
 
         Column {
+            Row {
+                courtDetails?.court_name?.let {
+                    Text(
+                        text = it,
+                        fontSize = 20.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 40.dp)
+                    )
+                }
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                courtDetails?.court_rating?.let {
+                    RatingStar(rating = it)
+                    courtDetails?.court_rating?.let {
+                        androidx.compose.material3.Text(
+                            text = "($it)",
+                            modifier = Modifier.padding(start = 2.dp)
+                        )
+                    }
+                }
+            }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -84,30 +127,9 @@ fun CourtReviewScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                 ) {
+
                     Column(modifier = Modifier.padding(4.dp)) {
-                        Row{
-                            courtDetails?.court_name?.let {
-                                Text(
-                                    text= it,
-                                    fontSize = 20.sp,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 40.dp)
-                                )
-                            }
-                        }
-                        Row(modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center){
-                            courtDetails?.court_rating?.let { RatingStar(rating = it)
-                                courtDetails?.court_rating?.let {
-                                    androidx.compose.material3.Text(
-                                        text = "($it)",
-                                        modifier = Modifier.padding(start = 2.dp)
-                                    )
-                                }}
-                        }
-                        Spacer(modifier = Modifier.height(20.dp))
+                        //Spacer(modifier = Modifier.height(20.dp))
                         Row {
                             courtDetails?.address?.let {
                                 Text(
@@ -138,95 +160,103 @@ fun CourtReviewScreen(
                         modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+
                         Row {
                             Text(
-                                text="Rate this court",
+                                text = "Rate this court",
                                 fontSize = 18.sp
                             )
                         }
                         Row {
                             Text(
-                                text="Tell others what you think",
+                                text = "Tell others what you think",
                                 fontSize = 14.sp,
                                 color = Color.Gray
                             )
                         }
                         Spacer(modifier = Modifier.height(20.dp))
                         Row {
-                        RatingBar(
-                            value = rating,
-                            config = RatingBarConfig()
-                                .style(RatingBarStyle.HighLighted).padding(6.dp),
-                            onValueChange = {
-                                rating = it
-                            },
-                            onRatingChanged = {
-                                ratingText=true
-                            }
-                        )
-                    }
-                        if(ratingText){
-                            Spacer(modifier = Modifier.height(5.dp))
-                            Row{
-                                if (rating==5f)
-                                Text(
-                                    text="Awesome",
-                                    fontSize = 14.sp,
-                                    color = Color.Gray
 
-                                )
-                                if(rating==4f)
+                            RatingBar(
+                                value = initialRating,
+                                config = RatingBarConfig()
+                                    .style(RatingBarStyle.HighLighted).padding(6.dp),
+                                onValueChange = {
+                                    initialRating = it
+                                },
+                                onRatingChanged = {
+                                    alreadyRated = false
+                                }
+                            )
+                        }
+                            Spacer(modifier = Modifier.height(5.dp))
+                            Row {
+                                if (initialRating == 5f)
                                     Text(
-                                        text ="Good",
+                                        text = "Awesome",
+                                        fontSize = 14.sp,
+                                        color = Color.Gray
+
+                                    )
+                                if (initialRating == 4f)
+                                    Text(
+                                        text = "Good",
                                         fontSize = 14.sp,
                                         color = Color.Gray
                                     )
-                                if(rating==3f)
+                                if (initialRating == 3f)
                                     Text(
-                                        text ="Average",
+                                        text = "Average",
                                         fontSize = 14.sp,
                                         color = Color.Gray
                                     )
-                                if(rating==2f)
+                                if (initialRating == 2f)
                                     Text(
-                                        text ="Poor",
+                                        text = "Poor",
                                         fontSize = 14.sp,
                                         color = Color.Gray
                                     )
-                                if(rating==1f)
+                                if (initialRating == 1f)
                                     Text(
-                                        text ="Bad",
+                                        text = "Bad",
                                         fontSize = 14.sp,
                                         color = Color.Gray
                                     )
-                                if(rating==0f)
+                                if (initialRating == 0f)
                                     Text(
-                                        text ="Unrated",
+                                        text = "Unrated",
                                         fontSize = 14.sp,
                                         color = Color.Gray
                                     )
                             }
-                        }
+
 
                         Row {
 
-                            androidx.compose.material.OutlinedTextField(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(start = 10.dp, end = 10.dp, top = 30.dp),
-                                value = text,
-                                onValueChange = {
-                                    if (it.length <= maxLength) text = it
-                                },
-                               // label = { Text(text = "Your review") },
-                                placeholder = { Text(text = "Describe your experience (optional)", color = Color.Gray) },
-                                colors = TextFieldDefaults.textFieldColors(
-                                    backgroundColor = Color.Transparent,
-                                    focusedLabelColor= Blue.copy(alpha = 0.6f),
-                                    focusedIndicatorColor = Blue.copy(alpha = 0.6f),
-                                    unfocusedIndicatorColor = Blue.copy(alpha = 0.6f)
-                                )
-                            )
+                            text.let {
+                                androidx.compose.material.OutlinedTextField(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(start = 10.dp, end = 10.dp, top = 30.dp),
+                                        value = it,
+                                        onValueChange = {
+                                            if (it.length <= maxLength) text = it
+                                            alreadyReviewed = false
+                                        },
+                                        placeholder = {
+                                            Text(
+                                                text = "Describe your experience (optional)",
+                                                color = Color.Gray
+                                            )
+                                        },
+                                        colors = TextFieldDefaults.textFieldColors(
+                                            backgroundColor = Color.Transparent,
+                                            focusedLabelColor = Blue.copy(alpha = 0.6f),
+                                            focusedIndicatorColor = Blue.copy(alpha = 0.6f),
+                                            unfocusedIndicatorColor = Blue.copy(alpha = 0.6f)
+                                        )
+                                    )
+                            }
                         }
                         Row {
                             Text(
@@ -242,13 +272,39 @@ fun CourtReviewScreen(
                     }
                 }
 
-
             }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        )
+        {
+            if(feedback?.rating!=null){
+                Button(onClick = { text.let {
+                    viewModel.updateReview(feedback?.id!!,initialRating,
+                        it
+                    )
+                } },
+                    enabled = (!alreadyRated && initialRating!=0f && initialRating!=feedback?.rating) || (!alreadyReviewed && initialRating!=0f && text!=feedback?.review)
+                ) {
+                    Text(text = "Update Review")
+                 }
+            } else {
+                    Button(
+                        onClick = {
+                            if (idCourt != null) {
+                                viewModel.insertReview(null, 1, idCourt, initialRating, text)
+                            }
+                        },
+                        enabled = !alreadyRated && initialRating!=0f
+                    ) {
+                        Text(text = "Publish Review")
+                    }
+                }
+
         }
 
     }
 }
-
-
-
-

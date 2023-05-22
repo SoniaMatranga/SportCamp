@@ -42,7 +42,11 @@ class AppViewModel(private val Dao: Dao) : ViewModel() {
 
     fun getAvailableTimeSlots(courtId: Int?, date: String?): LiveData<List<String>> = Dao.getAvailableTimeSlots(courtId, date)
 
+    fun getCourtReviewById(id_court: Int, id_user: Int): LiveData<Rating> = Dao.getCourtReviewById(id_court, id_user)
 
+    fun updateReview(id: Int, rating: Float, review: String) = Dao.updateReview(id, rating, review)
+
+    fun insertReview(id: Int?, id_user: Int, id_court: Int, rating: Float, review: String?)= Dao.insertReview(id, id_user, id_court, rating, review)
 
     companion object {
         val factory : ViewModelProvider.Factory = viewModelFactory {
