@@ -277,11 +277,11 @@ Surface(color=Color.White) {
                                     )
                                 }
 
-                                Toast.makeText(context, "Booking successfully modified!", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Booking successfully completed!", Toast.LENGTH_SHORT).show()
 
                             } else {
                                 //dialog please chose timeslot and equipments
-                                Toast.makeText(context, "Please, select both time slot and equipments!", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Select both time slot and equipments!", Toast.LENGTH_SHORT).show()
                             }
                         }) {
                         Row(verticalAlignment = Alignment.CenterVertically) {

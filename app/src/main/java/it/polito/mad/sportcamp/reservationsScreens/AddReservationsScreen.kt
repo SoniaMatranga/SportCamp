@@ -108,6 +108,7 @@ fun AddReservationsScreen(
 
         Spacer(modifier = Modifier.height(10.dp))
         Text(text="Select a date and a sport",
+            color = Color.Gray,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth().padding(horizontal = 40.dp))
 

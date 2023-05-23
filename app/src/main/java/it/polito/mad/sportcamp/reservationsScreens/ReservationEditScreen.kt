@@ -1,5 +1,6 @@
 package it.polito.mad.sportcamp.reservationsScreens
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -32,6 +33,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -80,26 +82,8 @@ fun ReservationEditScreen(
     val equipments = listOf("Not requested", "Requested")
     val bitmap = court?.image?.let { BitmapConverter.converterStringToBitmap(it) }
     val coroutineScope = rememberCoroutineScope()
-    var validationMessageShown by remember { mutableStateOf(false) }
-    var bookingMessageShown by remember { mutableStateOf(false) }
 
-    // Shows the validation message.
-    suspend fun showValidationMessage() {
-        if (!validationMessageShown) {
-            validationMessageShown = true
-            delay(2000L)
-            validationMessageShown = false
-        }
-    }
-
-    // Shows the bookingmessage.
-    suspend fun showEditMessage() {
-        if (!bookingMessageShown) {
-            bookingMessageShown = true
-            delay(2000L)
-            bookingMessageShown = false
-        }
-    }
+    val context = LocalContext.current
 
 
 
@@ -294,15 +278,11 @@ fun ReservationEditScreen(
                                     vm.selectedTimeSlot,
                                     vm.selectedEquipments
                                 )
-                                coroutineScope.launch {
-                                    showEditMessage()
-                                }
+                                Toast.makeText( context, "Booking successfully modified!", Toast.LENGTH_SHORT).show()
 
                             } else {
                                 //dialog please chose timeslot and equipments
-                                coroutineScope.launch {
-                                    showValidationMessage()
-                                }
+                                Toast.makeText( context, "Update both time slot and equipments!", Toast.LENGTH_SHORT).show()
                             }
                         }) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -313,13 +293,6 @@ fun ReservationEditScreen(
                             )
                         }
                     }
-                }
-                if (validationMessageShown) {
-                    ValidationBookingMessage(validationMessageShown)
-                }
-
-                if (bookingMessageShown) {
-                    BookingUpdatedMessage(bookingMessageShown)
                 }
             }
 

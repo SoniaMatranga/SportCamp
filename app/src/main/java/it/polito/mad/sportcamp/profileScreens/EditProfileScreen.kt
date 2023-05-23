@@ -216,7 +216,8 @@ fun EditProfileScreen(
                 openDialog.value = false
             },
             text = {
-                Text("All the previous data will be lost. Are you sure you want to save it anyway? ")
+                Text("Your data will be permanently changed. Are you sure to save all changes anyway? ")
+
             },
             confirmButton = {
                 Button(
@@ -488,8 +489,9 @@ fun EditProfileScreen(
                     }
 
                     user?.gender?.let { DropDownMenu(if(vm.usrGender != "") vm.usrGender else it, "Gender") }
-                    user?.level?.let { DropDownMenu(if(vm.usrLevel != "") vm.usrLevel else it, "Level") }
                     user?.sports?.let { DropDownMenuSports(if (vm.usrSports != "") vm.usrSports else it) }
+                    user?.level?.let { DropDownMenu(if(vm.usrLevel != "") vm.usrLevel else it, "Level") }
+
 
                     user?.bio?.let {
                         CustomTextField(
