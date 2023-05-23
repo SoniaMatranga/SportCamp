@@ -137,4 +137,9 @@ interface Dao {
     @Query("DELETE FROM ratings_table WHERE id=:id")
     fun deleteReviewById(id: Int)
 
+    @Query("UPDATE courts_table SET court_rating = (SELECT AVG(rating)" +
+            " FROM ratings_table WHERE ratings_table.id_court = courts_table.id_court) " +
+            "WHERE id_court=:id_court")
+    fun updateCourtRatingById(id_court: Int)
+
 }

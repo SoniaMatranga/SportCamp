@@ -36,6 +36,7 @@ import it.polito.mad.sportcamp.common.BitmapConverter
 import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
 import it.polito.mad.sportcamp.database.AppViewModel
 import it.polito.mad.sportcamp.ui.theme.Blue
+import kotlin.math.roundToInt
 
 @Composable
 fun CourtReviewScreen(
@@ -102,8 +103,9 @@ fun CourtReviewScreen(
                 courtDetails?.court_rating?.let {
                     RatingStar(rating = it)
                     courtDetails?.court_rating?.let {
+                        var z = ((it * 10.0).roundToInt() / 10.0)
                         androidx.compose.material3.Text(
-                            text = "($it)",
+                            text = "($z)",
                             modifier = Modifier.padding(start = 2.dp)
                         )
                     }
@@ -294,7 +296,9 @@ fun CourtReviewScreen(
                     viewModel.updateReview(feedback?.id!!,initialRating,
                         it
                     )
-                } },
+                }
+                    viewModel.updateCourtRatingById(courtDetails?.id_court!!)
+                                 },
                     enabled = (!alreadyRated && initialRating!=0f && initialRating!=feedback?.rating) || (!alreadyReviewed && initialRating!=0f && text!=feedback?.review)
                 ) {
                     Text(text = "Update")
@@ -306,6 +310,7 @@ fun CourtReviewScreen(
                         alreadyReviewed = false
                         initialRating=0f
                         text=""
+                        viewModel.updateCourtRatingById(courtDetails?.id_court!!)
                     }
                 ){
                     Text(text = "Delete")
@@ -322,6 +327,7 @@ fun CourtReviewScreen(
                 onClick = {
                     if (idCourt != null) {
                         viewModel.insertReview(null, 1, idCourt, initialRating, text)
+                        viewModel.updateCourtRatingById(courtDetails?.id_court!!)
                     }
                     },
                 enabled = !alreadyRated && initialRating!=0f

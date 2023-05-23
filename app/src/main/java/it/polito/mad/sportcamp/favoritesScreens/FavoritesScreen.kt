@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.ui.theme.Blue
+import kotlin.math.roundToInt
 
 data class ChipsModel(
     val name: String,
@@ -207,8 +208,9 @@ fun CourtCard(court: Court, navController: NavController) {
                                     RatingStar(rating = it)
                                 }
                                 court.court_rating?.let {
+                                    var z = ((it * 10.0).roundToInt() / 10.0)
                                     Text(
-                                        text = "($it)",
+                                        text = "($z)",
                                         modifier = Modifier.padding(start = 2.dp)
                                     )
                                 }

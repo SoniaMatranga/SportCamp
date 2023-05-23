@@ -52,6 +52,8 @@ class AppViewModel(private val Dao: Dao) : ViewModel() {
 
     fun deleteReviewById(id: Int) = Dao.deleteReviewById(id)
 
+    fun updateCourtRatingById(id_court: Int) = Dao.updateCourtRatingById(id_court)
+
     companion object {
         val factory : ViewModelProvider.Factory = viewModelFactory {
             initializer {
