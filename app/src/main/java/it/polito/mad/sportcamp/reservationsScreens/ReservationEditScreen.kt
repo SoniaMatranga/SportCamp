@@ -12,20 +12,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ExposedDropdownMenuBox
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -50,14 +41,12 @@ import androidx.navigation.NavHostController
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY2
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY3
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY4
-import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY5
 import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.BitmapConverter
-import it.polito.mad.sportcamp.common.BookingCompletedMessage
 import it.polito.mad.sportcamp.common.BookingUpdatedMessage
-import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
 import it.polito.mad.sportcamp.common.ValidationBookingMessage
 import it.polito.mad.sportcamp.database.AppViewModel
+import it.polito.mad.sportcamp.ui.theme.Orange
 import it.polito.mad.sportcamp.ui.theme.fonts
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -212,6 +201,14 @@ fun ReservationEditScreen(
                                 readOnly = true,
                                 modifier = Modifier.fillMaxWidth(),
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = vm.expandedTimeSlot) },
+                                colors= TextFieldDefaults.textFieldColors(
+                                    textColor = Color.Black,
+                                    disabledTextColor = Color.Black,
+                                    backgroundColor = Color.White,
+                                    cursorColor = Color.Black,
+                                    focusedIndicatorColor = Orange,
+                                    unfocusedIndicatorColor = Color.Gray
+                                )
                             )
                             ExposedDropdownMenu(
                                 expanded = vm.expandedTimeSlot,
@@ -254,6 +251,14 @@ fun ReservationEditScreen(
                                 readOnly = true,
                                 modifier = Modifier.fillMaxWidth(),
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = vm.expandedEquipments) },
+                                colors=TextFieldDefaults.textFieldColors(
+                                    textColor = Color.Black,
+                                    disabledTextColor = Color.Black,
+                                    backgroundColor = Color.White,
+                                    cursorColor = Color.Black,
+                                    focusedIndicatorColor = Orange,
+                                    unfocusedIndicatorColor = Color.Gray
+                                )
                             )
                             ExposedDropdownMenu(
                                 expanded = vm.expandedEquipments,

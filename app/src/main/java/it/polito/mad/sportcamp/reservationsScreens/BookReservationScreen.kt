@@ -12,14 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ExposedDropdownMenuBox
-import androidx.compose.material.ExposedDropdownMenuDefaults
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -48,10 +41,9 @@ import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY2
 import it.polito.mad.sportcamp.common.BitmapConverter
 import it.polito.mad.sportcamp.common.BookingCompletedMessage
 import it.polito.mad.sportcamp.common.ValidationBookingMessage
+import it.polito.mad.sportcamp.ui.theme.Orange
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
 
 
 class BookReservationsViewModel : ViewModel() {
@@ -187,40 +179,59 @@ fun BookReservationScreen(
                         .padding(horizontal = 45.dp, vertical = 10.dp)
                         .background(Color.White)
                 ) {
+Surface(color=Color.White) {
+
 
                     Box(
                         modifier = Modifier.background(Color.White)
                     ) {
-                        ExposedDropdownMenuBox(
-                            expanded = vm.expandedTimeSlot,
-                            onExpandedChange = {
-                                vm.expandedTimeSlot = !vm.expandedTimeSlot
-                            }
-                        ) {
-                            TextField(
-                                value = vm.selectedTimeSlot,
-                                onValueChange = {},
-                                readOnly = true,
-                                modifier = Modifier.fillMaxWidth(),
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = vm.expandedTimeSlot) },
-                            )
-                            ExposedDropdownMenu(
+
+                            ExposedDropdownMenuBox(
                                 expanded = vm.expandedTimeSlot,
-                                onDismissRequest = { vm.expandedTimeSlot = false }
+                                onExpandedChange = {
+                                    vm.expandedTimeSlot = !vm.expandedTimeSlot
+                                },
+                                modifier = Modifier.background(Color.White)
                             ) {
-                                timeSlots?.forEach { item ->
-                                    DropdownMenuItem(
-                                        content = { Text(text = item) },
-                                        onClick = {
-                                            vm.expandedTimeSlot = false
-                                            vm.selectedTimeSlot = item
-                                        }
+                                TextField(
+                                    value = vm.selectedTimeSlot,
+                                    onValueChange = {},
+                                    readOnly = true,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(Color.White),
+                                    trailingIcon = {
+                                        ExposedDropdownMenuDefaults.TrailingIcon(
+                                            expanded = vm.expandedTimeSlot
+                                        )
+                                    },
+                                    colors=TextFieldDefaults.textFieldColors(
+                                        textColor = Color.Black,
+                                        disabledTextColor = Color.Black,
+                                        backgroundColor = Color.White,
+                                        cursorColor = Color.Black,
+                                        focusedIndicatorColor = Orange,
+                                        unfocusedIndicatorColor = Color.Gray
                                     )
+                                )
+                                ExposedDropdownMenu(
+                                    expanded = vm.expandedTimeSlot,
+                                    onDismissRequest = { vm.expandedTimeSlot = false },
+                                    modifier = Modifier.background(Color.White)
+                                ) {
+                                    timeSlots?.forEach { item ->
+                                        DropdownMenuItem(
+                                            content = { Text(text = item) },
+                                            onClick = {
+                                                vm.expandedTimeSlot = false
+                                                vm.selectedTimeSlot = item
+                                            }
+                                        )
+                                    }
                                 }
                             }
-                        }
-                    }
 
+                    }}
 
                 }
                 Row(
@@ -237,7 +248,8 @@ fun BookReservationScreen(
                             expanded = vm.expandedEquipments,
                             onExpandedChange = {
                                 vm.expandedEquipments = !vm.expandedEquipments
-                            }
+                            },
+                            modifier = Modifier.background(Color.Transparent)
                         ) {
                             TextField(
                                 value = vm.selectedEquipments,
@@ -245,6 +257,14 @@ fun BookReservationScreen(
                                 readOnly = true,
                                 modifier = Modifier.fillMaxWidth(),
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = vm.expandedEquipments) },
+                                colors=TextFieldDefaults.textFieldColors(
+                                    textColor = Color.Black,
+                                    disabledTextColor = Color.Black,
+                                    backgroundColor = Color.White,
+                                    cursorColor = Color.Black,
+                                    focusedIndicatorColor = Orange,
+                                    unfocusedIndicatorColor = Color.Gray
+                                )
                             )
                             ExposedDropdownMenu(
                                 expanded = vm.expandedEquipments,
