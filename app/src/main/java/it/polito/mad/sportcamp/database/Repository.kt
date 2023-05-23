@@ -50,6 +50,8 @@ class AppViewModel(private val Dao: Dao) : ViewModel() {
 
     fun getCourtReviewsById(id_court: Int): LiveData<List<Rating>> = Dao.getCourtReviewsById(id_court)
 
+    fun deleteReviewById(id: Int) = Dao.deleteReviewById(id)
+
     companion object {
         val factory : ViewModelProvider.Factory = viewModelFactory {
             initializer {

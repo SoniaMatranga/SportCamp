@@ -284,13 +284,12 @@ fun CourtReviewScreen(
             }
         }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        )
-        {
-            if(feedback?.rating!=null){
+        if(feedback?.rating!=null){
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceEvenly)
+            {
                 Button(onClick = { text.let {
                     viewModel.updateReview(feedback?.id!!,initialRating,
                         it
@@ -298,22 +297,39 @@ fun CourtReviewScreen(
                 } },
                     enabled = (!alreadyRated && initialRating!=0f && initialRating!=feedback?.rating) || (!alreadyReviewed && initialRating!=0f && text!=feedback?.review)
                 ) {
-                    Text(text = "Update Review")
-                 }
-            } else {
-                    Button(
-                        onClick = {
-                            if (idCourt != null) {
-                                viewModel.insertReview(null, 1, idCourt, initialRating, text)
-                            }
-                        },
-                        enabled = !alreadyRated && initialRating!=0f
-                    ) {
-                        Text(text = "Publish Review")
+                    Text(text = "Update")
+                }
+                Button(
+                    onClick = {
+                        viewModel.deleteReviewById(feedback?.id!!)
+                        alreadyRated = false
+                        alreadyReviewed = false
+                        initialRating=0f
+                        text=""
                     }
+                ){
+                    Text(text = "Delete")
                 }
 
+            }
+        }else {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ){
+            Button(
+                onClick = {
+                    if (idCourt != null) {
+                        viewModel.insertReview(null, 1, idCourt, initialRating, text)
+                    }
+                    },
+                enabled = !alreadyRated && initialRating!=0f
+            ) {
+                Text(text = "Publish Review")
+            }
         }
+    }
 
     }
 }

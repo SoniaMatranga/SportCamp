@@ -134,4 +134,7 @@ interface Dao {
     @Query("SELECT * from ratings_table WHERE id_court=:id_court")
     fun getCourtReviewsById(id_court: Int): LiveData<List<Rating>>
 
+    @Query("DELETE FROM ratings_table WHERE id=:id")
+    fun deleteReviewById(id: Int)
+
 }
