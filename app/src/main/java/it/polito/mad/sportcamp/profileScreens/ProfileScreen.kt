@@ -476,7 +476,7 @@ fun sportsListRow(user: User){
                     // Sub title
                     Text(
                         text = "Tennis",
-                        fontSize = 14.sp,
+                        fontSize = 10.sp,
                         letterSpacing = (0.8).sp,
                         color = Color.Gray
                     )
@@ -505,7 +505,7 @@ fun sportsListRow(user: User){
                     // Sub title
                     Text(
                         text = "Basket",
-                        fontSize = 14.sp,
+                        fontSize = 10.sp,
                         letterSpacing = (0.8).sp,
                         color = Color.Gray
 
@@ -535,7 +535,7 @@ fun sportsListRow(user: User){
                     // Sub title
                     Text(
                         text = "Football",
-                        fontSize = 14.sp,
+                        fontSize = 10.sp,
                         letterSpacing = (0.8).sp,
                         color = Color.Gray
 
@@ -565,7 +565,7 @@ fun sportsListRow(user: User){
                     // Sub title
                     Text(
                         text = "Volley",
-                        fontSize = 14.sp,
+                        fontSize = 10.sp,
                         letterSpacing = (0.8).sp,
                         color = Color.Gray
 

@@ -80,10 +80,7 @@ var isEditedLevel: Boolean = false
 var isEditedSports :Boolean = false
 var isEditedCity :Boolean = false
 
-private class MyViewModel : ViewModel() {
-    var text1 by mutableStateOf("ciao")
-    var text2 by mutableStateOf("va bene")
-}
+
 
 
 
@@ -93,11 +90,7 @@ fun EditProfileScreen(
     viewModel: AppViewModel = viewModel(factory = AppViewModel.factory),
     navController: NavController
 ) {
-    val vm: MyViewModel = viewModel() // Inizializza il tuo ViewModel
 
-    // Utilizza rememberSaveable per mantenere lo stato dei valori dei TextField
-    val text1 by rememberSaveable { mutableStateOf(vm.text1) }
-    val text2 by rememberSaveable { mutableStateOf(vm.text2) }
 
 
 
