@@ -1,5 +1,6 @@
 package it.polito.mad.sportcamp.reservationsScreens
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -17,8 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,6 +27,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,11 +39,7 @@ import it.polito.mad.sportcamp.database.AppViewModel
 import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY2
 import it.polito.mad.sportcamp.common.BitmapConverter
-import it.polito.mad.sportcamp.common.BookingCompletedMessage
-import it.polito.mad.sportcamp.common.ValidationBookingMessage
 import it.polito.mad.sportcamp.ui.theme.Orange
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 
 class BookReservationsViewModel : ViewModel() {
@@ -76,29 +72,7 @@ fun BookReservationScreen(
 
     val equipments = listOf("Not requested", "Requested")
     val bitmap = courtDetails?.image?.let { BitmapConverter.converterStringToBitmap(it) }
-    val coroutineScope = rememberCoroutineScope()
-    var validationMessageShown by remember { mutableStateOf(false) }
-    var bookingMessageShown by remember { mutableStateOf(false) }
-
-    // Shows the validation message.
-    suspend fun showEditMessage() {
-        if (!validationMessageShown) {
-            validationMessageShown = true
-            delay(2000L)
-            validationMessageShown = false
-        }
-    }
-
-    // Shows the bookingmessage.
-    suspend fun showBookingMessage() {
-        if (!bookingMessageShown) {
-            bookingMessageShown = true
-            delay(2000L)
-            bookingMessageShown = false
-        }
-    }
-
-
+    val context = LocalContext.current
 
 
     Column(
@@ -286,14 +260,6 @@ Surface(color=Color.White) {
                 }
 
 
-                if(validationMessageShown){
-                    ValidationBookingMessage(validationMessageShown)
-                }
-
-                if(bookingMessageShown){
-                    BookingCompletedMessage(bookingMessageShown)
-                }
-
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
@@ -311,15 +277,11 @@ Surface(color=Color.White) {
                                     )
                                 }
 
-                                coroutineScope.launch {
-                                    showBookingMessage()
-                                }
+                                Toast.makeText(context, "Booking successfully modified!", Toast.LENGTH_SHORT).show()
 
                             } else {
                                 //dialog please chose timeslot and equipments
-                                coroutineScope.launch {
-                                    showEditMessage()
-                                }
+                                Toast.makeText(context, "Please, select both time slot and equipments!", Toast.LENGTH_SHORT).show()
                             }
                         }) {
                         Row(verticalAlignment = Alignment.CenterVertically) {

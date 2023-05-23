@@ -1,6 +1,7 @@
 package it.polito.mad.sportcamp.reservationsScreens
 
 import android.os.Build
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -43,6 +44,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -110,6 +112,7 @@ fun ReservationCard(reservation: ReservationContent, selectedDate:String, viewMo
     // variable
     var isExpanded by remember { mutableStateOf(false) }
     val today: LocalDate = LocalDate.now()
+    val context = LocalContext.current
 
 
     //========================= Dialog on discard ===================================
@@ -132,10 +135,11 @@ fun ReservationCard(reservation: ReservationContent, selectedDate:String, viewMo
                             )
                         }
                         openDialog.value = false
+                        Toast.makeText(context, "Reservation correctly deleted", Toast.LENGTH_SHORT).show()
                         //navController.navigate(route = Screen.Reservations.route)
 
                     }) {
-                    Text("Delete")
+                    Text("Yes, delete it")
                 }
             },
             dismissButton = {
@@ -143,7 +147,7 @@ fun ReservationCard(reservation: ReservationContent, selectedDate:String, viewMo
                     onClick = {
                         openDialog.value = false
                     }) {
-                    Text("Don't delete")
+                    Text("Cancel")
                 }
             }
         )
@@ -283,6 +287,24 @@ fun ReservationCard(reservation: ReservationContent, selectedDate:String, viewMo
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceEvenly
                             ) {
+                                Column {
+                                    Button(
+                                        shape = RoundedCornerShape(5.dp),
+                                        onClick = {
+                                            openDialog.value = true
+                                        }) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Text(
+                                                text = "Delete",
+                                                fontSize = 15.sp,
+                                            )
+                                            Icon(
+                                                Icons.Outlined.Delete,
+                                                contentDescription = "Delete"
+                                            )
+                                        }
+                                    }
+                                }
 
                                 Column {
 
@@ -308,25 +330,6 @@ fun ReservationCard(reservation: ReservationContent, selectedDate:String, viewMo
                                                     contentDescription = "Edit"
                                                 )
                                             }
-                                        }
-                                    }
-                                }
-
-                                Column {
-                                    Button(
-                                        shape = RoundedCornerShape(5.dp),
-                                        onClick = {
-                                            openDialog.value = true
-                                        }) {
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Text(
-                                                text = "Delete",
-                                                fontSize = 15.sp,
-                                            )
-                                            Icon(
-                                                Icons.Outlined.Delete,
-                                                contentDescription = "Delete"
-                                            )
                                         }
                                     }
                                 }

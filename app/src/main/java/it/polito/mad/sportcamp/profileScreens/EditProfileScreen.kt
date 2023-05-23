@@ -9,6 +9,7 @@ import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import android.widget.Toast
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -44,13 +45,11 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY
 import it.polito.mad.sportcamp.database.User
-import kotlinx.coroutines.delay
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.core.content.ContextCompat
 import it.polito.mad.sportcamp.common.BitmapConverter
-import kotlinx.coroutines.launch
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
@@ -150,8 +149,6 @@ fun EditProfileScreen(
     val userId = navController.currentBackStackEntry?.arguments?.getInt(DETAIL_ARGUMENT_KEY).toString()
     val user by vm.getUserById(userId.toInt()).observeAsState()
 
-    //init
-    val coroutineScope = rememberCoroutineScope()
 
 
     // The coroutine scope for event handlers calling suspend functions.
@@ -204,60 +201,49 @@ fun EditProfileScreen(
         }
     }
 
-    //clearAll()
 
-
-    // Shows the validation message.
-    suspend fun showEditMessage() {
-        if (!validationMessageShown) {
-            validationMessageShown = true
-            delay(3000L)
-            validationMessageShown = false
-        }
-    }
-
-    // Shows the save message.
-    suspend fun showSaveMessage() {
-        if (!saveMessageShown) {
-            saveMessageShown = true
-            delay(3000L)
-            saveMessageShown = false
-        }
-    }
 
 
     val scrollState = rememberScrollState()
+    val context = LocalContext.current
 
+    val openDialog = remember { mutableStateOf(false) }
 
-
-
-
-
-/*
-
-    //========================= Dialog on discard ===================================
-
-
-    val openDialog = remember { mutableStateOf(false)  }
-
+    //========================= Dialog on save ===================================
     if (openDialog.value) {
         AlertDialog(
             onDismissRequest = {
                 openDialog.value = false
             },
             text = {
-                Text("Changes will be discarded permanently. Are you sure to discard all? ")
+                Text("All the previous data will be lost. Are you sure you want to save it anyway? ")
             },
             confirmButton = {
                 Button(
                     onClick = {
-                        vm.clearAll()
+                        val usr = User(
+                            id_user =  userId.trim().toInt(),
+                            nickname = if (vm.isEditedNickname) vm.usrNickname else user?.nickname,
+                            name = if (vm.isEditedName) vm.usrName else user?.name,
+                            mail =  user?.mail,
+                            city = if (vm.isEditedCity) vm.usrCity else user?.city,
+                            age = if (vm.isEditedAge) vm.usrAge.toInt() else user?.age,
+                            gender = if (vm.isEditedGender) vm.usrGender else user?.gender,
+                            level = if (vm.isEditedLevel) vm.usrLevel else user?.level,
+                            sports = if(vm.isEditedSports) vm.usrSports else user?.sports,
+                            bio = if (vm.isEditedBio) vm.usrBio else user?.bio,
+                            image = if(bitmap.value != null) bitmap.value?.let {
+                                BitmapConverter.converterBitmapToString(
+                                    it
+                                )
+                            } else user?.image)
+                        updateUserInDB(usr, vm)
+                        Toast.makeText(context, "Profile successfully updated!", Toast.LENGTH_SHORT).show()
                         openDialog.value = false
+                        //navController.navigate(route = Screen.Reservations.route)
+
                     }) {
-                    Text("Discard")
-                    LaunchedEffect(vm) {
-                        vm.clearAll()
-                    }
+                    Text("Save")
                 }
             },
             dismissButton = {
@@ -265,13 +251,12 @@ fun EditProfileScreen(
                     onClick = {
                         openDialog.value = false
                     }) {
-                    Text("Don't discard")
-
+                    Text("Cancel")
                 }
             }
         )
     }
-*/
+
 
 
     //========================= Dialog Camera or gallery ===================================
@@ -549,32 +534,10 @@ fun EditProfileScreen(
                             Button(onClick = {
                                 if ( vm.isEditedAge || vm.isEditedBio || vm.isEditedCity || vm.isEditedGender || vm.isEditedLevel
                                     || vm.isEditedName || vm.isEditedSports || vm.isEditedNickname || isEditedImage) {
-                                    val usr = User(
-                                        id_user =  userId.trim().toInt(),
-                                        nickname = if (vm.isEditedNickname) vm.usrNickname else user?.nickname,
-                                        name = if (vm.isEditedName) vm.usrName else user?.name,
-                                        mail =  user?.mail,
-                                        city = if (vm.isEditedCity) vm.usrCity else user?.city,
-                                        age = if (vm.isEditedAge) vm.usrAge.toInt() else user?.age,
-                                        gender = if (vm.isEditedGender) vm.usrGender else user?.gender,
-                                        level = if (vm.isEditedLevel) vm.usrLevel else user?.level,
-                                        sports = if(vm.isEditedSports) vm.usrSports else user?.sports,
-                                        bio = if (vm.isEditedBio) vm.usrBio else user?.bio,
-                                        image = if(bitmap.value != null) bitmap.value?.let {
-                                            BitmapConverter.converterBitmapToString(
-                                                it
-                                            )
-                                        } else user?.image)
-                                    updateUserInDB(usr, vm)
-                                    coroutineScope.launch {
-                                        showSaveMessage()
-                                    }
+                                    openDialog.value=true
                                     //clearAll()
                                 } else {
-                                    //toast(mContext, "Please add or update something...")
-                                    coroutineScope.launch {
-                                        showEditMessage()
-                                    }
+                                    Toast.makeText(context, "Please add or update something...", Toast.LENGTH_SHORT).show()
                                 }
                             }) {
                                 Text(

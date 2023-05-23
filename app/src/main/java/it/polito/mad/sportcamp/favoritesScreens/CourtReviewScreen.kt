@@ -310,7 +310,7 @@ fun CourtReviewScreen(
                             openDialog.value = false
                             Toast.makeText(context, "Review correctly deleted", Toast.LENGTH_SHORT).show()
                         }) {
-                        Text("Delete")
+                        Text("Yes, delete it")
                     }
                 },
                 dismissButton = {
@@ -318,7 +318,7 @@ fun CourtReviewScreen(
                         onClick = {
                             openDialog.value = false
                         }) {
-                        Text("Don't delete")
+                        Text("Cancel")
                     }
                 }
             )
