@@ -55,56 +55,121 @@ import kotlinx.coroutines.launch
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import it.polito.mad.sportcamp.SportCampApplication
 import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.SaveMessage
 import it.polito.mad.sportcamp.common.ValidationMessage
 import it.polito.mad.sportcamp.ui.theme.*
 import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
+import it.polito.mad.sportcamp.database.Dao
+import it.polito.mad.sportcamp.reservationsScreens.AddReservationsViewModel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.text.SimpleDateFormat
+import java.util.Date
 
 
-
-
-var usrName: String = ""
+/*var usrName: String = ""
 var usrNickname: String = ""
 var usrCity: String = ""
 var usrAge: String = ""
 var usrGender: String = ""
 var usrLevel: String = ""
 var usrSports: String = ""
-var usrBio: String = ""
-var isEditedGender: Boolean = false
+var usrBio: String = ""*/
+
+/*var isEditedGender: Boolean = false
 var isEditedLevel: Boolean = false
 var isEditedSports :Boolean = false
-var isEditedCity :Boolean = false
+var isEditedCity :Boolean = false*/
 
 
+
+class EditProfileViewModel (private val Dao: Dao): ViewModel() {
+
+    var usrName by mutableStateOf("")
+    var usrNickname by mutableStateOf("")
+    var usrCity by mutableStateOf("")
+    var usrAge by mutableStateOf("")
+    var usrGender by mutableStateOf("")
+    var usrLevel by mutableStateOf("")
+    var usrSports by mutableStateOf("")
+    var usrBio by mutableStateOf("")
+    var usrImage by mutableStateOf("")
+    var isEditedGender by mutableStateOf(false)
+    var isEditedLevel by mutableStateOf(false)
+    var isEditedSports by mutableStateOf(false)
+    var isEditedCity by mutableStateOf(false)
+    var isEditedNickname by  mutableStateOf(false)
+    var isEditedName by  mutableStateOf(false)
+    var isEditedAge by  mutableStateOf(false)
+    var isEditedBio by  mutableStateOf(false)
+
+
+    init {
+
+            val userLiveData = Dao.getUserById(1)
+            userLiveData.observeForever { user ->
+                usrName = user?.name ?: ""
+                usrNickname = user?.nickname ?: ""
+                usrAge = user?.age?.toString() ?: ""
+                usrBio = user?.bio ?: ""
+                usrCity = user?.city ?: ""
+                usrLevel = user?.level ?: ""
+                usrGender = user?.gender ?: ""
+                usrSports = user?.sports ?: ""
+                usrImage = user?.image ?: ""
+            }
+
+    }
+
+    fun updateUser(nickname: String, name:String, mail:String, city:String,
+                   age:Int, gender:String, level:String, sports:String, bio:String, id_user:Int, image: String
+    ) = Dao.updateUser(nickname,name,mail,city,age,gender,level,sports,bio,id_user,image)
+
+    fun getUserById(id_user:Int) : LiveData<User> = Dao.getUserById(id_user)
+
+    companion object {
+        val factory : ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val application = (this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as SportCampApplication)
+                EditProfileViewModel(application.database.Dao())
+            }
+        }
+    }
+}
 
 
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun EditProfileScreen(
-    viewModel: AppViewModel = viewModel(factory = AppViewModel.factory),
+    vm: EditProfileViewModel = viewModel(factory = EditProfileViewModel.factory),
     navController: NavController
 ) {
 
-
-
-
-
+    //val vm: EditProfileViewModel = viewModel(factory = EditProfileViewModel.factory)
     val mContext = LocalContext.current
     val permission = android.Manifest.permission.CAMERA
-   //=========================================================================================
+
+    //=========================================================================================
 
     var userId = navController.currentBackStackEntry?.arguments?.getInt(DETAIL_ARGUMENT_KEY).toString()
-    val user by viewModel.getUserById(userId.toInt()).observeAsState()
+    val user by vm.getUserById(userId.toInt()).observeAsState()
+
+    //init
+    val coroutineScope = rememberCoroutineScope()
+
 
     // The coroutine scope for event handlers calling suspend functions.
-    val coroutineScope = rememberCoroutineScope()
-    // True if the message about the edit feature is shown.
+    //val coroutineScope = rememberCoroutineScope()
+    // True if the message is shown.
     var validationMessageShown by remember { mutableStateOf(false) }
     var saveMessageShown by remember { mutableStateOf(false) }
     var imageUri by remember {
@@ -154,7 +219,7 @@ fun EditProfileScreen(
         }
     }
 
-    clearAll()
+    //clearAll()
 
 
     // Shows the validation message.
@@ -180,10 +245,6 @@ fun EditProfileScreen(
     }
 
     val scrollState = rememberScrollState()
-    var isEditedNickname by remember { mutableStateOf(false) }
-    var isEditedName by remember { mutableStateOf(false) }
-    var isEditedAge by remember { mutableStateOf(false) }
-    var isEditedBio by remember { mutableStateOf(false) }
 
 
     //========================= Dialog on discard ===================================
@@ -200,14 +261,15 @@ fun EditProfileScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        usrName = user?.name.toString()
-                        usrNickname = user?.nickname.toString()
-                        usrCity = user?.city.toString()
-                        usrAge = user?.age.toString()
-                        usrGender = user?.city.toString()
-                        usrLevel = user?.level.toString()
-                        usrSports = user?.sports.toString()
-                        usrBio = user?.bio.toString()
+                        vm.usrName = user?.name.toString()
+                        vm.usrNickname = user?.nickname.toString()
+                        vm.usrCity = user?.city.toString()
+                        vm.usrAge = user?.age.toString()
+                        vm.usrGender = user?.city.toString()
+                        vm.usrLevel = user?.level.toString()
+                        vm.usrSports = user?.sports.toString()
+                        vm.usrBio = user?.bio.toString()
+                        vm.usrImage = user?.image.toString()
                         openDialog.value = false
                     }) {
                     Text("Discard")
@@ -280,38 +342,6 @@ fun EditProfileScreen(
                         .verticalScroll(state = scrollState),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    /*Column {
-                        TextField(
-                            value = text1,
-                            onValueChange = { newText ->
-                                vm.text1 = newText // Aggiorna il valore nel ViewModel
-                            }
-                        )
-                        CustomTextField(
-                            modifier = Modifier
-                                .padding(all = 10.dp)
-                                .fillMaxWidth(),
-                            labelResId = R.string.Nickname,
-                            inputWrapper = vm.text1,
-                            keyboardOptions = KeyboardOptions(
-                                capitalization = KeyboardCapitalization.None,
-                                autoCorrect = false,
-                                keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Done
-                            ),
-                            maxLength = 50,
-                            maxLines = 1,
-                            onTextChanged = { newText ->
-                                vm.text1 = newText // Aggiorna il valore nel ViewModel
-                            }
-                        )
-                        TextField(
-                            value = text2,
-                            onValueChange = { newText ->
-                                vm.text2 = newText // Aggiorna il valore nel ViewModel
-                            }
-                        )
-                    }*/
 
                     // User's image
                     Box(
@@ -411,12 +441,13 @@ fun EditProfileScreen(
                     }
 
                     user?.nickname?.let {
+
                         CustomTextField(
                             modifier = Modifier
                                 .padding(all = 10.dp)
                                 .fillMaxWidth(),
                             labelResId = R.string.Nickname,
-                            inputWrapper = it,
+                            inputWrapper = if(vm.usrNickname != "") vm.usrNickname else it,
                             keyboardOptions = KeyboardOptions(
                                 capitalization = KeyboardCapitalization.None,
                                 autoCorrect = false,
@@ -424,12 +455,16 @@ fun EditProfileScreen(
                                 imeAction = ImeAction.Done
                             ),
                             maxLength = 50,
-                            maxLines = 1
-                        ) {
-                            isEditedNickname = true
-                            usrNickname = it
-                        }
+                            maxLines = 1,
+                            onTextChanged = { newText ->
+                                vm.usrNickname = newText // Aggiorna il valore nel ViewModel
+                                vm.isEditedNickname = true
+                            }
+
+                        )
                     }
+
+
 
                     user?.name?.let {
                         CustomTextField(
@@ -437,7 +472,7 @@ fun EditProfileScreen(
                                 .padding(all = 10.dp)
                                 .fillMaxWidth(),
                             labelResId = R.string.Name,
-                            inputWrapper = it,
+                            inputWrapper = if(vm.usrName != "") vm.usrName else it,
                             keyboardOptions = KeyboardOptions(
                                 capitalization = KeyboardCapitalization.None,
                                 autoCorrect = false,
@@ -445,14 +480,15 @@ fun EditProfileScreen(
                                 imeAction = ImeAction.Done
                             ),
                             maxLength = 50,
-                            maxLines = 1
-                        ) {
-                            isEditedName = true
-                            usrName = it
-                        }
+                            maxLines = 1,
+                            onTextChanged = { newText ->
+                                vm.usrName = newText // Aggiorna il valore nel ViewModel
+                                vm.isEditedName = true
+                            }
+                        )
                     }
 
-                    user?.city?.let { dropDownMenu(it, "City") }
+                    user?.city?.let { dropDownMenu(if(vm.usrCity != "") vm.usrCity else it, "City") }
 
                     user?.age?.toString().let {
                         if (it != null) {
@@ -461,7 +497,7 @@ fun EditProfileScreen(
                                     .padding(all = 10.dp)
                                     .fillMaxWidth(),
                                 labelResId = R.string.Age,
-                                inputWrapper = it,
+                                inputWrapper = if(vm.usrAge != "") vm.usrAge else it,
                                 keyboardOptions = KeyboardOptions(
                                     capitalization = KeyboardCapitalization.None,
                                     autoCorrect = false,
@@ -469,17 +505,18 @@ fun EditProfileScreen(
                                     imeAction = ImeAction.Done
                                 ),
                                 maxLength = 3,
-                                maxLines = 1
-                            ) {
-                                isEditedAge = true
-                                usrAge = it
-                            }
+                                maxLines = 1,
+                                onTextChanged = { newText ->
+                                    vm.usrAge = newText // Aggiorna il valore nel ViewModel
+                                    vm.isEditedAge = true
+                                }
+                            )
                         }
                     }
 
-                    user?.gender?.let { dropDownMenu(it, "Gender") }
-                    user?.level?.let { dropDownMenu(it, "Level") }
-                    user?.sports?.let { dropDownMenuSports(it) }
+                    user?.gender?.let { dropDownMenu(if(vm.usrGender != "") vm.usrGender else it, "Gender") }
+                    user?.level?.let { dropDownMenu(if(vm.usrLevel != "") vm.usrLevel else it, "Level") }
+                    user?.sports?.let { dropDownMenuSports(if(vm.usrSports != "") vm.usrSports else it,) }
 
                     user?.bio?.let {
                         CustomTextField(
@@ -487,7 +524,7 @@ fun EditProfileScreen(
                                 .padding(all = 10.dp)
                                 .fillMaxWidth(),
                             labelResId = R.string.Bio,
-                            inputWrapper = it,
+                            inputWrapper = if(vm.usrBio != "") vm.usrBio else it,
                             keyboardOptions = KeyboardOptions(
                                 capitalization = KeyboardCapitalization.None,
                                 autoCorrect = false,
@@ -495,11 +532,12 @@ fun EditProfileScreen(
                                 imeAction = ImeAction.Done
                             ),
                             maxLength = 100,
-                            maxLines = 1
-                        ) {
-                            isEditedBio = true
-                            usrBio = it
-                        }
+                            maxLines = 1,
+                            onTextChanged = { newText ->
+                                vm.usrBio = newText // Aggiorna il valore nel ViewModel
+                                vm.isEditedBio = true
+                            }
+                        )
                     }
                     Spacer(modifier = Modifier.height(20.dp))
                     ValidationMessage(validationMessageShown)
@@ -521,29 +559,29 @@ fun EditProfileScreen(
                         }
                         Column() {
                             Button(onClick = {
-                                if ( isEditedAge || isEditedBio || isEditedCity || isEditedGender || isEditedLevel
-                                    || isEditedName || isEditedSports || isEditedNickname || isEditedImage) {
+                                if ( vm.isEditedAge || vm.isEditedBio || vm.isEditedCity || vm.isEditedGender || vm.isEditedLevel
+                                    || vm.isEditedName || vm.isEditedSports || vm.isEditedNickname || isEditedImage) {
                                     val user = User(
                                         id_user =  userId.trim().toInt(),
-                                        nickname = if (isEditedNickname) usrNickname else user?.nickname,
-                                        name = if (isEditedName) usrName else user?.name,
+                                        nickname = if (vm.isEditedNickname) vm.usrNickname else user?.nickname,
+                                        name = if (vm.isEditedName) vm.usrName else user?.name,
                                         mail =  user?.mail,
-                                        city = if (isEditedCity) usrCity else user?.city,
-                                        age = if (isEditedAge) usrAge.toInt() else user?.age,
-                                        gender = if (isEditedGender) usrGender else user?.gender,
-                                        level = if (isEditedLevel) usrLevel else user?.level,
-                                        sports = if(isEditedSports) usrSports else user?.sports,
-                                        bio = if (isEditedBio) usrBio else user?.bio,
+                                        city = if (vm.isEditedCity) vm.usrCity else user?.city,
+                                        age = if (vm.isEditedAge) vm.usrAge.toInt() else user?.age,
+                                        gender = if (vm.isEditedGender) vm.usrGender else user?.gender,
+                                        level = if (vm.isEditedLevel) vm.usrLevel else user?.level,
+                                        sports = if(vm.isEditedSports) vm.usrSports else user?.sports,
+                                        bio = if (vm.isEditedBio) vm.usrBio else user?.bio,
                                         image = if(bitmap.value != null) bitmap.value?.let {
                                             BitmapConverter.converterBitmapToString(
                                                 it
                                             )
                                         } else user?.image)
-                                    updateUserInDB(user, viewModel)
+                                    updateUserInDB(user, vm)
                                     coroutineScope.launch {
                                         showSaveMessage()
                                     }
-                                    clearAll()
+                                    //clearAll()
                                 } else {
                                     //toast(mContext, "Please add or update something...")
                                     coroutineScope.launch {
@@ -567,7 +605,7 @@ fun EditProfileScreen(
     )
 }
 
-fun clearAll() {
+/*fun clearAll() {
     usrName = ""
     usrNickname = ""
     usrCity = ""
@@ -576,11 +614,11 @@ fun clearAll() {
     usrLevel = ""
     usrSports = ""
     usrBio = ""
-}
+}*/
 
 fun updateUserInDB(
     user: User,
-    viewModel: AppViewModel
+    viewModel: EditProfileViewModel
 ) {
     viewModel.updateUser(user.nickname!!, user.name!!,user.mail!!,user.city!!,
         user.age!!,user.gender!!,user.level!!,user.sports!!,user.bio!!,user.id_user!!, user.image!! )
@@ -631,6 +669,7 @@ fun CustomTextField(
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun dropDownMenu(userOption: String, type: String) {
+    val vm: EditProfileViewModel = viewModel()
 
     var isExpanded by remember { mutableStateOf(false) }
     var userInitialValue by remember { mutableStateOf(userOption) } //male
@@ -680,61 +719,23 @@ fun dropDownMenu(userOption: String, type: String) {
                     userInitialValue = label
                     isExpanded = false
                     if(type == "Gender") {
-                        isEditedGender = true
-                        usrGender = label
+                        vm.isEditedGender = true
+                        vm.usrGender = label
                     }
                     if(type == "Level") {
-                        isEditedLevel = true
-                        usrLevel = label
-                    }
-                    if(type == "Sports") {
-                        isEditedSports = true
-                        usrSports = label
+                        vm.isEditedLevel = true
+                        vm.usrLevel = label
                     }
                     if(type == "City") {
-                        isEditedCity = true
-                        usrCity = label
+                        vm.isEditedCity = true
+                        vm.usrCity = label
                     }
                 }) {
                     Text(text = label)
                 }
             }
         }
-        /*
-                ExposedDropdownMenuBox(
-                    expanded = isExpanded,
-                    onExpandedChange = { isExpanded = it }
-                ) {
-                    TextField(
-                        value = gender,
-                        onValueChange = {},
-                        label = { Text("Gender") },
-                        readOnly = true,
-                        trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)
-                        },
-                        colors = ExposedDropdownMenuDefaults.textFieldColors(),
-                        // modifier = Modifier.menuAnchor()
-                    )
-
-                    ExposedDropdownMenu(
-                        expanded = isExpanded,
-                        onDismissRequest = { isExpanded = false }
-                    ) {
-                        DropdownMenuItem(
-                            onClick = { gender = "Male"; isExpanded = false },
-                            content = { Text(text = "Male") })
-                        DropdownMenuItem(
-                            onClick = { gender = "Female" },
-                            content = { Text(text = "Female") })
-                        DropdownMenuItem(
-                            onClick = { gender = "Other" },
-                            content = { Text(text = "Other") })
-
-                    }
-                }*/
     }
-
 
 }
 
@@ -742,6 +743,8 @@ fun dropDownMenu(userOption: String, type: String) {
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun dropDownMenuSports(userOption: String) {
+
+    val vm: EditProfileViewModel = viewModel()
     var isExpanded by remember { mutableStateOf(false) }
     var userInitialValue by remember { mutableStateOf(userOption) }
     var suggestions = listOf("Basketball", "Football", "Tennis", "Volleyball")
@@ -771,8 +774,8 @@ fun dropDownMenuSports(userOption: String) {
         DropdownMenu(
             expanded = isExpanded,
             onDismissRequest = { isExpanded = false
-                isEditedSports = true
-                usrSports = userInitialValue},
+                vm.isEditedSports = true
+                vm.usrSports = userInitialValue},
             modifier = Modifier
                 .padding(all = 10.dp)
                 .fillMaxWidth(),

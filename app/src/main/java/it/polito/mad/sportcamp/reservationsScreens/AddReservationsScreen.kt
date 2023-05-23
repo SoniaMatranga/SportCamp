@@ -101,7 +101,7 @@ fun AddReservationsScreen(
         CustomToolbarWithBackArrow(title = "Add Reservations", navController = navController as NavHostController)
 
         Spacer(modifier = Modifier.height(10.dp))
-        Text(text="Select a date and a sport, then click info to book the court",
+        Text(text="Select a date and a sport",
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth().padding(horizontal = 40.dp))
 
