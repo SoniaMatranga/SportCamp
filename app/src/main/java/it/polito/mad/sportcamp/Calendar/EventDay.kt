@@ -47,7 +47,7 @@ fun EventDay(
             modifier = modifier
                 .aspectRatio(1f)
                 .padding(2.dp),
-            elevation = if (state.isFromCurrentMonth) 6.dp else 0.dp,
+            elevation =  6.dp ,
             border = if (state.isCurrentDay) {
                 BorderStroke(3.dp, MaterialTheme.colors.secondary)
             } else if (isSelected) {
@@ -55,11 +55,8 @@ fun EventDay(
             } else {
                 null
             },
-            backgroundColor = if (state.date.isBefore(today)) {
-                Color.Gray
-            } else {
-                MaterialTheme.colors.background
-            },
+            backgroundColor = MaterialTheme.colors.background
+            ,
             contentColor = if (isSelected) {
                 MaterialTheme.colors.onPrimary
             } else {
@@ -74,7 +71,11 @@ fun EventDay(
             ) {
                 Text(
                     text = date.dayOfMonth.toString(),
-                    color = Color.Black
+                    color = if (state.date.isBefore(today)) {
+                        Color.Gray
+                    } else {
+                        Color.Black
+                    }
                 )
 
                 Row() {

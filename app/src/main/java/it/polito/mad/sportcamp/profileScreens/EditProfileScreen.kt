@@ -89,7 +89,6 @@ class EditProfileViewModel (private val Dao: Dao): ViewModel() {
 
 
     init {
-
             val userLiveData = Dao.getUserById(1)
             userLiveData.observeForever { user ->
                 usrName = user?.name ?: ""
@@ -103,6 +102,18 @@ class EditProfileViewModel (private val Dao: Dao): ViewModel() {
                 usrImage = user?.image ?: ""
             }
 
+    }
+
+    fun clearAll() {
+        usrName = ""
+        usrNickname = ""
+        usrCity = ""
+        usrAge = ""
+        usrGender = ""
+        usrLevel = ""
+        usrSports = ""
+        usrBio = ""
+        usrImage = ""
     }
 
     fun updateUser(nickname: String, name:String, mail:String, city:String,
@@ -218,7 +229,15 @@ fun EditProfileScreen(
     val scrollState = rememberScrollState()
 
 
+
+
+
+
+/*
+
     //========================= Dialog on discard ===================================
+
+
     val openDialog = remember { mutableStateOf(false)  }
 
     if (openDialog.value) {
@@ -232,18 +251,13 @@ fun EditProfileScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        vm.usrName = user?.name.toString()
-                        vm.usrNickname = user?.nickname.toString()
-                        vm.usrCity = user?.city.toString()
-                        vm.usrAge = user?.age.toString()
-                        vm.usrGender = user?.city.toString()
-                        vm.usrLevel = user?.level.toString()
-                        vm.usrSports = user?.sports.toString()
-                        vm.usrBio = user?.bio.toString()
-                        vm.usrImage = user?.image.toString()
+                        vm.clearAll()
                         openDialog.value = false
                     }) {
                     Text("Discard")
+                    LaunchedEffect(vm) {
+                        vm.clearAll()
+                    }
                 }
             },
             dismissButton = {
@@ -252,10 +266,13 @@ fun EditProfileScreen(
                         openDialog.value = false
                     }) {
                     Text("Don't discard")
+
                 }
             }
         )
     }
+*/
+
 
     //========================= Dialog Camera or gallery ===================================
 
@@ -517,9 +534,9 @@ fun EditProfileScreen(
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         modifier= Modifier.fillMaxWidth()
                     ){
-                        Column {
+                        /*Column {
                             Button(onClick = {
-                                openDialog.value = true
+                               // openDialog.value = true
                             }) {
                                 Text(
                                     text = "Discard",
@@ -527,7 +544,7 @@ fun EditProfileScreen(
                                     textAlign = TextAlign.Center,
                                 )
                             }
-                        }
+                        }*/
                         Column {
                             Button(onClick = {
                                 if ( vm.isEditedAge || vm.isEditedBio || vm.isEditedCity || vm.isEditedGender || vm.isEditedLevel
@@ -576,16 +593,6 @@ fun EditProfileScreen(
     )
 }
 
-/*fun clearAll() {
-    usrName = ""
-    usrNickname = ""
-    usrCity = ""
-    usrAge = ""
-    usrGender = ""
-    usrLevel = ""
-    usrSports = ""
-    usrBio = ""
-}*/
 
 fun updateUserInDB(
     user: User,

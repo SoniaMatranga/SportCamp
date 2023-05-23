@@ -581,47 +581,6 @@ private fun prepareOptionsData(user: User) {
         )
     )
 
-
-    /*
-       optionsList.add(
-           OptionsData(
-               icon = appIcons.LocationCity,
-               title = "City",
-               subTitle = user.city.toString()
-           )
-       )
-
-
-
-
-
-       optionsList.add(
-           OptionsData(
-               icon = appIcons.Transgender,
-               title = "Gender",
-               subTitle = user.gender.toString()
-           )
-       )
-
-       optionsList.add(
-           OptionsData(
-               icon = appIcons.TrendingUp,
-               title = "Level",
-               subTitle = user.level.toString()
-           )
-       )
-
-
-       optionsList.add(
-           OptionsData(
-               icon = appIcons.DirectionsRun,
-               title = "Sports",
-               subTitle = user.sports.toString()
-           )
-       )
-
-        */
-
 }
 
 data class OptionsData(val icon: ImageVector, val title: String, val subTitle: String)
