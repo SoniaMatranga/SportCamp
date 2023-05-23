@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
@@ -54,8 +53,10 @@ import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.BitmapConverter
 import it.polito.mad.sportcamp.database.AppViewModel
 import it.polito.mad.sportcamp.database.ReservationContent
+import it.polito.mad.sportcamp.favoritesScreens.RatingStar
 import it.polito.mad.sportcamp.ui.theme.fonts
 import java.time.LocalDate
+import kotlin.math.roundToInt
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -202,8 +203,28 @@ fun ReservationCard(reservation: ReservationContent, selectedDate:String, viewMo
                                     )
                                 }
                             }
+                            Row(modifier = Modifier
+                                .clickable (
+                                    onClick = {
+                                        navController.navigate(
+                                            route = Screen.CourtReviewList.passIdCourt(reservation.id_court!!)
+                                        )
+                                    }
+                                )
+                            ) {
+                                reservation.court_rating?.let {
+                                    RatingStar(rating = it)
+                                }
+                                reservation.court_rating?.let {
+                                    var z = ((it * 10.0).roundToInt() / 10.0)
+                                    androidx.compose.material3.Text(
+                                        text = "($z)",
+                                        modifier = Modifier.padding(start = 2.dp)
+                                    )
+                                }
+                            }
+
                             Row {
-                                Spacer(modifier = Modifier.width(25.dp))
                                 reservation.time_slot?.let {
                                     Text(
                                         text = "($it)",

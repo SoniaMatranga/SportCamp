@@ -57,7 +57,7 @@ fun FavoritesScreen(
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        CustomToolBar(title = "Favorites")
+        CustomToolBar(title = "Ratings")
 
         val filterList = listOf(
             ChipsModel(

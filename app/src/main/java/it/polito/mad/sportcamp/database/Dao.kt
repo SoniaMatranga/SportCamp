@@ -15,7 +15,8 @@ data class ReservationContent(
     val sport: String?,
     val time_slot: String?,
     val date: String?,
-    val image: String?
+    val image: String?,
+    val court_rating: Float?
     )
 
 data class ReservationTimed(

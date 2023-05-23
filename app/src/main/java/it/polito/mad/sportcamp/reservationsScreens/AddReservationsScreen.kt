@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -41,12 +42,14 @@ import it.polito.mad.sportcamp.common.BitmapConverter
 import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
 import it.polito.mad.sportcamp.database.AppViewModel
 import it.polito.mad.sportcamp.database.Court
+import it.polito.mad.sportcamp.favoritesScreens.RatingStar
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.util.*
+import kotlin.math.roundToInt
 
 
- class AddReservationsViewModel : ViewModel() {
+class AddReservationsViewModel : ViewModel() {
     var sportFilter by mutableStateOf("Basketball")
     val sdf = SimpleDateFormat("yyyy-MM-dd")
     val currentDate = sdf.format(Date())
@@ -275,6 +278,26 @@ private fun CourtCard(court: Court, dateFilter: String , navController: NavHostC
                                 court.court_name?.let {
                                     Text(
                                         text = it,
+                                    )
+                                }
+                            }
+                            Row(modifier = Modifier
+                                .clickable (
+                                    onClick = {
+                                        navController.navigate(
+                                            route = Screen.CourtReviewList.passIdCourt(court.id_court!!)
+                                        )
+                                    }
+                                )
+                            ) {
+                                court.court_rating?.let {
+                                    RatingStar(rating = it)
+                                }
+                                court.court_rating?.let {
+                                    var z = ((it * 10.0).roundToInt() / 10.0)
+                                    androidx.compose.material3.Text(
+                                        text = "($z)",
+                                        modifier = Modifier.padding(start = 2.dp)
                                     )
                                 }
                             }
