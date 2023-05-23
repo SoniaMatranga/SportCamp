@@ -6,7 +6,6 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -38,6 +37,7 @@ import androidx.compose.material.icons.outlined.Star
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.min
 import it.polito.mad.sportcamp.bottomnav.Screen
@@ -167,7 +167,8 @@ fun CourtCard(court: Court, navController: NavController) {
         modifier = Modifier
             .padding(5.dp)
             .fillMaxWidth()
-            .background(Color.White),
+            .background(Color.White)
+            .clickable ( onClick= {expanded=!expanded}),
         shape = RoundedCornerShape(10.dp),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 10.dp
@@ -208,30 +209,33 @@ fun CourtCard(court: Court, navController: NavController) {
                         .fillMaxWidth()
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                       // modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Column(modifier = Modifier.padding(4.dp)) {
+                        Column(modifier = Modifier.padding(4.dp).weight(4f)) {
                             Row {
 
-                                androidx.compose.material.Icon(
-                                    modifier = Modifier
-                                        .size(25.dp),
-                                    imageVector = Icons.Outlined.LocationOn,
-                                    contentDescription = "Location",
-                                )
                                 court.court_name?.let {
                                     Text(
+                                        overflow = TextOverflow.Ellipsis,
+                                        maxLines =2,
                                         text = it,
                                         fontSize = 18.sp,
                                         modifier = Modifier.padding(start = 2.dp)
                                     )
                                 }
                             }
-                            Row {
-                                Spacer(modifier = Modifier.width(25.dp))
+                            Row(modifier = Modifier
+                                .clickable (
+                                    onClick = {
+                                        navController.navigate(
+                                            route = Screen.CourtReviewList.passIdCourt(court.id_court!!)
+                                        )
+                                    }
+                                )
+                            ) {
                                 court.court_rating?.let {
-                                    RatingStar(rating = it)
+                                    RatingStar(rating = it, modifier = Modifier)
                                 }
                                 court.court_rating?.let {
                                     Text(
@@ -242,6 +246,37 @@ fun CourtCard(court: Court, navController: NavController) {
                             }
 
                         }
+                        Column(modifier = Modifier.fillMaxWidth().weight(2f)) {
+
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+
+                                androidx.compose.material.Button(
+                                    shape = RoundedCornerShape(5.dp),
+                                    onClick = {
+                                        navController.navigate(
+                                            route = Screen.CourtReview.passIdCourt(
+                                                court!!.id_court!!
+                                            )
+                                        )
+                                    }) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        androidx.compose.material.Text(
+                                            maxLines=1,
+                                            text = "Review",
+                                            fontSize = 13.sp,
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                    /*
                         Column(
                             modifier = Modifier.fillMaxHeight(),
                             verticalArrangement = Arrangement.Center,
@@ -255,71 +290,43 @@ fun CourtCard(court: Court, navController: NavController) {
                                     contentDescription = "Info",
                                 )
                             }
-                        }
+                        }*/
                     }
 
                     Spacer(modifier = Modifier.height(4.dp))
 
                     if (expanded) {
-                        Column(modifier = Modifier.padding(4.dp)) {
-
-
+                        Column(
+                            modifier = Modifier
+                                .padding(horizontal = 10.dp)
+                                .padding(bottom = 10.dp)
+                        ) {
                             Row {
                                 court.address?.let { it1 ->
-                                    Text(
+                                    androidx.compose.material.Text(
                                         text = "Address: $it1",
-                                      //  fontSize = 14.sp,
+                                        fontSize = 14.sp,
                                     )
                                 }
                             }
                             Row {
                                 court.city?.let { it1 ->
-                                    Text(
+                                    androidx.compose.material.Text(
                                         text = "City: $it1",
-                                       // fontSize = 14.sp,
+                                        fontSize = 14.sp,
                                     )
                                 }
                             }
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
+                            Row {
 
-                                Column() {
-
-                                    court.sport?.let {
-                                        androidx.compose.material.Text(
-                                            text = "Sport: $it",
+                                court.sport?.let {
+                                    androidx.compose.material.Text(
+                                        text = "Sport: $it",
+                                        fontSize = 14.sp
                                         )
                                     }
                                 }
 
-                            }
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.End,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-
-                                androidx.compose.material.Button(
-                                    shape = RoundedCornerShape(5.dp),
-                                    onClick = {
-                                            navController.navigate(
-                                                route = Screen.CourtReview.passIdCourt(
-                                                    court!!.id_court!!
-                                                )
-                                            )
-                                    }) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        androidx.compose.material.Text(
-                                            text = "Review",
-                                            fontSize = 13.sp,
-                                            textAlign = TextAlign.Center
-                                        )
-                                    }
-                                }
                             }
                         }
                     }
@@ -329,7 +336,7 @@ fun CourtCard(court: Court, navController: NavController) {
 
         }
     }
-}
+
 
 
 
@@ -384,7 +391,7 @@ fun ChipWithSubItems(chipLabel: String, chipItems: List<String>, courtsList: Lis
 }
 
 @Composable
-fun RatingStar(rating: Float) {
+fun RatingStar(rating: Float, modifier: Modifier) {
     val filledStars = rating.toInt()
     val hasHalfStar = rating - filledStars >= 0.5f
 

@@ -131,4 +131,7 @@ interface Dao {
     @Query("INSERT INTO ratings_table (id, id_user, id_court, rating, review) VALUES (:id, :id_user, :id_court, :rating, :review) ")
     fun insertReview(id: Int?, id_user: Int, id_court: Int, rating: Float, review: String?)
 
+    @Query("SELECT * from ratings_table WHERE id_court=:id_court")
+    fun getCourtReviewsById(id_court: Int): LiveData<List<Rating>>
+
 }

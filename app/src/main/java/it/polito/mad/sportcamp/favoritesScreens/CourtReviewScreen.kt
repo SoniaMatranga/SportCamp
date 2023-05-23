@@ -1,8 +1,10 @@
 package it.polito.mad.sportcamp.favoritesScreens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.Text
@@ -30,6 +32,7 @@ import com.gowtham.ratingbar.RatingBar
 import com.gowtham.ratingbar.RatingBarConfig
 import com.gowtham.ratingbar.RatingBarStyle
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY3
+import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.BitmapConverter
 import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
 import it.polito.mad.sportcamp.database.AppViewModel
@@ -87,12 +90,18 @@ fun CourtReviewScreen(
                     )
                 }
             }
+            Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.Center){
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .clickable (onClick = {navController.navigate(
+                        route = Screen.CourtReviewList.passIdCourt(
+                            courtDetails!!.id_court!!
+                        )
+                    )} ),
                 horizontalArrangement = Arrangement.Center
             ) {
                 courtDetails?.court_rating?.let {
-                    RatingStar(rating = it)
+                    RatingStar(rating = it, modifier=Modifier)
                     courtDetails?.court_rating?.let {
                         androidx.compose.material3.Text(
                             text = "($it)",
@@ -100,7 +109,8 @@ fun CourtReviewScreen(
                         )
                     }
                 }
-            }
+
+            }}
             Row(
                 modifier = Modifier
                     .fillMaxWidth()

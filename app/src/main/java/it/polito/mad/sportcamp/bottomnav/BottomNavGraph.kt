@@ -85,6 +85,16 @@ fun BottomNavGraph(
         }
 
         composable(
+            route = Screen.CourtReviewList.route,
+            arguments = listOf(navArgument(DETAIL_ARGUMENT_KEY3){
+                type= NavType.IntType
+            })
+        )
+        {
+            CourtReviewListScreen(navController = navController)
+        }
+
+        composable(
             route = Screen.ReservationEdit.route,
             arguments = listOf(navArgument(DETAIL_ARGUMENT_KEY4){
                 type= NavType.IntType

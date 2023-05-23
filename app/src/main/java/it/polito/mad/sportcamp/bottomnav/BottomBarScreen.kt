@@ -95,6 +95,17 @@ sealed class Screen(
         }
     }
 
+    object CourtReviewList: Screen(
+        route = "courtReviewList/{$DETAIL_ARGUMENT_KEY3}",
+        title = "courtReviewList",
+        icon =Icons.Outlined.Edit,
+        icon_focused = Icons.Outlined.Edit
+    ) {
+        fun passIdCourt(id: Int): String {
+            return this.route.replace(oldValue = "{$DETAIL_ARGUMENT_KEY3}", newValue = id.toString())
+        }
+    }
+
     object ReservationEdit: Screen(
         route = "reservationEdit/{$DETAIL_ARGUMENT_KEY4}/{$DETAIL_ARGUMENT_KEY3}/{$DETAIL_ARGUMENT_KEY2}",
         title = "reservationEdit",
