@@ -54,7 +54,9 @@ import it.polito.mad.sportcamp.common.BitmapConverter
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.lifecycle.ViewModel
+import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.SaveMessage
 import it.polito.mad.sportcamp.common.ValidationMessage
 import it.polito.mad.sportcamp.ui.theme.*
@@ -78,22 +80,12 @@ var isEditedLevel: Boolean = false
 var isEditedSports :Boolean = false
 var isEditedCity :Boolean = false
 
-
-class EditProfileViewModel() : ViewModel() {
-
-    private val _usrName = MutableStateFlow("")
-    val productName = _usrName.asStateFlow()
-
-    fun onUsrNameChange(it: String) {
-        _usrName.value = it
-    }
-
-    fun getUsrName(){
-        _usrName.value
-    }
-
-
+private class MyViewModel : ViewModel() {
+    var text1 by mutableStateOf("ciao")
+    var text2 by mutableStateOf("va bene")
 }
+
+
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
@@ -101,8 +93,14 @@ fun EditProfileScreen(
     viewModel: AppViewModel = viewModel(factory = AppViewModel.factory),
     navController: NavController
 ) {
+    val vm: MyViewModel = viewModel() // Inizializza il tuo ViewModel
 
-    val vm = EditProfileViewModel()
+    // Utilizza rememberSaveable per mantenere lo stato dei valori dei TextField
+    val text1 by rememberSaveable { mutableStateOf(vm.text1) }
+    val text2 by rememberSaveable { mutableStateOf(vm.text2) }
+
+
+
 
     val mContext = LocalContext.current
     val permission = android.Manifest.permission.CAMERA
@@ -209,7 +207,7 @@ fun EditProfileScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        vm.onUsrNameChange(user?.name.toString())
+                        usrName = user?.name.toString()
                         usrNickname = user?.nickname.toString()
                         usrCity = user?.city.toString()
                         usrAge = user?.age.toString()
@@ -275,6 +273,7 @@ fun EditProfileScreen(
             )
         },
         content = {  _ ->
+
             Surface(
                 color = Color.White,
                 modifier = Modifier
@@ -288,6 +287,38 @@ fun EditProfileScreen(
                         .verticalScroll(state = scrollState),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
+                    /*Column {
+                        TextField(
+                            value = text1,
+                            onValueChange = { newText ->
+                                vm.text1 = newText // Aggiorna il valore nel ViewModel
+                            }
+                        )
+                        CustomTextField(
+                            modifier = Modifier
+                                .padding(all = 10.dp)
+                                .fillMaxWidth(),
+                            labelResId = R.string.Nickname,
+                            inputWrapper = vm.text1,
+                            keyboardOptions = KeyboardOptions(
+                                capitalization = KeyboardCapitalization.None,
+                                autoCorrect = false,
+                                keyboardType = KeyboardType.Text,
+                                imeAction = ImeAction.Done
+                            ),
+                            maxLength = 50,
+                            maxLines = 1,
+                            onTextChanged = { newText ->
+                                vm.text1 = newText // Aggiorna il valore nel ViewModel
+                            }
+                        )
+                        TextField(
+                            value = text2,
+                            onValueChange = { newText ->
+                                vm.text2 = newText // Aggiorna il valore nel ViewModel
+                            }
+                        )
+                    }*/
 
                     // User's image
                     Box(
@@ -424,7 +455,7 @@ fun EditProfileScreen(
                             maxLines = 1
                         ) {
                             isEditedName = true
-                            vm.onUsrNameChange(it)
+                            usrName = it
                         }
                     }
 
@@ -502,7 +533,7 @@ fun EditProfileScreen(
                                     val user = User(
                                         id_user =  userId.trim().toInt(),
                                         nickname = if (isEditedNickname) usrNickname else user?.nickname,
-                                        name = if (isEditedName) {vm.getUsrName().toString()} else user?.name,
+                                        name = if (isEditedName) usrName else user?.name,
                                         mail =  user?.mail,
                                         city = if (isEditedCity) usrCity else user?.city,
                                         age = if (isEditedAge) usrAge.toInt() else user?.age,
@@ -544,7 +575,7 @@ fun EditProfileScreen(
 }
 
 fun clearAll() {
-    //usrName = ""
+    usrName = ""
     usrNickname = ""
     usrCity = ""
     usrAge = ""
@@ -786,6 +817,8 @@ fun dropDownMenuSports(userOption: String) {
         }
     }
 }
+
+
 
 
 

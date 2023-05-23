@@ -19,8 +19,11 @@ import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Info
@@ -33,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
@@ -47,6 +51,7 @@ import it.polito.mad.sportcamp.common.BitmapConverter
 import it.polito.mad.sportcamp.database.AppViewModel
 import it.polito.mad.sportcamp.database.ReservationContent
 import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
+import it.polito.mad.sportcamp.ui.theme.fonts
 
 
 @Composable
@@ -61,7 +66,8 @@ fun ReservationDetails(
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        CustomToolbarWithBackArrow(title = "My reservations details", navController = navController)
+
+        CustomToolbarReservationDetails(title = "My reservations details", navController = navController, date= selectedDate)
 
         reservations?.let { ReservationsList(reservations = it, selectedDate= selectedDate, viewModel = viewModel, navController=navController) }
 
@@ -321,6 +327,25 @@ fun ReservationCard(reservation: ReservationContent, selectedDate:String, viewMo
             }
         }
     }
+}
+
+@Composable
+fun CustomToolbarReservationDetails(title: String, navController: NavHostController, date: String) {
+    TopAppBar(
+        title = { Text(text = title, fontFamily = fonts) },
+        navigationIcon = {
+            IconButton(onClick = {
+                navController.navigate(
+                    route = Screen.Reservations.route
+                ) }) {
+                Icon(
+                    Icons.Filled.ArrowBack,
+                    contentDescription = "arrowBack",
+                    tint = Color.White
+                )
+            }
+        }
+    )
 }
 
 

@@ -28,6 +28,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -43,6 +44,13 @@ import it.polito.mad.sportcamp.database.Court
 import java.text.SimpleDateFormat
 import java.util.*
 
+
+ class AddReservationsViewModel : ViewModel() {
+    var sportFilter by mutableStateOf("Basketball")
+    val sdf = SimpleDateFormat("yyyy-MM-dd")
+    val currentDate = sdf.format(Date())
+    var dateFilter by mutableStateOf(currentDate)
+}
 @SuppressLint("SimpleDateFormat")
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
@@ -51,15 +59,10 @@ fun AddReservationsScreen(
     navController: NavController,
     viewModel: AppViewModel = viewModel(factory = AppViewModel.factory)
 ) {
-    var sportFilter by remember { mutableStateOf("Basketball") }
-    val courts by viewModel.getCourtsBySport(sportFilter).observeAsState()
-
-    val sdf = SimpleDateFormat("yyyy-MM-dd")
-    val currentDate = sdf.format(Date())
-
+    val vm: AddReservationsViewModel = viewModel()
+    val courts by viewModel.getCourtsBySport(vm.sportFilter).observeAsState()
     val calendarState = rememberSheetState()
 
-    var dateFilter by remember { mutableStateOf(currentDate) }
 
 
 
@@ -68,7 +71,7 @@ fun AddReservationsScreen(
     var expanded by remember { mutableStateOf(false) }
     var selectedIcon by remember {mutableStateOf(Icons.Filled.SportsFootball) }
 
-    selectedIcon = when (sportFilter) {
+    selectedIcon = when (vm.sportFilter) {
         "Football" -> Icons.Filled.SportsSoccer
         "Tennis" -> Icons.Filled.SportsTennis
         "Volleyball" -> Icons.Filled.SportsVolleyball
@@ -87,7 +90,7 @@ fun AddReservationsScreen(
         ),
         selection = CalendarSelection.Date{ date ->
             Log.d ("SelectedDate", date.toString())
-            dateFilter = date.toString()
+            vm.dateFilter = date.toString()
         })
 
 
@@ -122,7 +125,7 @@ fun AddReservationsScreen(
                     )
 
                 }
-                Text(dateFilter)
+                Text(vm.dateFilter)
 
             }
 
@@ -155,7 +158,7 @@ fun AddReservationsScreen(
                                 tint = Color.Black
                             )
                         }
-                        Text(sportFilter)
+                        Text(vm.sportFilter)
                     }
                     ExposedDropdownMenu(
                         expanded = expanded,
@@ -166,7 +169,7 @@ fun AddReservationsScreen(
                             DropdownMenuItem(
                                 content = { Text(text = item) },
                                 onClick = {
-                                    sportFilter = item
+                                    vm.sportFilter = item
                                     expanded = false
                                     Toast.makeText(context, item, Toast.LENGTH_SHORT).show()
                                 }
@@ -177,7 +180,7 @@ fun AddReservationsScreen(
             }
 
         }
-        courts?.let { CourtsList(courts = it, dateFilter = dateFilter,  navController = navController) }
+        courts?.let { CourtsList(courts = it, dateFilter = vm.dateFilter,  navController = navController) }
     }
 
 

@@ -38,6 +38,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY
@@ -49,14 +50,24 @@ import it.polito.mad.sportcamp.common.BookingCompletedMessage
 import it.polito.mad.sportcamp.common.ValidationBookingMessage
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
 
 
+class BookReservationsViewModel : ViewModel() {
+    var expandedTimeSlot by mutableStateOf(false)
+    var expandedEquipments by mutableStateOf(false)
+
+    var selectedEquipments by mutableStateOf("Select equipments")
+    var selectedTimeSlot by  mutableStateOf("Select time slot")
+}
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun BookReservationScreen(
     navController: NavHostController,
     viewModel: AppViewModel = viewModel(factory = AppViewModel.factory)
 ) {
+    val vm: BookReservationsViewModel = viewModel()
 
     val idCourt = navController.currentBackStackEntry?.arguments?.getInt(DETAIL_ARGUMENT_KEY).toString()
     val date = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY2).toString()
@@ -65,11 +76,11 @@ fun BookReservationScreen(
     val timeSlots by viewModel.getAvailableTimeSlots(idCourt.toInt(), date).observeAsState()
     val courtDetails by viewModel.getCourtById(idCourt.toInt()).observeAsState()
 
-    var expandedTimeSlot by remember { mutableStateOf(false) }
-    var expandedEquipments by remember { mutableStateOf(false) }
+    //var expandedTimeSlot by remember { mutableStateOf(false) }
+    //var expandedEquipments by remember { mutableStateOf(false) }
 
-    var selectedEquipments by remember { mutableStateOf("Select equipments") }
-    var selectedTimeSlot by remember { mutableStateOf("Select time slot") }
+    //var selectedEquipments by remember { mutableStateOf("Select equipments") }
+    //var selectedTimeSlot by remember { mutableStateOf("Select time slot") }
 
     val equipments = listOf("Not requested", "Requested")
     val bitmap = courtDetails?.image?.let { BitmapConverter.converterStringToBitmap(it) }
@@ -181,28 +192,28 @@ fun BookReservationScreen(
                         modifier = Modifier.background(Color.White)
                     ) {
                         ExposedDropdownMenuBox(
-                            expanded = expandedTimeSlot,
+                            expanded = vm.expandedTimeSlot,
                             onExpandedChange = {
-                                expandedTimeSlot = !expandedTimeSlot
+                                vm.expandedTimeSlot = !vm.expandedTimeSlot
                             }
                         ) {
                             TextField(
-                                value = selectedTimeSlot,
+                                value = vm.selectedTimeSlot,
                                 onValueChange = {},
                                 readOnly = true,
                                 modifier = Modifier.fillMaxWidth(),
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedTimeSlot) },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = vm.expandedTimeSlot) },
                             )
                             ExposedDropdownMenu(
-                                expanded = expandedTimeSlot,
-                                onDismissRequest = { expandedTimeSlot = false }
+                                expanded = vm.expandedTimeSlot,
+                                onDismissRequest = { vm.expandedTimeSlot = false }
                             ) {
                                 timeSlots?.forEach { item ->
                                     DropdownMenuItem(
                                         content = { Text(text = item) },
                                         onClick = {
-                                            expandedTimeSlot = false
-                                            selectedTimeSlot = item
+                                            vm.expandedTimeSlot = false
+                                            vm.selectedTimeSlot = item
                                         }
                                     )
                                 }
@@ -223,28 +234,28 @@ fun BookReservationScreen(
                         modifier = Modifier.background(Color.White)
                     ) {
                         ExposedDropdownMenuBox(
-                            expanded = expandedEquipments,
+                            expanded = vm.expandedEquipments,
                             onExpandedChange = {
-                                expandedEquipments = !expandedEquipments
+                                vm.expandedEquipments = !vm.expandedEquipments
                             }
                         ) {
                             TextField(
-                                value = selectedEquipments,
+                                value = vm.selectedEquipments,
                                 onValueChange = {},
                                 readOnly = true,
                                 modifier = Modifier.fillMaxWidth(),
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedEquipments) },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = vm.expandedEquipments) },
                             )
                             ExposedDropdownMenu(
-                                expanded = expandedEquipments,
-                                onDismissRequest = { expandedEquipments = false }
+                                expanded = vm.expandedEquipments,
+                                onDismissRequest = { vm.expandedEquipments = false }
                             ) {
                                 equipments.forEach { item ->
                                     DropdownMenuItem(
                                         content = { Text(text = item) },
                                         onClick = {
-                                            expandedEquipments = false
-                                            selectedEquipments = item
+                                            vm.expandedEquipments = false
+                                            vm.selectedEquipments = item
                                         }
                                     )
                                 }
@@ -272,11 +283,11 @@ fun BookReservationScreen(
                     Button(
                         shape = RoundedCornerShape(5.dp),
                         onClick = {
-                            if (selectedTimeSlot != "Select time slot" && selectedEquipments != "Select equipments") {
+                            if (vm.selectedTimeSlot != "Select time slot" && vm.selectedEquipments != "Select equipments") {
                                 courtDetails?.id_court?.let {
                                     viewModel.addReservation(
                                         null, 1,
-                                        it, selectedTimeSlot, date, selectedEquipments, ""
+                                        it, vm.selectedTimeSlot, date, vm.selectedEquipments, ""
                                     )
                                 }
 

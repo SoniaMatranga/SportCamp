@@ -375,7 +375,7 @@ private fun OptionsItemStyle(item: OptionsData, context: Context) {
                 .size(25.dp),
             imageVector = item.icon,
             contentDescription = item.title,
-            tint = MaterialTheme.colors.secondary
+            tint = MaterialTheme.colors.primaryVariant
         )
 
         Row(
@@ -504,7 +504,7 @@ fun sportsListRow(user: User){
 
                     // Sub title
                     Text(
-                        text = "Basketball",
+                        text = "Basket",
                         fontSize = 14.sp,
                         letterSpacing = (0.8).sp,
                         color = Color.Gray
@@ -516,7 +516,7 @@ fun sportsListRow(user: User){
             if(user.sports?.contains("Football") == true) {
                 Column(
                     modifier = Modifier
-                        .weight(weight = 3f, fill = false)
+                        .weight(weight = 4f, fill = false)
                         .padding(start = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -564,7 +564,7 @@ fun sportsListRow(user: User){
 
                     // Sub title
                     Text(
-                        text = "Volleyball",
+                        text = "Volley",
                         fontSize = 14.sp,
                         letterSpacing = (0.8).sp,
                         color = Color.Gray
