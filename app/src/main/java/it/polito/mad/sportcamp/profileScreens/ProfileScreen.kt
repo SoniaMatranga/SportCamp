@@ -1,6 +1,6 @@
 package it.polito.mad.sportcamp.profileScreens
 
-import android.content.Context
+
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,8 +15,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,7 +56,7 @@ fun ProfileScreen(
 
                 CustomToolbarWithEditButton(title = "Profile", navController= navController as NavHostController)
 
-                user?.let { Profile(user = it, navController= navController) }
+                user?.let { Profile(user = it) }
             }
         }
     }
@@ -66,34 +64,8 @@ fun ProfileScreen(
 
 private val optionsList: ArrayList<OptionsData> = ArrayList()
 
-/*
 @Composable
-fun TopAppbarProfile(context: Context) {
-    TopAppBar(
-        title = {
-            Text(
-                text = "Profile",
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        },
-        backgroundColor = MaterialTheme.colors.background,
-        elevation = 4.dp,
-        navigationIcon = {
-            IconButton(onClick = {
-                Toast.makeText(context, "Nav Button", Toast.LENGTH_SHORT).show()
-            }) {
-                Icon(
-                    Icons.Filled.ArrowBack,
-                    contentDescription = "Go back",
-                )
-            }
-        }
-    )
-}*/
-
-@Composable
-fun Profile(user: User, navController: NavController, context: Context = LocalContext.current.applicationContext) {
+fun Profile(user: User) {
 
     // This indicates if the optionsList has data or not
     // Initially, the list is empty. So, its value is false.
@@ -123,7 +95,7 @@ fun Profile(user: User, navController: NavController, context: Context = LocalCo
                 .fillMaxSize()
         ) {
             item{
-                UserDetails(user = user, navController= navController)
+                UserDetails(user = user)
             }
             // Show the options
             items(optionsList) { item ->
@@ -132,11 +104,11 @@ fun Profile(user: User, navController: NavController, context: Context = LocalCo
                     modifier = Modifier.padding(horizontal = 30.dp)
 
                 ) {
-                    OptionsItemStyle(item = item, context = context)
+                    OptionsItemStyle(item = item)
                 }
             }
             item{
-                sportsListRow(user = user)
+                SportsListRow(user = user)
                 Spacer(modifier = Modifier.height(50.dp))
             }
 
@@ -152,7 +124,7 @@ fun Profile(user: User, navController: NavController, context: Context = LocalCo
 
 // This composable displays user's image, name, email
 @Composable
-private fun UserDetails(user: User,  navController: NavController) {
+private fun UserDetails(user: User) {
 
 
     val bitmap = user.image?.let { BitmapConverter.converterStringToBitmap(it) }
@@ -361,7 +333,7 @@ private fun UserDetails(user: User,  navController: NavController) {
 
 // Row style for options
 @Composable
-private fun OptionsItemStyle(item: OptionsData, context: Context) {
+private fun OptionsItemStyle(item: OptionsData) {
 
     Row(
         modifier = Modifier
@@ -433,7 +405,7 @@ fun CustomToolbarWithEditButton(title: String, navController: NavHostController)
 
 
 @Composable
-fun sportsListRow(user: User){
+fun SportsListRow(user: User){
 
     Row(
         modifier = Modifier

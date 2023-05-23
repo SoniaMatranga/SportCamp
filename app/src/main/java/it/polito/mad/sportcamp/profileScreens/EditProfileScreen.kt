@@ -43,7 +43,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY
-import it.polito.mad.sportcamp.database.AppViewModel
 import it.polito.mad.sportcamp.database.User
 import kotlinx.coroutines.delay
 import androidx.compose.runtime.getValue
@@ -54,40 +53,17 @@ import it.polito.mad.sportcamp.common.BitmapConverter
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import it.polito.mad.sportcamp.SportCampApplication
-import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.SaveMessage
 import it.polito.mad.sportcamp.common.ValidationMessage
 import it.polito.mad.sportcamp.ui.theme.*
 import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
 import it.polito.mad.sportcamp.database.Dao
-import it.polito.mad.sportcamp.reservationsScreens.AddReservationsViewModel
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import java.text.SimpleDateFormat
-import java.util.Date
-
-
-/*var usrName: String = ""
-var usrNickname: String = ""
-var usrCity: String = ""
-var usrAge: String = ""
-var usrGender: String = ""
-var usrLevel: String = ""
-var usrSports: String = ""
-var usrBio: String = ""*/
-
-/*var isEditedGender: Boolean = false
-var isEditedLevel: Boolean = false
-var isEditedSports :Boolean = false
-var isEditedCity :Boolean = false*/
 
 
 
@@ -160,7 +136,7 @@ fun EditProfileScreen(
 
     //=========================================================================================
 
-    var userId = navController.currentBackStackEntry?.arguments?.getInt(DETAIL_ARGUMENT_KEY).toString()
+    val userId = navController.currentBackStackEntry?.arguments?.getInt(DETAIL_ARGUMENT_KEY).toString()
     val user by vm.getUserById(userId.toInt()).observeAsState()
 
     //init
@@ -177,7 +153,7 @@ fun EditProfileScreen(
     }
     val bitmap1 = user?.image?.let { BitmapConverter.converterStringToBitmap(it) }
 
-    var bitmap = remember {
+    val bitmap = remember {
         mutableStateOf(bitmap1)
     }
 
@@ -200,8 +176,6 @@ fun EditProfileScreen(
     ) { isGranted ->
         if (isGranted) {
             openCameraDialog.value = true
-        } else {
-
         }
     }
 
@@ -240,9 +214,6 @@ fun EditProfileScreen(
         }
     }
 
-    suspend fun refreshUser() {
-
-    }
 
     val scrollState = rememberScrollState()
 
@@ -411,7 +382,7 @@ fun EditProfileScreen(
                         }
 
                         IconButton(
-                            onClick = { /* Azione da eseguire quando il bottone viene cliccato */ },
+                            onClick = { },
                             modifier = Modifier
                                 .size(24.dp)
                                 .align(Alignment.Center)
@@ -457,7 +428,7 @@ fun EditProfileScreen(
                             maxLength = 50,
                             maxLines = 1,
                             onTextChanged = { newText ->
-                                vm.usrNickname = newText // Aggiorna il valore nel ViewModel
+                                vm.usrNickname = newText
                                 vm.isEditedNickname = true
                             }
 
@@ -482,13 +453,13 @@ fun EditProfileScreen(
                             maxLength = 50,
                             maxLines = 1,
                             onTextChanged = { newText ->
-                                vm.usrName = newText // Aggiorna il valore nel ViewModel
+                                vm.usrName = newText
                                 vm.isEditedName = true
                             }
                         )
                     }
 
-                    user?.city?.let { dropDownMenu(if(vm.usrCity != "") vm.usrCity else it, "City") }
+                    user?.city?.let { DropDownMenu(if(vm.usrCity != "") vm.usrCity else it, "City") }
 
                     user?.age?.toString().let {
                         if (it != null) {
@@ -507,16 +478,16 @@ fun EditProfileScreen(
                                 maxLength = 3,
                                 maxLines = 1,
                                 onTextChanged = { newText ->
-                                    vm.usrAge = newText // Aggiorna il valore nel ViewModel
+                                    vm.usrAge = newText
                                     vm.isEditedAge = true
                                 }
                             )
                         }
                     }
 
-                    user?.gender?.let { dropDownMenu(if(vm.usrGender != "") vm.usrGender else it, "Gender") }
-                    user?.level?.let { dropDownMenu(if(vm.usrLevel != "") vm.usrLevel else it, "Level") }
-                    user?.sports?.let { dropDownMenuSports(if(vm.usrSports != "") vm.usrSports else it,) }
+                    user?.gender?.let { DropDownMenu(if(vm.usrGender != "") vm.usrGender else it, "Gender") }
+                    user?.level?.let { DropDownMenu(if(vm.usrLevel != "") vm.usrLevel else it, "Level") }
+                    user?.sports?.let { DropDownMenuSports(if (vm.usrSports != "") vm.usrSports else it) }
 
                     user?.bio?.let {
                         CustomTextField(
@@ -534,7 +505,7 @@ fun EditProfileScreen(
                             maxLength = 100,
                             maxLines = 1,
                             onTextChanged = { newText ->
-                                vm.usrBio = newText // Aggiorna il valore nel ViewModel
+                                vm.usrBio = newText
                                 vm.isEditedBio = true
                             }
                         )
@@ -546,7 +517,7 @@ fun EditProfileScreen(
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         modifier= Modifier.fillMaxWidth()
                     ){
-                        Column() {
+                        Column {
                             Button(onClick = {
                                 openDialog.value = true
                             }) {
@@ -557,11 +528,11 @@ fun EditProfileScreen(
                                 )
                             }
                         }
-                        Column() {
+                        Column {
                             Button(onClick = {
                                 if ( vm.isEditedAge || vm.isEditedBio || vm.isEditedCity || vm.isEditedGender || vm.isEditedLevel
                                     || vm.isEditedName || vm.isEditedSports || vm.isEditedNickname || isEditedImage) {
-                                    val user = User(
+                                    val usr = User(
                                         id_user =  userId.trim().toInt(),
                                         nickname = if (vm.isEditedNickname) vm.usrNickname else user?.nickname,
                                         name = if (vm.isEditedName) vm.usrName else user?.name,
@@ -577,7 +548,7 @@ fun EditProfileScreen(
                                                 it
                                             )
                                         } else user?.image)
-                                    updateUserInDB(user, vm)
+                                    updateUserInDB(usr, vm)
                                     coroutineScope.launch {
                                         showSaveMessage()
                                     }
@@ -666,9 +637,8 @@ fun CustomTextField(
 }
 
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun dropDownMenu(userOption: String, type: String) {
+fun DropDownMenu(userOption: String, type: String) {
     val vm: EditProfileViewModel = viewModel()
 
     var isExpanded by remember { mutableStateOf(false) }
@@ -712,7 +682,6 @@ fun dropDownMenu(userOption: String, type: String) {
                 .padding(all = 10.dp)
                 // .border(BorderStroke(1.dp, Color.Gray))
                 .fillMaxWidth(),
-            // .width(with(LocalDensity.current){textfieldSize.width.toDp()}),
         ) {
             suggestions.forEach { label ->
                 DropdownMenuItem(onClick = {
@@ -740,14 +709,13 @@ fun dropDownMenu(userOption: String, type: String) {
 }
 
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun dropDownMenuSports(userOption: String) {
+fun DropDownMenuSports(userOption: String) {
 
     val vm: EditProfileViewModel = viewModel()
     var isExpanded by remember { mutableStateOf(false) }
     var userInitialValue by remember { mutableStateOf(userOption) }
-    var suggestions = listOf("Basketball", "Football", "Tennis", "Volleyball")
+    val suggestions = listOf("Basketball", "Football", "Tennis", "Volleyball")
 
     val icon = if (isExpanded)
         Icons.Filled.ArrowDropUp
