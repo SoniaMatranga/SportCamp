@@ -20,9 +20,9 @@ sealed class Screen(
     //for home
     object Favorites: Screen(
         route = "favorites",
-        title = "Favorites",
-        icon = Icons.Outlined.Favorite,
-        icon_focused = Icons.Outlined.Favorite
+        title = "Ratings",
+        icon = Icons.Outlined.Star,
+        icon_focused = Icons.Outlined.Star
     )
 
     //for reservations
