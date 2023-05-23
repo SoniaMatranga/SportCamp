@@ -1,10 +1,12 @@
 package it.polito.mad.sportcamp.favoritesScreens
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
@@ -22,6 +24,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -50,6 +53,7 @@ fun CourtReviewScreen(
     var alreadyReviewed by remember { mutableStateOf(true) }
     var initialRating: Float by remember { mutableStateOf(0f) }
     var text by remember { mutableStateOf("") }
+    val context = LocalContext.current
 
     if (alreadyRated) {
         feedback?.rating?.let {
@@ -66,6 +70,7 @@ fun CourtReviewScreen(
     val bitmap = courtDetails?.image?.let { BitmapConverter.converterStringToBitmap(it) }
     val maxLength = 500
     val scrollState = rememberScrollState()
+    val openDialog = remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -285,6 +290,39 @@ fun CourtReviewScreen(
 
             }
         }
+        if (openDialog.value) {
+            AlertDialog(
+                onDismissRequest = {
+                    openDialog.value = false
+                },
+                text = {
+                    Text("This review will be deleted permanently. Are you sure you want to delete it anyway? ")
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            viewModel.deleteReviewById(feedback?.id!!)
+                            alreadyRated = false
+                            alreadyReviewed = false
+                            initialRating=0f
+                            text=""
+                            viewModel.updateCourtRatingById(courtDetails?.id_court!!)
+                            openDialog.value = false
+                            Toast.makeText(context, "Review correctly deleted", Toast.LENGTH_SHORT).show()
+                        }) {
+                        Text("Delete")
+                    }
+                },
+                dismissButton = {
+                    Button(
+                        onClick = {
+                            openDialog.value = false
+                        }) {
+                        Text("Don't delete")
+                    }
+                }
+            )
+        }
 
         if(feedback?.rating!=null){
             Row(
@@ -292,28 +330,24 @@ fun CourtReviewScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceEvenly)
             {
+                Button(
+                    onClick = {
+                        openDialog.value = true
+                    }
+                ){
+                    Text(text = "Delete")
+                }
                 Button(onClick = { text.let {
                     viewModel.updateReview(feedback?.id!!,initialRating,
                         it
                     )
                 }
                     viewModel.updateCourtRatingById(courtDetails?.id_court!!)
-                                 },
+                    Toast.makeText(context, "Review correctly updated", Toast.LENGTH_SHORT).show()
+                },
                     enabled = (!alreadyRated && initialRating!=0f && initialRating!=feedback?.rating) || (!alreadyReviewed && initialRating!=0f && text!=feedback?.review)
                 ) {
                     Text(text = "Update")
-                }
-                Button(
-                    onClick = {
-                        viewModel.deleteReviewById(feedback?.id!!)
-                        alreadyRated = false
-                        alreadyReviewed = false
-                        initialRating=0f
-                        text=""
-                        viewModel.updateCourtRatingById(courtDetails?.id_court!!)
-                    }
-                ){
-                    Text(text = "Delete")
                 }
 
             }
@@ -328,6 +362,7 @@ fun CourtReviewScreen(
                     if (idCourt != null) {
                         viewModel.insertReview(null, 1, idCourt, initialRating, text)
                         viewModel.updateCourtRatingById(courtDetails?.id_court!!)
+                        Toast.makeText(context, "Review correctly published", Toast.LENGTH_SHORT).show()
                     }
                     },
                 enabled = !alreadyRated && initialRating!=0f
