@@ -35,6 +35,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.ui.theme.Blue
+import java.text.SimpleDateFormat
+import java.util.*
 import kotlin.math.roundToInt
 
 data class ChipsModel(
@@ -49,15 +51,26 @@ fun FavoritesScreen(
     navController: NavController,
     viewModel: AppViewModel = viewModel(factory = AppViewModel.factory)
 ) {
-    val courtsList: List<Court> by viewModel.getAllCourts().observeAsState(listOf())
+    val sdf = SimpleDateFormat("yyyy-MM-dd")
+    val currentDate = sdf.format(Date()).toString()
+    val courtsList: List<Court> by viewModel.getAllCourtsUserPlayed(1,currentDate).observeAsState(listOf())
     var sportFilter by remember { mutableStateOf("") }
     var all: Boolean by remember { mutableStateOf(true) }
-    val courts: List<Court> by viewModel.getCourtsBySport(sportFilter).observeAsState(listOf())
+    val courts: List<Court> by viewModel.getFilteredCourtsUserPlayed(1, currentDate, sportFilter).observeAsState(listOf())
+
 
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
         CustomToolBar(title = "Ratings")
+        Row(modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically){
+           Text(
+               text="This is the list of the courts in which you have played\nClick on the Review button to leave a feedback",
+               color = Color.Gray
+           )
+        }
 
         val filterList = listOf(
             ChipsModel(

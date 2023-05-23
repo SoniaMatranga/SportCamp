@@ -143,4 +143,16 @@ interface Dao {
             "WHERE id_court=:id_court")
     fun updateCourtRatingById(id_court: Int)
 
+    @Query("SELECT ct.id_court, ct.court_name, ct.address, ct.city, ct.sport, ct.court_rating, ct.image" +
+            " FROM courts_table ct JOIN reservations_table rt ON ct.id_court = rt.id_court" +
+            " WHERE rt.id_user = :id_user" +
+            "  AND rt.date < :date")
+    fun getAllCourtsUserPlayed(id_user: Int, date: String): LiveData<List<Court>>
+
+    @Query("SELECT ct.id_court, ct.court_name, ct.address, ct.city, ct.sport, ct.court_rating, ct.image" +
+            " FROM courts_table ct JOIN reservations_table rt ON ct.id_court = rt.id_court" +
+            " WHERE rt.id_user = :id_user" +
+            "  AND rt.date < :date AND ct.sport = :sport")
+    fun getFilteredCourtsUserPlayed(id_user: Int, date: String, sport: String): LiveData<List<Court>>
+
 }

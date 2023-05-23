@@ -54,6 +54,10 @@ class AppViewModel(private val Dao: Dao) : ViewModel() {
 
     fun updateCourtRatingById(id_court: Int) = Dao.updateCourtRatingById(id_court)
 
+    fun getAllCourtsUserPlayed(id_user: Int, date: String): LiveData<List<Court>> = Dao.getAllCourtsUserPlayed(id_user, date)
+
+    fun getFilteredCourtsUserPlayed(id_user: Int, date: String, sport: String): LiveData<List<Court>> = Dao.getFilteredCourtsUserPlayed(id_user, date, sport)
+
     companion object {
         val factory : ViewModelProvider.Factory = viewModelFactory {
             initializer {
