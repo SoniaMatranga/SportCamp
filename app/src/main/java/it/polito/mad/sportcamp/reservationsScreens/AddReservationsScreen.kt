@@ -42,6 +42,7 @@ import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
 import it.polito.mad.sportcamp.database.AppViewModel
 import it.polito.mad.sportcamp.database.Court
 import java.text.SimpleDateFormat
+import java.time.LocalDate
 import java.util.*
 
 
@@ -80,6 +81,8 @@ fun AddReservationsScreen(
             Icons.Filled.Man
         }
     }
+
+    val today: LocalDate = LocalDate.now()
 
 
     CalendarDialog(
@@ -180,7 +183,29 @@ fun AddReservationsScreen(
             }
 
         }
-        courts?.let { CourtsList(courts = it, dateFilter = vm.dateFilter,  navController = navController) }
+
+        if(!LocalDate.parse(vm.dateFilter).isBefore(today)) {
+            courts?.let {
+                CourtsList(
+                    courts = it,
+                    dateFilter = vm.dateFilter,
+                    navController = navController
+                )
+            }
+        }
+        else{
+            Box(contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(40.dp),) {
+                Text(
+                    text = "You cannot book courts for past dates, sorry!",
+                    fontSize = 20.sp,
+                    textAlign = TextAlign.Center,
+                    color=MaterialTheme.colors.primary
+                )
+            }
+        }
     }
 
 
@@ -240,12 +265,12 @@ private fun CourtCard(court: Court, dateFilter: String , navController: NavHostC
                     modifier = Modifier
                         .fillMaxWidth()
                 ) {
-
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Start
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Column(modifier = Modifier.padding(horizontal = 4.dp)) {
+
+                        Column(modifier = Modifier.padding(4.dp).weight(4f)) {
+
                             Row {
                                 court.court_name?.let {
                                     Text(
@@ -263,36 +288,37 @@ private fun CourtCard(court: Court, dateFilter: String , navController: NavHostC
                             }
                         }
 
-                    }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
-                    ) {
 
                         Column(
-                            modifier = Modifier.fillMaxHeight(),
+                            modifier = Modifier.fillMaxWidth().weight(2f),
                             verticalArrangement = Arrangement.Center,
                         ) {
-                            Button(
-                                shape = RoundedCornerShape(5.dp),
-                                onClick = {
-                                    navController.navigate(
-                                        route = Screen.BookReservation.passValues(
-                                            court.id_court, dateFilter
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Button(
+                                    shape = RoundedCornerShape(5.dp),
+                                    onClick = {
+                                        navController.navigate(
+                                            route = Screen.BookReservation.passValues(
+                                                court.id_court, dateFilter
+                                            )
                                         )
-                                    )
-                                }) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(
-                                        text = "Book now",
-                                        fontSize = 13.sp,
-                                        textAlign = TextAlign.Center
-                                    )
+                                    }) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            maxLines = 1,
+                                            text = "Book now",
+                                            fontSize = 13.sp,
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
-
                 }
             }
         }

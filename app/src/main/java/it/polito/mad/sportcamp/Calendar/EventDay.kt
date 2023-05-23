@@ -98,19 +98,19 @@ fun EventDay(
                                 modifier = Modifier
                                     .size(10.dp)
                                     .clip(CircleShape)
-                                    .background(Color.Black)
+                                    .background( if (state.date.isBefore(today)) {Color.Gray} else {Color.Black})
                             )
                             Box(
                                 modifier = Modifier
                                     .size(10.dp)
                                     .clip(CircleShape)
-                                    .background(Color.Black)
+                                    .background(if (state.date.isBefore(today)) {Color.Gray} else {Color.Black})
                             )
 
                             Text(
                                 text = "+", //text inside calendar day
                                 fontSize = 13.sp,
-                                color = MaterialTheme.colors.onSecondary
+                                color = if (state.date.isBefore(today)) {Color.Gray} else {Color.Black}
                             )
                         }
                     }
@@ -134,16 +134,12 @@ fun EventDay(
                                         modifier = Modifier
                                             .size(10.dp)
                                             .clip(CircleShape)
-                                            .background(Color.Black)
+                                            .background(if (state.date.isBefore(today)) {Color.Gray} else {Color.Black})
                                     )
 
                                 }
                             } else {
-                                /*Text(
-                        text = "Sport", //text inside calendar day
-                        fontSize = 8.sp,
-                        textAlign = TextAlign.Center
-                    )*/
+
                             }
                         }
                     }

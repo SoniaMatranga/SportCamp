@@ -1,5 +1,7 @@
 package it.polito.mad.sportcamp.reservationsScreens
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -50,10 +52,11 @@ import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.BitmapConverter
 import it.polito.mad.sportcamp.database.AppViewModel
 import it.polito.mad.sportcamp.database.ReservationContent
-import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
 import it.polito.mad.sportcamp.ui.theme.fonts
+import java.time.LocalDate
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ReservationDetails(
     navController: NavHostController,
@@ -61,13 +64,14 @@ fun ReservationDetails(
 ) {
     val selectedDate = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY).toString()
 
+
     val reservations by viewModel.getReservationsByUserAndDate(1, selectedDate).observeAsState()
 
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
 
-        CustomToolbarReservationDetails(title = "My reservations details", navController = navController, date= selectedDate)
+        CustomToolbarReservationDetails(title = "My reservations details", navController = navController)
 
         reservations?.let { ReservationsList(reservations = it, selectedDate= selectedDate, viewModel = viewModel, navController=navController) }
 
@@ -81,6 +85,7 @@ fun ReservationDetails(
 
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ReservationsList(reservations: List<ReservationContent>, selectedDate:String, viewModel: AppViewModel, navController :NavHostController) {
     LazyColumn {
@@ -96,6 +101,7 @@ fun ReservationsList(reservations: List<ReservationContent>, selectedDate:String
 
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ReservationCard(reservation: ReservationContent, selectedDate:String, viewModel: AppViewModel, navController :NavHostController) {
 
@@ -103,6 +109,7 @@ fun ReservationCard(reservation: ReservationContent, selectedDate:String, viewMo
     // We keep track if the message is expanded or not in this
     // variable
     var isExpanded by remember { mutableStateOf(false) }
+    val today: LocalDate = LocalDate.now()
 
 
     //========================= Dialog on discard ===================================
@@ -279,24 +286,28 @@ fun ReservationCard(reservation: ReservationContent, selectedDate:String, viewMo
 
                                 Column {
 
-                                    Button(
-                                        shape = RoundedCornerShape(5.dp),
-                                        onClick = {
-                                            navController.navigate(
-                                                route = Screen.ReservationEdit.passValues(
-                                                    reservation.id_reservation!!, reservation.id_court!!, selectedDate
+                                    if(!LocalDate.parse(reservation.date).isBefore(today)) {
+                                        Button(
+                                            shape = RoundedCornerShape(5.dp),
+                                            onClick = {
+                                                navController.navigate(
+                                                    route = Screen.ReservationEdit.passValues(
+                                                        reservation.id_reservation!!,
+                                                        reservation.id_court!!,
+                                                        selectedDate
+                                                    )
                                                 )
-                                            )
-                                        }) {
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Text(
-                                                text = "Edit",
-                                                fontSize = 15.sp,
-                                            )
-                                            Icon(
-                                                Icons.Outlined.Edit,
-                                                contentDescription = "Edit"
-                                            )
+                                            }) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(
+                                                    text = "Edit",
+                                                    fontSize = 15.sp,
+                                                )
+                                                Icon(
+                                                    Icons.Outlined.Edit,
+                                                    contentDescription = "Edit"
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -330,7 +341,7 @@ fun ReservationCard(reservation: ReservationContent, selectedDate:String, viewMo
 }
 
 @Composable
-fun CustomToolbarReservationDetails(title: String, navController: NavHostController, date: String) {
+fun CustomToolbarReservationDetails(title: String, navController: NavHostController) {
     TopAppBar(
         title = { Text(text = title, fontFamily = fonts) },
         navigationIcon = {
