@@ -42,7 +42,6 @@ fun CourtReviewListScreen(
 ) {
     val idCourt = navController.currentBackStackEntry?.arguments?.getInt(DETAIL_ARGUMENT_KEY3)
     val reviews by viewModel.getCourtReviewsById(idCourt!!).observeAsState(listOf())
-    println(reviews)
 
     Column(
         modifier = Modifier
@@ -117,7 +116,7 @@ fun ReviewCard(review: Rating, navController: NavController, viewModel: AppViewM
                             fontSize = 18.sp,
                         )
                     }
-                    RatingStar(rating = review.rating!!, modifier = Modifier)
+                    RatingStar(rating = review.rating!!)
                 }
 
 

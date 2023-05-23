@@ -4,7 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.Text
@@ -101,7 +100,7 @@ fun CourtReviewScreen(
                 horizontalArrangement = Arrangement.Center
             ) {
                 courtDetails?.court_rating?.let {
-                    RatingStar(rating = it, modifier=Modifier)
+                    RatingStar(rating = it)
                     courtDetails?.court_rating?.let {
                         androidx.compose.material3.Text(
                             text = "($it)",
@@ -139,7 +138,7 @@ fun CourtReviewScreen(
                 ) {
 
                     Column(modifier = Modifier.padding(4.dp)) {
-                        //Spacer(modifier = Modifier.height(20.dp))
+
                         Row {
                             courtDetails?.address?.let {
                                 Text(

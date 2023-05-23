@@ -17,13 +17,10 @@ import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
@@ -33,20 +30,14 @@ import androidx.navigation.NavController
 import it.polito.mad.sportcamp.common.BitmapConverter
 import it.polito.mad.sportcamp.database.AppViewModel
 import it.polito.mad.sportcamp.database.Court
-import androidx.compose.material.icons.outlined.Star
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.max
-import androidx.compose.ui.unit.min
 import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.ui.theme.Blue
 
 data class ChipsModel(
     val name: String,
-    val subList: List<String>? = null,
-    val textExpanded: String? = null,
     val leadingIcon: ImageVector? = null,
     val trailingIcon: ImageVector? = null,
 )
@@ -68,12 +59,6 @@ fun FavoritesScreen(
         CustomToolBar(title = "Favorites")
 
         val filterList = listOf(
-            ChipsModel(
-                name = "City",
-                subList = listOf("Turin", "Milan", "Rome", "Venice", "Naples", "Padua", "Genoa"),
-                trailingIcon = Icons.Default.ArrowDropDown,
-                leadingIcon = Icons.Default.Check
-            ),
             ChipsModel(
                 name = "Tennis",
                 leadingIcon = Icons.Default.SportsTennis,
@@ -103,13 +88,6 @@ fun FavoritesScreen(
             items(filterList) { item ->
                 isSelected = selectedItem == item.name
                 Spacer(modifier = Modifier.padding(5.dp))
-                if (item.subList != null) {
-                    ChipWithSubItems(
-                        chipLabel = item.name,
-                        chipItems = item.subList,
-                        courtsList = courtsList
-                    )
-                } else {
                     FilterChip(
                         selected = isSelected,
                         onClick = {
@@ -134,16 +112,8 @@ fun FavoritesScreen(
                                 item.leadingIcon?.let { Icon(it, contentDescription = item.name, tint = Color.Black) }
                         },
                          colors = FilterChipDefaults.filterChipColors(containerColor = Color.Transparent, selectedContainerColor = Blue.copy(alpha = 0.6f))
-
-                        /* trailingIcon = {
-                            if (item.trailingIcon != null && isSelected)
-                                Icon(item.trailingIcon, contentDescription = item.name)
-                        }*/
                     )
-                    //}
-                }
             }
-            //FilterChip(if(all) courtsList else filteredList, sportFilter, all)
         }
         LazyColumn(
             modifier = Modifier.padding(vertical = 2.dp, horizontal = 4.dp),
@@ -209,7 +179,6 @@ fun CourtCard(court: Court, navController: NavController) {
                         .fillMaxWidth()
                 ) {
                     Row(
-                       // modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Column(modifier = Modifier.padding(4.dp).weight(4f)) {
@@ -235,7 +204,7 @@ fun CourtCard(court: Court, navController: NavController) {
                                 )
                             ) {
                                 court.court_rating?.let {
-                                    RatingStar(rating = it, modifier = Modifier)
+                                    RatingStar(rating = it)
                                 }
                                 court.court_rating?.let {
                                     Text(
@@ -260,7 +229,7 @@ fun CourtCard(court: Court, navController: NavController) {
                                     onClick = {
                                         navController.navigate(
                                             route = Screen.CourtReview.passIdCourt(
-                                                court!!.id_court!!
+                                                court.id_court!!
                                             )
                                         )
                                     }) {
@@ -275,22 +244,6 @@ fun CourtCard(court: Court, navController: NavController) {
                                 }
                             }
                         }
-
-                    /*
-                        Column(
-                            modifier = Modifier.fillMaxHeight(),
-                            verticalArrangement = Arrangement.Center,
-                        ) {
-                            Row {
-                                androidx.compose.material.Icon(
-                                    modifier = Modifier
-                                        .size(25.dp)
-                                        .clickable { expanded = !expanded },
-                                    imageVector = Icons.Outlined.Info,
-                                    contentDescription = "Info",
-                                )
-                            }
-                        }*/
                     }
 
                     Spacer(modifier = Modifier.height(4.dp))
@@ -339,59 +292,8 @@ fun CourtCard(court: Court, navController: NavController) {
 
 
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChipWithSubItems(chipLabel: String, chipItems: List<String>, courtsList: List<Court>) {
-    var isSelected by remember { mutableStateOf(false) }
-    var showSubList by remember { mutableStateOf(false) }
-    var filterName by remember { mutableStateOf("") }
-
-    ExposedDropdownMenuBox(
-        expanded = showSubList,
-        onExpandedChange = { showSubList = !showSubList }
-    ) {
-        FilterChip(
-            modifier = Modifier.menuAnchor(),
-            selected = isSelected,
-            onClick = {
-                isSelected = true
-            },
-            label = { Text(text = filterName.ifEmpty { chipLabel }) },
-            trailingIcon = {
-                Icon(
-                    modifier = Modifier.rotate(if (showSubList) 180f else 0f),
-                    imageVector = Icons.Default.ArrowDropDown,
-                    contentDescription = "List"
-                )
-            }
-        )
-        ExposedDropdownMenu(
-            expanded = showSubList,
-            onDismissRequest = { showSubList = false },
-        ) {
-            chipItems.forEach { subListItem ->
-                TextButton(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = {
-                        filterName = subListItem
-                        showSubList = false
-                    },
-                    colors = ButtonDefaults.textButtonColors(
-                        containerColor = if (subListItem == filterName || subListItem == chipLabel) {
-                            MaterialTheme.colorScheme.onPrimary
-                        } else { Color.Transparent }
-                    )
-                ) {
-                    Text(text = subListItem, color = Color.Black)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun RatingStar(rating: Float, modifier: Modifier) {
+fun RatingStar(rating: Float) {
     val filledStars = rating.toInt()
     val hasHalfStar = rating - filledStars >= 0.5f
 
@@ -415,33 +317,6 @@ fun RatingStar(rating: Float, modifier: Modifier) {
         }
     }
 }
-
-
-/*
-
-//card that expands
-@Composable
-fun CardComponent() {
-
-    Card(
-        elevation = 50.dp,
-        modifier = Modifier.padding(50.dp)
-    ) {
-        var expanded by remember { mutableStateOf(false) }
-        //raster image
-        val image = ImageBitmap.imageResource(id = R.drawable.sport_camp_logo)
-        Column(Modifier.clickable { expanded = !expanded }) {
-            Image(bitmap = image, contentDescription = "image")
-            AnimatedVisibility(expanded) {
-                Text(
-                    text = "Add reservations screen",
-                    style = MaterialTheme.typography.body1
-                )
-            }
-        }
-
-    }
-}*/
 
 
 
