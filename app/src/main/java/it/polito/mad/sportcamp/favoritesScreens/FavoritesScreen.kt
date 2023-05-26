@@ -223,7 +223,7 @@ fun CourtCard(court: Court, navController: NavController) {
                                     RatingStar(rating = it)
                                 }
                                 court.court_rating?.let {
-                                    var z = ((it * 10.0).roundToInt() / 10.0)
+                                    val z = ((it * 10.0).roundToInt() / 10.0)
                                     Text(
                                         text = "($z)",
                                         modifier = Modifier.padding(start = 2.dp)

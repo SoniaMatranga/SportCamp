@@ -50,9 +50,9 @@ fun NavItems(){
 fun BottomBar(navController:NavHostController)
 {
     val screens = listOf(
-        Screen.Reservations,
-        Screen.Favorites,
-        Screen.Profile
+        Screen.ReservationsBottomBar,
+        Screen.RatingsBottomBar,
+        Screen.ProfileBottomBar
     )
 
     val navStackBackEntry by navController.currentBackStackEntryAsState()

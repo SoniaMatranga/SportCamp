@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.room.RewriteQueriesToDropUnusedColumns
 import it.polito.mad.sportcamp.SportCampApplication
 
 class AppViewModel(private val Dao: Dao) : ViewModel() {
@@ -18,10 +19,13 @@ class AppViewModel(private val Dao: Dao) : ViewModel() {
         Dao.updateUser(nickname,name,mail,city,age,gender,level,sports,bio,id_user,image)
 
     //=================================== reservations ==========================================
+
     //fun getAllReservations(): LiveData<List<ReservationTimed>> = Dao.getAllReservations()
+
     fun getReservationsByUser(id_user: Int): LiveData<List<ReservationTimed>> = Dao.getReservationsByUser(id_user)
     fun getReservationAndCourt(id_reservation: Int): LiveData<ReservationContent> = Dao.getReservationAndCourt(id_reservation)
     fun getReservationById(id_reservation: Int): LiveData<Reservation> = Dao.getReservationById(id_reservation)
+
 
     fun getReservationsByUserAndDate(id_user: Int, date: String): LiveData<List<ReservationContent>> = Dao.getReservationsByUserAndDate(id_user, date)
 

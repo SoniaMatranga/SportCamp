@@ -22,8 +22,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,13 +43,9 @@ import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY3
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY4
 import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.BitmapConverter
-import it.polito.mad.sportcamp.common.BookingUpdatedMessage
-import it.polito.mad.sportcamp.common.ValidationBookingMessage
 import it.polito.mad.sportcamp.database.AppViewModel
 import it.polito.mad.sportcamp.ui.theme.Orange
 import it.polito.mad.sportcamp.ui.theme.fonts
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 
 class ReservationEditViewModel : ViewModel() {
@@ -81,7 +75,6 @@ fun ReservationEditScreen(
 
     val equipments = listOf("Not requested", "Requested")
     val bitmap = court?.image?.let { BitmapConverter.converterStringToBitmap(it) }
-    val coroutineScope = rememberCoroutineScope()
 
     val context = LocalContext.current
 

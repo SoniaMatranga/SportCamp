@@ -20,7 +20,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY3
 import it.polito.mad.sportcamp.common.BitmapConverter
@@ -51,7 +50,7 @@ fun CourtReviewListScreen(
             modifier = Modifier.padding(vertical = 2.dp, horizontal = 4.dp),
         ) {
             items(items = reviews) { review ->
-                ReviewCard(review = review, navController = navController, viewModel = viewModel)
+                ReviewCard(review = review, viewModel = viewModel)
             }
 
         }
@@ -61,7 +60,7 @@ fun CourtReviewListScreen(
 
 
 @Composable
-fun ReviewCard(review: Rating, navController: NavController, viewModel: AppViewModel) {
+fun ReviewCard(review: Rating, viewModel: AppViewModel) {
 
     val user by viewModel.getUserById(review.id_user!!).observeAsState()
     val bitmap = user?.image?.let { BitmapConverter.converterStringToBitmap(it) }
@@ -119,7 +118,7 @@ fun ReviewCard(review: Rating, navController: NavController, viewModel: AppViewM
                     Row(modifier = Modifier.padding(10.dp)) {
                         Row {
                             Text(
-                                text = "$it",
+                                text = it,
                                 modifier = Modifier.padding(start = 2.dp)
                             )
                         }

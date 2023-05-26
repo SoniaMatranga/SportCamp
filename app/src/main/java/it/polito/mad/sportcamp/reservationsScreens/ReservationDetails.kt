@@ -216,7 +216,7 @@ fun ReservationCard(reservation: ReservationContent, selectedDate:String, viewMo
                                     RatingStar(rating = it)
                                 }
                                 reservation.court_rating?.let {
-                                    var z = ((it * 10.0).roundToInt() / 10.0)
+                                    val z = ((it * 10.0).roundToInt() / 10.0)
                                     androidx.compose.material3.Text(
                                         text = "($z)",
                                         modifier = Modifier.padding(start = 2.dp)

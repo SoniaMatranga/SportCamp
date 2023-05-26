@@ -103,7 +103,7 @@ class EditProfileViewModel (private val Dao: Dao): ViewModel() {
 
     }
 
-    fun clearAll() {
+    /*fun clearAll() {
         usrName = ""
         usrNickname = ""
         usrCity = ""
@@ -113,7 +113,7 @@ class EditProfileViewModel (private val Dao: Dao): ViewModel() {
         usrSports = ""
         usrBio = ""
         usrImage = ""
-    }
+    }*/
 
     fun updateUser(nickname: String, name:String, mail:String, city:String,
                    age:Int, gender:String, level:String, sports:String, bio:String, id_user:Int, image: String
@@ -154,8 +154,8 @@ fun EditProfileScreen(
     // The coroutine scope for event handlers calling suspend functions.
     //val coroutineScope = rememberCoroutineScope()
     // True if the message is shown.
-    var validationMessageShown by remember { mutableStateOf(false) }
-    var saveMessageShown by remember { mutableStateOf(false) }
+    val validationMessageShown by remember { mutableStateOf(false) }
+    val saveMessageShown by remember { mutableStateOf(false) }
     var imageUri by remember {
         mutableStateOf<Uri?>(null)
     }

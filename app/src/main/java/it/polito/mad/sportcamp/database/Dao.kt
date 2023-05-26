@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.room.*
 
 
+
 data class ReservationContent(
     val id_reservation: Int?,
     val id_court: Int?,
@@ -19,6 +20,7 @@ data class ReservationContent(
     val court_rating: Float?
     )
 
+
 data class ReservationTimed(
     val  id_reservation: Int?,
     val id_user: Int?,
@@ -27,8 +29,9 @@ data class ReservationTimed(
     val date: String?,
     val equipments: String?,
     val options: String?
-) {
-}
+)
+
+
 data class CourtContent(
     val id_court: Int?,
     val court_name: String?,
@@ -58,9 +61,12 @@ interface Dao {
 
     //============ RESERVATIONS ===============
 
+    /*@RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM reservations_table, time_slots_table WHERE reservations_table.id_time_slot == time_slots_table.id_time_slot")
-    fun getAllReservations(): LiveData<List<ReservationTimed>>
+    fun getAllReservations(): LiveData<List<ReservationTimed>>*/
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM reservations_table, time_slots_table WHERE id_user=:id_user AND reservations_table.id_time_slot == time_slots_table.id_time_slot")
     fun getReservationsByUser(id_user: Int): LiveData<List<ReservationTimed>>
 
@@ -68,9 +74,13 @@ interface Dao {
     fun getReservationById(id_reservation: Int): LiveData<Reservation>
 
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM reservations_table, courts_table, time_slots_table WHERE id_reservation=:id_reservation AND reservations_table.id_court=courts_table.id_court AND reservations_table.id_time_slot == time_slots_table.id_time_slot")
     fun getReservationAndCourt(id_reservation: Int): LiveData<ReservationContent>
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM reservations_table, courts_table, time_slots_table WHERE id_user=:id_user AND date=:date AND reservations_table.id_court=courts_table.id_court AND reservations_table.id_time_slot == time_slots_table.id_time_slot")
     fun getReservationsByUserAndDate(id_user: Int, date:String): LiveData<List<ReservationContent>>
 
@@ -109,6 +119,8 @@ interface Dao {
     @Query("SELECT * FROM courts_table WHERE id_court=:id_court")
     fun getCourtById(id_court: Int): LiveData<Court>
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM courts_table, reservations_table, time_slots_table" +
             " WHERE courts_table.sport=:sport " +
             "AND reservations_table.date!=:date " +
