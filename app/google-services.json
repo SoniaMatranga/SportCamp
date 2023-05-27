@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "619388174529",
+    "project_id": "sportcamp-e6def",
+    "storage_bucket": "sportcamp-e6def.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:619388174529:android:8e6e00fb081def011dd440",
+        "android_client_info": {
+          "package_name": "it.polito.mad.sportcamp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBlOiYXySeNaXCti9UUdaqf2dFGviK3Xe8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

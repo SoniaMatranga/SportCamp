@@ -1,6 +1,8 @@
 package it.polito.mad.sportcamp.profileScreens
 
 
+import android.content.ContentValues.TAG
+import android.util.Log
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -28,20 +30,60 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.firestore.ktx.toObject
+import com.google.firebase.ktx.Firebase
+import it.polito.mad.sportcamp.SportCampApplication
 import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.BitmapConverter
+import it.polito.mad.sportcamp.database.Dao
 import it.polito.mad.sportcamp.database.User
 import it.polito.mad.sportcamp.ui.theme.*
+import java.lang.System.err
+
+
+class ProfileViewModel (): ViewModel() {
+
+    private val db = Firebase.firestore
+    private val user = MutableLiveData<User>()
+
+
+    fun getUserDocument() :MutableLiveData<User>{
+        db
+            .collection("users")
+            .document("user1")
+            .addSnapshotListener { value, error ->
+                if(error != null) Log.w(TAG, "Error getting documents.")
+                if(value != null) user.value = value?.toObject(User::class.java)
+            }
+        return user
+    }
+
+    companion object {
+        val factory : ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                ProfileViewModel()
+            }
+        }
+    }
+}
 
 @Composable
 fun ProfileScreen(
     navController: NavController,
-    viewModel: AppViewModel = viewModel(factory = AppViewModel.factory)
+    vm: ProfileViewModel = viewModel(factory = ProfileViewModel.factory)
 ) {
 
-    val user by viewModel.getUserById(1).observeAsState()
+    val user by vm.getUserDocument().observeAsState()
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -51,8 +93,6 @@ fun ProfileScreen(
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Top appbar
-                //TopAppbarProfile(context = LocalContext.current.applicationContext)
 
                 CustomToolbarWithEditButton(title = "Profile", navController= navController as NavHostController)
 
@@ -85,11 +125,6 @@ fun Profile(user: User) {
     }
 
     if (listPrepared) {
-
-        // User's image, name, email
-
-
-
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -114,32 +149,20 @@ fun Profile(user: User) {
 
         }
 
-
-
-
     }
 }
 
 
 
-// This composable displays user's image, name, email
 @Composable
 private fun UserDetails(user: User) {
 
 
     val bitmap = user.image?.let { BitmapConverter.converterStringToBitmap(it) }
-   // val listColors = listOf(  MaterialTheme.colors.primary, Color.Yellow)
-    // User's image
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            /*.background(
-                Brush.verticalGradient(
-                    listColors,
-                    tileMode = TileMode.Repeated
-                )
-            )*/
             .padding(all = 8.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -211,7 +234,7 @@ private fun UserDetails(user: User) {
         }
 
     }
-// ======================= TEST =========================
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
