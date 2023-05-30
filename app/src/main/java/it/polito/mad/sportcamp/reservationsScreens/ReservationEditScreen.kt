@@ -1,5 +1,7 @@
 package it.polito.mad.sportcamp.reservationsScreens
 
+import android.content.ContentValues
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -19,9 +21,11 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,17 +39,26 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavHostController
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY2
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY3
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY4
 import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.BitmapConverter
-import it.polito.mad.sportcamp.database.AppViewModel
+import it.polito.mad.sportcamp.database.Court
+import it.polito.mad.sportcamp.database.Reservation
+import it.polito.mad.sportcamp.database.TimeSlot
 import it.polito.mad.sportcamp.ui.theme.Orange
 import it.polito.mad.sportcamp.ui.theme.fonts
+import kotlinx.coroutines.tasks.await
 
 
 class ReservationEditViewModel : ViewModel() {
@@ -53,25 +66,143 @@ class ReservationEditViewModel : ViewModel() {
     var expandedEquipments by mutableStateOf(false)
     var selectedEquipments by mutableStateOf("Select equipments")
     var selectedTimeSlot by  mutableStateOf("Select time slot")
+
+    private val db = Firebase.firestore
+    private val court = MutableLiveData<Court>()
+    private val timeSlots = MutableLiveData<List<TimeSlot>>()
+
+
+    private fun getTimeSlots() {
+        db.collection("slots")
+            .addSnapshotListener { value, error ->
+                if (error != null) {
+                    Log.w(ContentValues.TAG, "Error getting documents.")
+                }
+                if (value != null) {
+                    val timeSlotsList = mutableListOf<TimeSlot>()
+                    for (doc in value.documents) {
+                        val timeSlot = doc.toObject(TimeSlot::class.java)
+                        if (timeSlot != null) {
+                            timeSlotsList.add(timeSlot)
+                        }
+                    }
+                    timeSlots.value = timeSlotsList
+
+                }
+            }
+    }
+
+    fun getCourtById(id_court: Int): MutableLiveData<Court> {
+        db.collection("courts")
+            .whereEqualTo("id_court", id_court)
+            .addSnapshotListener { value, error ->
+                if (error != null) {
+                    Log.w(ContentValues.TAG, "Error getting documents.")
+                }
+                if (value != null && !value.isEmpty) {
+                    val courtDocument = value.documents[0]
+                    court.value = courtDocument.toObject(Court::class.java)
+                }
+            }
+        return court
+    }
+
+
+    fun updateReservationById(idReservation: Int) {
+        val reservationsRef = db.collection("reservations")
+        val query = reservationsRef.whereEqualTo("id_reservation", idReservation)
+
+        query.get()
+            .addOnSuccessListener { querySnapshot ->
+                for (documentSnapshot in querySnapshot.documents) {
+                    val reservation = documentSnapshot.toObject(Reservation::class.java)
+                    if (reservation != null) {
+
+                        val timeSlot = timeSlots.value?.find { it.time_slot == selectedTimeSlot }
+                        val updatedTimeSlot = timeSlot?.id_time_slot
+
+                        documentSnapshot.reference.update(
+                            mapOf(
+                                "id_time_slot" to updatedTimeSlot,
+                                "equipments" to selectedEquipments
+
+                            )
+                        )
+                            .addOnSuccessListener {
+                                Log.d(ContentValues.TAG, "Reservation updated successfully")
+                            }
+                            .addOnFailureListener { e ->
+                                Log.w(ContentValues.TAG, "Error updating reservation", e)
+                            }
+                    }
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.w(ContentValues.TAG, "Error getting reservation", e)
+            }
+    }
+
+
+    suspend fun getAvailableTimeSlots(courtId: Int?, date: String?): MutableLiveData<List<String>> {
+        getTimeSlots()
+        val availableTimeSlots = MutableLiveData<List<String>>()
+
+        val reservationsRef = db.collection("reservations")
+        val query = reservationsRef
+            .whereEqualTo("id_court", courtId)
+            .whereEqualTo("date", date)
+
+        try {
+            val reservationsSnapshot = query.get().await()
+            val reservedTimeSlots = reservationsSnapshot.documents.mapNotNull {
+                it.getLong("id_time_slot")?.toString()
+            }
+
+            timeSlots.value?.let { allTimeSlots ->
+                val availableTimeSlotsList = allTimeSlots
+                    .sortedBy { it.id_time_slot }
+                    .filterNot { reservedTimeSlots.contains(it.id_time_slot.toString()) }
+                    .mapNotNull { it.time_slot }
+
+                availableTimeSlots.value = availableTimeSlotsList
+            }
+        } catch (e: Exception) {
+            Log.w(ContentValues.TAG, "Error getting available time slots", e)
+        }
+
+        return availableTimeSlots
+    }
+
+
+    companion object {
+        val factory : ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                ReservationEditViewModel()
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ReservationEditScreen(
     navController: NavHostController,
-    viewModel: AppViewModel = viewModel(factory = AppViewModel.factory)
+    vm: ReservationEditViewModel= viewModel(factory = ReservationEditViewModel.factory)
 ) {
-
-    val vm: ReservationEditViewModel = viewModel()
 
     val idReservation = navController.currentBackStackEntry?.arguments?.getInt(DETAIL_ARGUMENT_KEY4).toString()
     val idCourt = navController.currentBackStackEntry?.arguments?.getInt(DETAIL_ARGUMENT_KEY3).toString()
     val date = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY2)
+    
 
-    //val reservation by viewModel.getReservationById(idReservation.toInt()).observeAsState()
+    val court by vm.getCourtById(idCourt.toInt()).observeAsState()
+    var timeSlots by remember { mutableStateOf(emptyList<String>()) }
 
-    val court by viewModel.getCourtById(idCourt.toInt()).observeAsState()
-    val timeSlots by viewModel.getAvailableTimeSlots(idCourt.toInt(), date).observeAsState()
+    LaunchedEffect(idCourt.toInt(), date) {
+        val availableTimeSlots = vm.getAvailableTimeSlots(idCourt.toInt(), date).value
+        timeSlots = availableTimeSlots ?: emptyList()
+    }
+    //val timeSlots by vm.getAvailableTimeSlots(idCourt.toInt(), date!!).observeAsState()
 
     val equipments = listOf("Not requested", "Requested")
     val bitmap = court?.image?.let { BitmapConverter.converterStringToBitmap(it) }
@@ -266,10 +397,8 @@ fun ReservationEditScreen(
                         onClick = {
                             if (vm.selectedTimeSlot != "Select time slot" && vm.selectedEquipments != "Select equipments") {
 
-                                viewModel.updateReservationById(
+                                vm.updateReservationById(
                                     idReservation.toInt(),
-                                    vm.selectedTimeSlot,
-                                    vm.selectedEquipments
                                 )
                                 Toast.makeText( context, "Booking successfully modified!", Toast.LENGTH_SHORT).show()
 
@@ -290,7 +419,8 @@ fun ReservationEditScreen(
             }
 
 
-        } else {
+        }
+        else {
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
