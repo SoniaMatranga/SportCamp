@@ -3,12 +3,14 @@ package it.polito.mad.sportcamp.profileScreens
 
 
 import android.annotation.SuppressLint
+import android.content.ContentValues
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -53,10 +55,14 @@ import it.polito.mad.sportcamp.common.BitmapConverter
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import it.polito.mad.sportcamp.SportCampApplication
 import it.polito.mad.sportcamp.common.SaveMessage
 import it.polito.mad.sportcamp.common.ValidationMessage
@@ -66,7 +72,7 @@ import it.polito.mad.sportcamp.database.Dao
 
 
 
-class EditProfileViewModel (private val Dao: Dao): ViewModel() {
+class EditProfileViewModel (): ViewModel() {
 
     var usrName by mutableStateOf("")
     var usrNickname by mutableStateOf("")
@@ -86,9 +92,24 @@ class EditProfileViewModel (private val Dao: Dao): ViewModel() {
     var isEditedAge by  mutableStateOf(false)
     var isEditedBio by  mutableStateOf(false)
 
+    private val db = Firebase.firestore
+    private val user = MutableLiveData<User>()
+
+
+    fun getUserDocument() : MutableLiveData<User> {
+        db
+            .collection("users")
+            .document("user1")
+            .addSnapshotListener { value, error ->
+                if(error != null) Log.w(ContentValues.TAG, "Error getting documents.")
+                if(value != null) user.value = value?.toObject(User::class.java)
+            }
+        return user
+    }
+
 
     init {
-            val userLiveData = Dao.getUserById(1)
+            val userLiveData = getUserDocument()
             userLiveData.observeForever { user ->
                 usrName = user?.name ?: ""
                 usrNickname = user?.nickname ?: ""
@@ -103,29 +124,49 @@ class EditProfileViewModel (private val Dao: Dao): ViewModel() {
 
     }
 
-    /*fun clearAll() {
-        usrName = ""
-        usrNickname = ""
-        usrCity = ""
-        usrAge = ""
-        usrGender = ""
-        usrLevel = ""
-        usrSports = ""
-        usrBio = ""
-        usrImage = ""
-    }*/
 
-    fun updateUser(nickname: String, name:String, mail:String, city:String,
-                   age:Int, gender:String, level:String, sports:String, bio:String, id_user:Int, image: String
-    ) = Dao.updateUser(nickname,name,mail,city,age,gender,level,sports,bio,id_user,image)
+    fun updateUser(
+        nickname: String,
+        name: String,
+        mail: String,
+        city: String,
+        age: Int,
+        gender: String,
+        level: String,
+        sports: String,
+        bio: String,
+        id_user: Int,
+        image: String
+    ) {
+        val userRef = db.collection("users").document("user1")
 
-    fun getUserById(id_user:Int) : LiveData<User> = Dao.getUserById(id_user)
+        val updateData = hashMapOf(
+            "nickname" to nickname,
+            "name" to name,
+            "mail" to mail,
+            "city" to city,
+            "age" to age,
+            "gender" to gender,
+            "level" to level,
+            "sports" to sports,
+            "bio" to bio,
+            "id_user" to id_user,
+            "image" to image
+        )
 
+        userRef
+            .update(updateData as Map<String, Any>)
+            .addOnSuccessListener {
+                Log.d("UpdateUser", "User data updated successfully.")
+            }
+            .addOnFailureListener { e ->
+                Log.e("UpdateUser", "Error updating user data.", e)
+            }
+    }
     companion object {
         val factory : ViewModelProvider.Factory = viewModelFactory {
             initializer {
-                val application = (this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as SportCampApplication)
-                EditProfileViewModel(application.database.Dao())
+                EditProfileViewModel()
             }
         }
     }
@@ -140,14 +181,13 @@ fun EditProfileScreen(
     navController: NavController
 ) {
 
-    //val vm: EditProfileViewModel = viewModel(factory = EditProfileViewModel.factory)
     val mContext = LocalContext.current
     val permission = android.Manifest.permission.CAMERA
 
     //=========================================================================================
 
     val userId = navController.currentBackStackEntry?.arguments?.getInt(DETAIL_ARGUMENT_KEY).toString()
-    val user by vm.getUserById(userId.toInt()).observeAsState()
+    val user by vm.getUserDocument().observeAsState()
 
 
 
@@ -521,23 +561,30 @@ fun EditProfileScreen(
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         modifier= Modifier.fillMaxWidth()
                     ){
-                        /*Column {
-                            Button(onClick = {
-                               // openDialog.value = true
-                            }) {
-                                Text(
-                                    text = "Discard",
-                                    fontSize = 18.sp,
-                                    textAlign = TextAlign.Center,
-                                )
-                            }
-                        }*/
                         Column {
                             Button(onClick = {
                                 if ( vm.isEditedAge || vm.isEditedBio || vm.isEditedCity || vm.isEditedGender || vm.isEditedLevel
                                     || vm.isEditedName || vm.isEditedSports || vm.isEditedNickname || isEditedImage) {
-                                    openDialog.value=true
-                                    //clearAll()
+                                    //openDialog.value=true
+                                    val usr = User(
+                                        id_user =  userId.trim().toInt(),
+                                        nickname = if (vm.isEditedNickname) vm.usrNickname else user?.nickname,
+                                        name = if (vm.isEditedName) vm.usrName else user?.name,
+                                        mail =  user?.mail,
+                                        city = if (vm.isEditedCity) vm.usrCity else user?.city,
+                                        age = if (vm.isEditedAge) vm.usrAge.toInt() else user?.age,
+                                        gender = if (vm.isEditedGender) vm.usrGender else user?.gender,
+                                        level = if (vm.isEditedLevel) vm.usrLevel else user?.level,
+                                        sports = if(vm.isEditedSports) vm.usrSports else user?.sports,
+                                        bio = if (vm.isEditedBio) vm.usrBio else user?.bio,
+                                        image = if(bitmap.value != null) bitmap.value?.let {
+                                            BitmapConverter.converterBitmapToString(
+                                                it
+                                            )
+                                        } else user?.image)
+                                    updateUserInDB(usr, vm)
+                                    Toast.makeText(context, "Profile successfully updated!", Toast.LENGTH_SHORT).show()
+                                    //openDialog.value = false
                                 } else {
                                     Toast.makeText(context, "Please add or update something...", Toast.LENGTH_SHORT).show()
                                 }

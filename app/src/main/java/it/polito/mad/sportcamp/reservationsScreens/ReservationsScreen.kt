@@ -1,6 +1,8 @@
 package it.polito.mad.sportcamp.reservationsScreens
 
+import android.content.ContentValues
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.*
@@ -12,23 +14,119 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.map
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import it.polito.mad.sportcamp.Calendar.Calendar
 import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.CustomToolBar
 import it.polito.mad.sportcamp.database.AppViewModel
+import it.polito.mad.sportcamp.database.Reservation
+import it.polito.mad.sportcamp.database.ReservationTimed
+import it.polito.mad.sportcamp.database.TimeSlot
+import it.polito.mad.sportcamp.database.User
+import it.polito.mad.sportcamp.profileScreens.ProfileViewModel
 import it.polito.mad.sportcamp.ui.theme.*
 
 
+class ReservationsViewModel : ViewModel() {
+
+    private val db = Firebase.firestore
+    private val reservations = MutableLiveData<List<Reservation>>()
+    private val timeSlots = MutableLiveData<List<TimeSlot>>()
+
+
+    fun getTimeSlots(): MutableLiveData<List<TimeSlot>> {
+        db.collection("slots")
+            .addSnapshotListener { value, error ->
+                if (error != null) {
+                    Log.w(ContentValues.TAG, "Error getting documents.")
+                }
+                if (value != null) {
+                    val timeSlotsList = mutableListOf<TimeSlot>()
+                    for (doc in value.documents) {
+                        val timeSlot = doc.toObject(TimeSlot::class.java)
+                        if (timeSlot != null) {
+                            timeSlotsList.add(timeSlot)
+                        }
+                    }
+                    timeSlots.value = timeSlotsList
+
+                }
+            }
+        return timeSlots
+    }
+
+
+    fun getReservationsByUser(id: Int): MutableLiveData<List<Reservation>> {
+
+        db.collection("reservations")
+            .whereEqualTo("id_user", id)
+            .addSnapshotListener { value, error ->
+                if (error != null) {
+                    Log.w(ContentValues.TAG, "Error getting documents.")
+                }
+                if (value != null) {
+                    val reservationList = mutableListOf<Reservation>()
+                    for (doc in value.documents) {
+                        val reservation = doc.toObject(Reservation::class.java)
+                        if (reservation != null) {
+                            reservationList.add(reservation)
+                        }
+                    }
+                    reservations.value = reservationList
+                }
+            }
+
+        return reservations
+    }
+
+
+    companion object {
+        val factory : ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                ReservationsViewModel()
+            }
+        }
+    }
+}
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ReservationsScreen(
     navController: NavController,
-    viewModel: AppViewModel = viewModel(factory = AppViewModel.factory)
+    vm: ReservationsViewModel = viewModel(factory = ReservationsViewModel.factory)
 ) {
 
-   val reservations by viewModel.getReservationsByUser(1).observeAsState()
+    val reservationsTimed = mutableListOf<ReservationTimed>()
+    val reservations by vm.getReservationsByUser(1).observeAsState()
+    val timeSlots by vm.getTimeSlots().observeAsState()
+
+    reservations?.let { reservationList -> // Ottieni la lista di oggetti TimeSlot
+        for (reservation in reservationList) {
+            val timeSlot = timeSlots?.find { it.id_time_slot == reservation.id_time_slot }
+            if (timeSlot != null) {
+                val reservationTimed = ReservationTimed(
+                    reservation.id_reservation,
+                    reservation.id_user,
+                    reservation.id_court,
+                    timeSlot.time_slot,
+                    reservation.date,
+                    reservation.equipments,
+                    reservation.options
+                )
+                reservationsTimed.add(reservationTimed)
+            }
+        }
+
+    }
 
     
     Column(
@@ -40,7 +138,7 @@ fun ReservationsScreen(
             Column( modifier =Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.SpaceBetween
                 ){
-                reservations?.let { Calendar(navController =navController, reservationsList = it) }
+                reservationsTimed?.let { Calendar(navController =navController, reservationsList = it) }
 
                 Row(modifier = Modifier
                     .fillMaxWidth()

@@ -1,6 +1,8 @@
 package it.polito.mad.sportcamp.reservationsScreens
 
+import android.content.ContentValues
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
@@ -46,27 +48,165 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavHostController
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.firestore.ktx.toObject
+import com.google.firebase.ktx.Firebase
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY
 import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.BitmapConverter
 import it.polito.mad.sportcamp.database.AppViewModel
+import it.polito.mad.sportcamp.database.Court
+import it.polito.mad.sportcamp.database.Reservation
 import it.polito.mad.sportcamp.database.ReservationContent
+import it.polito.mad.sportcamp.database.TimeSlot
 import it.polito.mad.sportcamp.favoritesScreens.RatingStar
 import it.polito.mad.sportcamp.ui.theme.fonts
 import java.time.LocalDate
 import kotlin.math.roundToInt
 
 
+class ReservationDetailsViewModel : ViewModel() {
+
+    private val db = Firebase.firestore
+    private val reservations = MutableLiveData<List<Reservation>>()
+    private val timeSlots = MutableLiveData<List<TimeSlot>>()
+
+
+    fun getTimeSlots() {
+        db.collection("slots")
+            .addSnapshotListener { value, error ->
+                if (error != null) {
+                    Log.w(ContentValues.TAG, "Error getting documents.")
+                }
+                if (value != null) {
+                    val timeSlotsList = mutableListOf<TimeSlot>()
+                    for (doc in value.documents) {
+                        val timeSlot = doc.toObject(TimeSlot::class.java)
+                        if (timeSlot != null) {
+                            timeSlotsList.add(timeSlot)
+                        }
+                    }
+                    timeSlots.value = timeSlotsList
+
+                }
+            }
+    }
+
+
+    fun deleteReservationById(id: Int) {
+        db.collection("reservations")
+            .whereEqualTo("id_reservation", id)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val reservationDocuments = querySnapshot.documents
+                if (reservationDocuments.isNotEmpty()) {
+                    val reservationDocument = reservationDocuments[0]
+                    reservationDocument.reference.delete()
+                        .addOnSuccessListener {
+                            // Rimuovi la prenotazione dalla lista delle prenotazioni
+                            val currentReservations = reservations.value?.toMutableList()
+                            currentReservations?.removeAll { it.id_reservation == id }
+                            reservations.value = currentReservations
+                        }
+                        .addOnFailureListener { exception ->
+                            Log.w(ContentValues.TAG, "Error deleting reservation.", exception)
+                        }
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.w(ContentValues.TAG, "Error getting reservation document.", exception)
+            }
+    }
+
+    fun getReservationsByUserAndDate(id: Int, date: String): MutableLiveData<List<ReservationContent>> {
+        val reservationsContent = MutableLiveData<List<ReservationContent>>()
+        getTimeSlots()
+
+        db.collection("reservations")
+            .whereEqualTo("id_user", id)
+            .whereEqualTo("date", date)
+            .addSnapshotListener { value, error ->
+                if (error != null) {
+                    Log.w(ContentValues.TAG, "Error getting documents.")
+                }
+                if (value != null) {
+                    val reservationList = mutableListOf<ReservationContent>()
+                    for (doc in value.documents) {
+                        val reservation = doc.toObject(Reservation::class.java)
+                        val courtId = reservation?.id_court
+
+                        db.collection("courts")
+                            .whereEqualTo("id_court", courtId)
+                            .get()
+                            .addOnSuccessListener { querySnapshot ->
+                                val courtDocuments = querySnapshot.documents
+                                if (courtDocuments.isNotEmpty()) {
+                                    val courtDocument = courtDocuments[0]
+                                    val courtValue = courtDocument.toObject(Court::class.java)
+
+                                    // Retrieve court information
+                                    val courtName = courtValue?.court_name
+                                    val courtAddress = courtValue?.address
+                                    val courtCity = courtValue?.city
+                                    val courtSport = courtValue?.sport
+                                    val courtRating = courtValue?.court_rating
+                                    val courtImage = courtValue?.image
+
+                                    // Retrieve time slot information
+                                    val timeSlotValue = timeSlots.value?.find { it.id_time_slot == reservation?.id_time_slot }
+                                    val timeSlot = timeSlotValue?.time_slot
+
+                                    // Create ReservationContent object and add it to the list
+                                    val reservationContent = ReservationContent(
+                                        id_reservation = reservation?.id_reservation,
+                                        id_court = reservation?.id_court,
+                                        equipments = reservation?.equipments,
+                                        court_name = courtName,
+                                        address = courtAddress,
+                                        city = courtCity,
+                                        sport = courtSport,
+                                        time_slot = timeSlot,
+                                        date = reservation?.date,
+                                        image = courtImage,
+                                        court_rating = courtRating
+                                    )
+                                    reservationList.add(reservationContent)
+
+                                    // Notify reservationsContent of the updated list
+                                    reservationsContent.value = reservationList
+                                }
+                            }
+                    }
+                }
+            }
+
+        return reservationsContent
+    }
+
+
+    companion object {
+        val factory : ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                ReservationDetailsViewModel()
+            }
+        }
+    }
+}
+
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ReservationDetails(
     navController: NavHostController,
-    viewModel: AppViewModel = viewModel(factory = AppViewModel.factory)
+    viewModel: ReservationDetailsViewModel = viewModel(factory = ReservationDetailsViewModel.factory)
 ) {
     val selectedDate = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY).toString()
-
 
     val reservations by viewModel.getReservationsByUserAndDate(1, selectedDate).observeAsState()
 
@@ -90,7 +230,7 @@ fun ReservationDetails(
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun ReservationsList(reservations: List<ReservationContent>, selectedDate:String, viewModel: AppViewModel, navController :NavHostController) {
+fun ReservationsList(reservations: List<ReservationContent>, selectedDate:String, viewModel: ReservationDetailsViewModel, navController :NavHostController) {
     LazyColumn {
         item {
             reservations.forEach { reservationContent ->
@@ -106,7 +246,7 @@ fun ReservationsList(reservations: List<ReservationContent>, selectedDate:String
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun ReservationCard(reservation: ReservationContent, selectedDate:String, viewModel: AppViewModel, navController :NavHostController) {
+fun ReservationCard(reservation: ReservationContent, selectedDate:String, viewModel: ReservationDetailsViewModel, navController :NavHostController) {
 
     val bitmap = reservation.image?.let { BitmapConverter.converterStringToBitmap(it) }
     // We keep track if the message is expanded or not in this
