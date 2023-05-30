@@ -1,6 +1,7 @@
 package it.polito.mad.sportcamp.reservationsScreens
 
 import android.annotation.SuppressLint
+import android.content.ContentValues
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
@@ -29,10 +30,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.maxkeppeker.sheets.core.models.base.rememberSheetState
 import com.maxkeppeler.sheets.calendar.CalendarDialog
 import com.maxkeppeler.sheets.calendar.models.CalendarConfig
@@ -42,6 +49,7 @@ import it.polito.mad.sportcamp.common.BitmapConverter
 import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
 import it.polito.mad.sportcamp.database.AppViewModel
 import it.polito.mad.sportcamp.database.Court
+import it.polito.mad.sportcamp.database.TimeSlot
 import it.polito.mad.sportcamp.favoritesScreens.RatingStar
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -54,6 +62,38 @@ class AddReservationsViewModel : ViewModel() {
     val sdf = SimpleDateFormat("yyyy-MM-dd")
     val currentDate = sdf.format(Date())
     var dateFilter by mutableStateOf(currentDate)
+    private val db = Firebase.firestore
+    private val courts = MutableLiveData<List<Court>>()
+
+    fun getCourtsBySport(sport: String): MutableLiveData<List<Court>> {
+        db.collection("courts")
+            .whereEqualTo("sport", sport)
+            .addSnapshotListener { value, error ->
+                if (error != null) {
+                    Log.w(ContentValues.TAG, "Error getting documents.")
+                }
+                if (value != null && !value.isEmpty) {
+
+                    val courtsList = mutableListOf<Court>()
+                    for (doc in value.documents) {
+                        val court = doc.toObject(Court::class.java)
+                        if (court != null) {
+                            courtsList.add(court)
+                        }
+                    }
+                    courts.value = courtsList
+                }
+            }
+        return courts
+    }
+
+    companion object {
+        val factory : ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                AddReservationsViewModel()
+            }
+        }
+    }
 }
 @SuppressLint("SimpleDateFormat")
 @RequiresApi(Build.VERSION_CODES.O)
@@ -61,10 +101,10 @@ class AddReservationsViewModel : ViewModel() {
 @Composable
 fun AddReservationsScreen(
     navController: NavController,
-    viewModel: AppViewModel = viewModel(factory = AppViewModel.factory)
+    vm: AddReservationsViewModel = viewModel(factory = AddReservationsViewModel.factory)
 ) {
-    val vm: AddReservationsViewModel = viewModel()
-    val courts by viewModel.getCourtsBySport(vm.sportFilter).observeAsState()
+
+    val courts by vm.getCourtsBySport(vm.sportFilter).observeAsState()
     val calendarState = rememberSheetState()
 
 
