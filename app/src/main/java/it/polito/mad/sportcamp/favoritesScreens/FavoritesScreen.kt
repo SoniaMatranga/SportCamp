@@ -1,5 +1,7 @@
 package it.polito.mad.sportcamp.favoritesScreens
 
+import android.content.ContentValues
+import android.util.Log
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.foundation.Image
 import androidx.compose.ui.graphics.*
@@ -33,10 +35,26 @@ import it.polito.mad.sportcamp.database.Court
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import it.polito.mad.sportcamp.bottomnav.Screen
+import it.polito.mad.sportcamp.database.Reservation
+import it.polito.mad.sportcamp.database.TimeSlot
 import it.polito.mad.sportcamp.ui.theme.Blue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 import kotlin.math.roundToInt
 
 data class ChipsModel(
@@ -45,32 +63,143 @@ data class ChipsModel(
     val trailingIcon: ImageVector? = null,
 )
 
+class FavoriteViewModel : ViewModel() {
+
+    private val db = Firebase.firestore
+
+    var all: Boolean by mutableStateOf(true)
+
+    fun getFilteredCourtsUserPlayed(sportFilter :String): LiveData<List<Court>> {
+        val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+
+        val courts = MediatorLiveData<List<Court>>()
+
+        db.collection("reservations")
+            .whereEqualTo("id_user", 1)
+
+            .whereLessThan("date", currentDate)
+            .addSnapshotListener { value, error ->
+                if (error != null) {
+                    Log.w(ContentValues.TAG, "Error getting documents.")
+                }
+                if (value != null) {
+                    val courtList = mutableListOf<Court>()
+                    for (doc in value.documents) {
+                        val reservation = doc.toObject(Reservation::class.java)
+                        if (reservation != null) {
+                            val courtId = reservation.id_court ?: continue
+                            db.collection("courts")
+                                .whereEqualTo("id_court", courtId)
+                                .whereEqualTo("sport", sportFilter)
+                                .get()
+                                .addOnSuccessListener { courtSnapshot ->
+                                    for (courtDoc in courtSnapshot.documents) {
+                                        val court = courtDoc.toObject(Court::class.java)
+                                        court?.let {
+                                            if(!courtList.contains(it))
+                                            courtList.add(it)
+                                        }
+                                    }
+                                    courts.value = courtList
+
+                                }
+                                .addOnFailureListener { e ->
+                                    Log.w(ContentValues.TAG, "Error getting court documents.", e)
+                                }
+                        }
+                    }
+                }
+            }
+
+        return courts
+    }
+
+    fun getAllCourtsUserPlayed(): LiveData<List<Court>> {
+        val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+
+        val courts = MediatorLiveData<List<Court>>()
+
+        db.collection("reservations")
+            .whereEqualTo("id_user", 1)
+            .whereLessThan("date", currentDate)
+            .addSnapshotListener { value, error ->
+                if (error != null) {
+                    Log.w(ContentValues.TAG, "Error getting documents.")
+                }
+                if (value != null) {
+                    val courtList = mutableListOf<Court>()
+                    for (doc in value.documents) {
+                        val reservation = doc.toObject(Reservation::class.java)
+                        if (reservation != null) {
+                            val courtId = reservation.id_court
+                            db.collection("courts")
+                                .whereEqualTo("id_court", courtId)
+                                .get()
+                                .addOnSuccessListener { courtSnapshot ->
+                                    for (courtDoc in courtSnapshot.documents) {
+                                        val court = courtDoc.toObject(Court::class.java)
+                                        court?.let {
+                                            if(!courtList.contains(it))
+                                            courtList.add(it)
+                                        }
+                                    }
+                                    courts.value = courtList
+
+
+                                }
+                                .addOnFailureListener { e ->
+                                    Log.w(ContentValues.TAG, "Error getting court documents.", e)
+                                }
+                        }
+                    }
+
+                }
+            }
+
+        return courts
+    }
+
+
+    companion object {
+        val factory : ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                FavoriteViewModel()
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoritesScreen(
     navController: NavController,
-    viewModel: AppViewModel = viewModel(factory = AppViewModel.factory)
+    vm: FavoriteViewModel = viewModel(factory = FavoriteViewModel.factory)
 ) {
-    val sdf = SimpleDateFormat("yyyy-MM-dd")
-    val currentDate = sdf.format(Date()).toString()
-    val courtsList: List<Court> by viewModel.getAllCourtsUserPlayed(1,currentDate).observeAsState(listOf())
-    var sportFilter by remember { mutableStateOf("") }
-    var all: Boolean by remember { mutableStateOf(true) }
-    val courts: List<Court> by viewModel.getFilteredCourtsUserPlayed(1, currentDate, sportFilter).observeAsState(listOf())
+
+
+    var sportFilter by remember {mutableStateOf("")}
+
+    val courts by vm.getAllCourtsUserPlayed().observeAsState()
+    val courtsList by vm.getFilteredCourtsUserPlayed(sportFilter).observeAsState()
+
 
 
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
         CustomToolBar(title = "Ratings")
-        Row(modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically){
            Text(
                text="Leave a review and rate the courts you've played. Click stars to se all the ratings",
                color = Color.Gray,
                 textAlign = TextAlign.Center,
-               modifier = Modifier.fillMaxWidth().padding(horizontal = 40.dp)
+               modifier = Modifier
+                   .fillMaxWidth()
+                   .padding(horizontal = 40.dp)
            )
         }
 
@@ -109,10 +238,10 @@ fun FavoritesScreen(
                         onClick = {
                             when (selectedItem == item.name) {
                                 true -> {
-                                    selectedItem = ""; all = true
+                                    selectedItem = ""; vm.all = true
                                 }
                                 false -> {
-                                    selectedItem = item.name; all = false; sportFilter = item.name
+                                    selectedItem = item.name; vm.all = false; sportFilter = item.name
                                 }
                             }
                         },
@@ -134,8 +263,10 @@ fun FavoritesScreen(
         LazyColumn(
             modifier = Modifier.padding(vertical = 2.dp, horizontal = 4.dp),
         ) {
-            items(items = if (all) courtsList else courts) { court ->
-                CourtCard(court = court, navController = navController)
+            courts?.let {
+                items(items = if (vm.all) it else courtsList!!) { court ->
+                    CourtCard(court = court, navController = navController)
+                }
             }
 
         }
@@ -154,7 +285,7 @@ fun CourtCard(court: Court, navController: NavController) {
             .padding(5.dp)
             .fillMaxWidth()
             .background(Color.White)
-            .clickable ( onClick= {expanded=!expanded}),
+            .clickable(onClick = { expanded = !expanded }),
         shape = RoundedCornerShape(10.dp),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 10.dp
@@ -197,7 +328,9 @@ fun CourtCard(court: Court, navController: NavController) {
                     Row(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Column(modifier = Modifier.padding(4.dp).weight(4f)) {
+                        Column(modifier = Modifier
+                            .padding(4.dp)
+                            .weight(4f)) {
                             Row {
 
                                 court.court_name?.let {
@@ -232,7 +365,9 @@ fun CourtCard(court: Court, navController: NavController) {
                             }
 
                         }
-                        Column(modifier = Modifier.fillMaxWidth().weight(2f)) {
+                        Column(modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(2f)) {
 
 
                             Row(
