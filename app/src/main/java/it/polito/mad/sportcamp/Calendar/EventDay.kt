@@ -15,14 +15,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import io.github.boguszpawlowski.composecalendar.day.DayState
 import io.github.boguszpawlowski.composecalendar.selection.DynamicSelectionState
 import it.polito.mad.sportcamp.bottomnav.Screen
-import it.polito.mad.sportcamp.database.ReservationTimed
+import it.polito.mad.sportcamp.classes.ReservationTimed
 import it.polito.mad.sportcamp.ui.theme.OrangeActionBar
 import java.time.LocalDate
 

@@ -53,9 +53,9 @@ import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY3
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY4
 import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.BitmapConverter
-import it.polito.mad.sportcamp.database.Court
-import it.polito.mad.sportcamp.database.Reservation
-import it.polito.mad.sportcamp.database.TimeSlot
+import it.polito.mad.sportcamp.classes.Court
+import it.polito.mad.sportcamp.classes.Reservation
+import it.polito.mad.sportcamp.classes.TimeSlot
 import it.polito.mad.sportcamp.ui.theme.Orange
 import it.polito.mad.sportcamp.ui.theme.fonts
 import kotlinx.coroutines.tasks.await

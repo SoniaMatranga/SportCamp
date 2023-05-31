@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import io.github.boguszpawlowski.composecalendar.SelectableCalendar
 import it.polito.mad.sportcamp.bottomnav.Screen
-import it.polito.mad.sportcamp.database.ReservationTimed
+import it.polito.mad.sportcamp.classes.ReservationTimed
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable

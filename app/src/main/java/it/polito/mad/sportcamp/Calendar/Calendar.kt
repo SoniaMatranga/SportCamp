@@ -7,7 +7,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.navigation.NavController
-import it.polito.mad.sportcamp.database.ReservationTimed
+import it.polito.mad.sportcamp.classes.ReservationTimed
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable

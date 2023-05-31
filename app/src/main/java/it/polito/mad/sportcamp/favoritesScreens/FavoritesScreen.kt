@@ -30,8 +30,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import it.polito.mad.sportcamp.common.BitmapConverter
-import it.polito.mad.sportcamp.database.AppViewModel
-import it.polito.mad.sportcamp.database.Court
+import it.polito.mad.sportcamp.classes.Court
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -45,16 +44,10 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import it.polito.mad.sportcamp.bottomnav.Screen
-import it.polito.mad.sportcamp.database.Reservation
-import it.polito.mad.sportcamp.database.TimeSlot
+import it.polito.mad.sportcamp.classes.Reservation
 import it.polito.mad.sportcamp.ui.theme.Blue
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 import kotlin.math.roundToInt
 
 data class ChipsModel(
@@ -66,10 +59,21 @@ data class ChipsModel(
 class FavoriteViewModel : ViewModel() {
 
     private val db = Firebase.firestore
+    private val _loadingState = MutableLiveData<Boolean>(true)
+    val loadingState: LiveData<Boolean> = _loadingState
+    var sportFilter by mutableStateOf("Tennis")
+    var selectedItem by  mutableStateOf("Tennis")
 
-    var all: Boolean by mutableStateOf(true)
+    fun getLoadingState(): Boolean {
+        return _loadingState.value ?: false
+    }
+
+    fun setLoadingState(loading: Boolean) {
+        _loadingState.value = loading
+    }
 
     fun getFilteredCourtsUserPlayed(sportFilter :String): LiveData<List<Court>> {
+        setLoadingState(true)
         val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
         val courts = MediatorLiveData<List<Court>>()
@@ -96,12 +100,12 @@ class FavoriteViewModel : ViewModel() {
                                     for (courtDoc in courtSnapshot.documents) {
                                         val court = courtDoc.toObject(Court::class.java)
                                         court?.let {
-                                            if(!courtList.contains(it))
-                                            courtList.add(it)
+                                            if(!courtList.contains(it)) {
+                                                courtList.add(it)
+                                            }
                                         }
                                     }
                                     courts.value = courtList
-
                                 }
                                 .addOnFailureListener { e ->
                                     Log.w(ContentValues.TAG, "Error getting court documents.", e)
@@ -110,7 +114,7 @@ class FavoriteViewModel : ViewModel() {
                     }
                 }
             }
-
+        setLoadingState(false)
         return courts
     }
 
@@ -139,11 +143,13 @@ class FavoriteViewModel : ViewModel() {
                                     for (courtDoc in courtSnapshot.documents) {
                                         val court = courtDoc.toObject(Court::class.java)
                                         court?.let {
-                                            if(!courtList.contains(it))
-                                            courtList.add(it)
+                                            if(!courtList.contains(it)) {
+                                                courtList.add(it)
+                                            }
                                         }
                                     }
                                     courts.value = courtList
+
 
 
                                 }
@@ -156,6 +162,7 @@ class FavoriteViewModel : ViewModel() {
                 }
             }
 
+        setLoadingState(false)
         return courts
     }
 
@@ -177,10 +184,11 @@ fun FavoritesScreen(
 ) {
 
 
-    var sportFilter by remember {mutableStateOf("")}
+    //var sportFilter by remember {mutableStateOf("Tennis")}
+    val isLoading = vm.loadingState.value ?: true
 
-    val courts by vm.getAllCourtsUserPlayed().observeAsState()
-    val courtsList by vm.getFilteredCourtsUserPlayed(sportFilter).observeAsState()
+    //val courts by vm.getAllCourtsUserPlayed().observeAsState()
+    val courtsList by vm.getFilteredCourtsUserPlayed(vm.sportFilter).observeAsState()
 
 
 
@@ -226,22 +234,24 @@ fun FavoritesScreen(
             ),
         )
 
-        var selectedItem by remember { mutableStateOf("") }
+
         var isSelected by remember { mutableStateOf(false) }
 
         LazyRow {
             items(filterList) { item ->
-                isSelected = selectedItem == item.name
+                isSelected = vm.selectedItem == item.name
                 Spacer(modifier = Modifier.padding(5.dp))
                     FilterChip(
                         selected = isSelected,
                         onClick = {
-                            when (selectedItem == item.name) {
+                            when (vm.selectedItem == item.name) {
                                 true -> {
-                                    selectedItem = ""; vm.all = true
+                                    vm.selectedItem = item.name //; vm.all = true
+
                                 }
                                 false -> {
-                                    selectedItem = item.name; vm.all = false; sportFilter = item.name
+                                    vm.selectedItem = item.name;
+                                    vm.sportFilter = item.name
                                 }
                             }
                         },
@@ -263,9 +273,36 @@ fun FavoritesScreen(
         LazyColumn(
             modifier = Modifier.padding(vertical = 2.dp, horizontal = 4.dp),
         ) {
-            courts?.let {
-                items(items = if (vm.all) it else courtsList!!) { court ->
-                    CourtCard(court = court, navController = navController)
+            when {
+                isLoading == true -> {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(40.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator() // Spinner
+                        }
+                    }
+                }
+
+                courtsList?.isNotEmpty() == true -> {
+                    items(items = courtsList!!) { court ->
+                        CourtCard(court = court, navController = navController)
+                    }
+                }
+
+                courtsList?.isEmpty() == true -> {
+                    item {
+                        Text(
+                            text = "No courts available to be rated on this sport",
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        )
+                    }
                 }
             }
 

@@ -45,13 +45,12 @@ import androidx.navigation.NavHostController
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY
-import it.polito.mad.sportcamp.database.AppViewModel
 import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY2
 import it.polito.mad.sportcamp.common.BitmapConverter
-import it.polito.mad.sportcamp.database.Court
-import it.polito.mad.sportcamp.database.Reservation
-import it.polito.mad.sportcamp.database.TimeSlot
+import it.polito.mad.sportcamp.classes.Court
+import it.polito.mad.sportcamp.classes.Reservation
+import it.polito.mad.sportcamp.classes.TimeSlot
 import it.polito.mad.sportcamp.ui.theme.Orange
 import kotlinx.coroutines.tasks.await
 

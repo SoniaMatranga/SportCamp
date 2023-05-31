@@ -8,6 +8,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -31,6 +32,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -48,6 +50,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -56,16 +59,14 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavHostController
 import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY
 import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.BitmapConverter
-import it.polito.mad.sportcamp.database.AppViewModel
-import it.polito.mad.sportcamp.database.Court
-import it.polito.mad.sportcamp.database.Reservation
-import it.polito.mad.sportcamp.database.ReservationContent
-import it.polito.mad.sportcamp.database.TimeSlot
+import it.polito.mad.sportcamp.classes.Court
+import it.polito.mad.sportcamp.classes.Reservation
+import it.polito.mad.sportcamp.classes.ReservationContent
+import it.polito.mad.sportcamp.classes.TimeSlot
 import it.polito.mad.sportcamp.favoritesScreens.RatingStar
 import it.polito.mad.sportcamp.ui.theme.fonts
 import java.time.LocalDate
@@ -77,6 +78,17 @@ class ReservationDetailsViewModel : ViewModel() {
     private val db = Firebase.firestore
     private val reservations = MutableLiveData<List<Reservation>>()
     private val timeSlots = MutableLiveData<List<TimeSlot>>()
+
+    private val _loadingState = MutableLiveData<Boolean>(true)
+    val loadingState: LiveData<Boolean> = _loadingState
+
+    fun getLoadingState(): Boolean {
+        return _loadingState.value ?: false
+    }
+
+    fun setLoadingState(loading: Boolean) {
+        _loadingState.value = loading
+    }
 
 
     fun getTimeSlots() {
@@ -181,12 +193,13 @@ class ReservationDetailsViewModel : ViewModel() {
 
                                     // Notify reservationsContent of the updated list
                                     reservationsContent.value = reservationList
+
                                 }
                             }
                     }
                 }
             }
-
+        setLoadingState(false)
         return reservationsContent
     }
 
@@ -207,6 +220,7 @@ fun ReservationDetails(
     viewModel: ReservationDetailsViewModel = viewModel(factory = ReservationDetailsViewModel.factory)
 ) {
     val selectedDate = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY).toString()
+    val isLoading = viewModel.loadingState.value ?: true
 
     val reservations by viewModel.getReservationsByUserAndDate(1, selectedDate).observeAsState()
 
@@ -216,7 +230,23 @@ fun ReservationDetails(
 
         CustomToolbarReservationDetails(title = "My reservations details", navController = navController)
 
-        reservations?.let { ReservationsList(reservations = it, selectedDate= selectedDate, viewModel = viewModel, navController=navController) }
+        when {
+            isLoading == true -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(40.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator() // Spinner
+                }
+
+            }
+
+            else -> {
+                reservations?.let { ReservationsList(reservations = it, selectedDate= selectedDate, viewModel = viewModel, navController=navController) }
+            }
+        }
 
         Spacer(modifier = Modifier.height(20.dp))
 

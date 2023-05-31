@@ -1,5 +1,7 @@
 package it.polito.mad.sportcamp.favoritesScreens
 
+import android.content.ContentValues
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -28,8 +30,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavHostController
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.gowtham.ratingbar.RatingBar
 import com.gowtham.ratingbar.RatingBarConfig
 import com.gowtham.ratingbar.RatingBarStyle
@@ -37,14 +47,176 @@ import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY3
 import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.BitmapConverter
 import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
-import it.polito.mad.sportcamp.database.AppViewModel
+import it.polito.mad.sportcamp.classes.Court
+import it.polito.mad.sportcamp.classes.Rating
 import it.polito.mad.sportcamp.ui.theme.Blue
 import kotlin.math.roundToInt
+
+class CourtReviewViewModel : ViewModel() {
+
+    private val db = Firebase.firestore
+    private val court = MutableLiveData<Court>()
+    private val rating = MutableLiveData<Rating>()
+    fun getCourtById(id_court: Int): MutableLiveData<Court> {
+        db.collection("courts")
+            .whereEqualTo("id_court", id_court)
+            .addSnapshotListener { value, error ->
+                if (error != null) {
+                    Log.w(ContentValues.TAG, "Error getting documents.")
+                }
+                if (value != null && !value.isEmpty) {
+                    val courtDocument = value.documents[0]
+                    court.value = courtDocument.toObject(Court::class.java)
+                }
+            }
+        return court
+    }
+
+    fun getCourtReviewById(id_court: Int, id_user: Int): LiveData<Rating> {
+        db.collection("ratings")
+            .whereEqualTo("id_court", id_court)
+            .whereEqualTo("id_user", id_user)
+            .addSnapshotListener { value, error ->
+                if (error != null) {
+                    Log.w(ContentValues.TAG, "Error getting documents.")
+                }
+                if (value != null && !value.isEmpty) {
+                    val ratingDocument = value.documents[0]
+                    rating.value = ratingDocument.toObject(Rating::class.java)
+                }
+            }
+        return rating
+    }
+
+    fun deleteReviewById(id: Int) {
+        db.collection("ratings")
+            .whereEqualTo("id", id)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val reviewDocuments = querySnapshot.documents
+                if (reviewDocuments.isNotEmpty()) {
+                    val reviewDocument = reviewDocuments[0]
+                    reviewDocument.reference.delete()
+                        .addOnSuccessListener {
+                        }
+                        .addOnFailureListener { exception ->
+                            Log.w(ContentValues.TAG, "Error deleting reservation.", exception)
+                        }
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.w(ContentValues.TAG, "Error getting reservation document.", exception)
+            }
+    }
+
+    fun updateCourtRatingById(id_court: Int) {
+        val ratingsRef = db.collection("ratings")
+        val query = ratingsRef.whereEqualTo("id_court", id_court)
+
+        query.get()
+            .addOnSuccessListener { querySnapshot ->
+                var totalRating = 0f
+                var totalReviews = 0
+
+                for (documentSnapshot in querySnapshot.documents) {
+                    val rating = documentSnapshot.toObject(Rating::class.java)
+                    if (rating != null && rating.rating != null) {
+                        totalRating += rating.rating
+                        totalReviews++
+                    }
+                }
+
+                val averageRating = if (totalReviews > 0) totalRating / totalReviews else 0f
+
+                val courtsRef = db.collection("courts")
+                val courtQuery = courtsRef.whereEqualTo("id_court", id_court)
+
+                courtQuery.get()
+                    .addOnSuccessListener { courtSnapshot ->
+                        for (courtDocument in courtSnapshot.documents) {
+                            courtDocument.reference.update(
+                                mapOf(
+                                    "court_rating" to averageRating
+                                )
+                            )
+                                .addOnSuccessListener {
+                                    Log.d(ContentValues.TAG, "Court rating updated successfully")
+                                }
+                                .addOnFailureListener { e ->
+                                    Log.w(ContentValues.TAG, "Error updating court rating", e)
+                                }
+                        }
+                    }
+                    .addOnFailureListener { e ->
+                        Log.w(ContentValues.TAG, "Error getting court document", e)
+                    }
+            }
+            .addOnFailureListener { e ->
+                Log.w(ContentValues.TAG, "Error getting ratings", e)
+            }
+    }
+
+    fun updateReview(id: Int, rating: Float, review: String){
+        val ratingRef = db.collection("ratings")
+        val query = ratingRef.whereEqualTo("id", id)
+
+        query.get()
+            .addOnSuccessListener { querySnapshot ->
+                for (documentSnapshot in querySnapshot.documents) {
+                    val ratingTmp = documentSnapshot.toObject(Rating::class.java)
+                    if (ratingTmp != null) {
+                        documentSnapshot.reference.update(
+                            mapOf(
+                                "rating" to rating,
+                                "review" to review
+                            )
+                        )
+                            .addOnSuccessListener {
+                                Log.d(ContentValues.TAG, " Rating updated successfully")
+                            }
+                            .addOnFailureListener { e ->
+                                Log.w(ContentValues.TAG, "Error updating rating", e)
+                            }
+                    }
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.w(ContentValues.TAG, "Error getting rating", e)
+            }
+    }
+
+    fun insertReview(id: Int?, id_user: Int, id_court: Int, rating: Float, review: String?) {
+        val rating = Rating(
+            id= id,
+            id_user = id_user,
+            id_court=id_court,
+            rating=rating,
+            review=review
+        )
+
+        db.collection("ratings")
+            .add(rating)
+            .addOnSuccessListener { documentReference ->
+                Log.d(ContentValues.TAG, "Rating added with ID: ${documentReference.id}")
+            }
+            .addOnFailureListener { e ->
+                Log.w(ContentValues.TAG, "Error adding rating", e)
+            }
+    }
+
+    companion object {
+        val factory : ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                CourtReviewViewModel()
+            }
+        }
+    }
+}
 
 @Composable
 fun CourtReviewScreen(
     navController: NavHostController,
-    viewModel: AppViewModel = viewModel(factory = AppViewModel.factory)
+    viewModel: CourtReviewViewModel = viewModel(factory = CourtReviewViewModel.factory)
 ) {
     val idCourt = navController.currentBackStackEntry?.arguments?.getInt(DETAIL_ARGUMENT_KEY3)
     val courtDetails by viewModel.getCourtById(idCourt!!).observeAsState()
@@ -338,10 +510,7 @@ fun CourtReviewScreen(
                     Text(text = "Delete")
                 }
                 Button(onClick = { text.let {
-                    viewModel.updateReview(feedback?.id!!,initialRating,
-                        it
-                    )
-                }
+                    viewModel.updateReview(feedback?.id!!,initialRating, it) }
                     viewModel.updateCourtRatingById(courtDetails?.id_court!!)
                     Toast.makeText(context, "Review correctly updated", Toast.LENGTH_SHORT).show()
                 },

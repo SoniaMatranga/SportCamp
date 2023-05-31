@@ -47,9 +47,7 @@ import com.maxkeppeler.sheets.calendar.models.CalendarSelection
 import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.BitmapConverter
 import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
-import it.polito.mad.sportcamp.database.AppViewModel
-import it.polito.mad.sportcamp.database.Court
-import it.polito.mad.sportcamp.database.TimeSlot
+import it.polito.mad.sportcamp.classes.Court
 import it.polito.mad.sportcamp.favoritesScreens.RatingStar
 import java.text.SimpleDateFormat
 import java.time.LocalDate

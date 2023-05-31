@@ -1,5 +1,7 @@
 package it.polito.mad.sportcamp.favoritesScreens
 
+import android.content.ContentValues
+import android.util.Log
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -19,19 +21,78 @@ import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavHostController
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY3
 import it.polito.mad.sportcamp.common.BitmapConverter
 import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
-import it.polito.mad.sportcamp.database.AppViewModel
-import it.polito.mad.sportcamp.database.Rating
+import it.polito.mad.sportcamp.classes.Rating
+import it.polito.mad.sportcamp.classes.User
 import it.polito.mad.sportcamp.ui.theme.Blue
 
+
+class CourtReviewListViewModel : ViewModel() {
+
+    private val db = Firebase.firestore
+    private val ratings = MutableLiveData<List<Rating>>()
+
+    private val user = MutableLiveData<User>()
+
+
+    fun getUserById() :MutableLiveData<User>{
+        db
+            .collection("users")
+            .document("user1")
+            .addSnapshotListener { value, error ->
+                if(error != null) Log.w(ContentValues.TAG, "Error getting documents.")
+                if(value != null) user.value = value?.toObject(User::class.java)
+            }
+        return user
+    }
+
+    fun getCourtReviewsById(id_court: Int) : LiveData<List<Rating>> {
+
+            db.collection("ratings")
+                .whereEqualTo("id_court", id_court)
+                .addSnapshotListener { value, error ->
+                    if (error != null) {
+                        Log.w(ContentValues.TAG, "Error getting documents.")
+                    }
+                    if (value != null) {
+                        val ratingList = mutableListOf<Rating>()
+                        for (doc in value.documents) {
+                            val rating = doc.toObject(Rating::class.java)
+                            if (rating != null) {
+                                ratingList.add(rating)
+                            }
+                        }
+                        ratings.value = ratingList
+                    }
+                }
+
+            return ratings
+
+    }
+    companion object {
+        val factory : ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                CourtReviewListViewModel()
+            }
+        }
+    }
+}
 @Composable
 fun CourtReviewListScreen(
     navController: NavHostController,
-    viewModel: AppViewModel = viewModel(factory = AppViewModel.factory)
+    viewModel: CourtReviewListViewModel = viewModel(factory = CourtReviewListViewModel.factory)
 ) {
     val idCourt = navController.currentBackStackEntry?.arguments?.getInt(DETAIL_ARGUMENT_KEY3)
     val reviews by viewModel.getCourtReviewsById(idCourt!!).observeAsState(listOf())
@@ -60,9 +121,9 @@ fun CourtReviewListScreen(
 
 
 @Composable
-fun ReviewCard(review: Rating, viewModel: AppViewModel) {
+fun ReviewCard(review: Rating, viewModel: CourtReviewListViewModel) {
 
-    val user by viewModel.getUserById(review.id_user!!).observeAsState()
+    val user by viewModel.getUserById().observeAsState()
     val bitmap = user?.image?.let { BitmapConverter.converterStringToBitmap(it) }
 
     ElevatedCard(
