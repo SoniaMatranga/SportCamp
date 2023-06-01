@@ -23,6 +23,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import it.polito.mad.sportcamp.Calendar.Calendar
@@ -39,14 +41,19 @@ class ReservationsViewModel : ViewModel() {
     private val db = Firebase.firestore
     private val reservations = MutableLiveData<List<Reservation>>()
     private val timeSlots = MutableLiveData<List<TimeSlot>>()
-    private val _loadingState = MutableLiveData<Boolean>(true)
+    private val _loadingState = MutableLiveData(true)
     val loadingState: LiveData<Boolean> = _loadingState
+    private var user: FirebaseUser = Firebase.auth.currentUser!!
+
+    private fun getUserUID(): String{
+        return user.uid
+    }
 
     fun getLoadingState(): Boolean {
         return _loadingState.value ?: false
     }
 
-    fun setLoadingState(loading: Boolean) {
+    private fun setLoadingState(loading: Boolean) {
         _loadingState.value = loading
     }
 
@@ -73,10 +80,10 @@ class ReservationsViewModel : ViewModel() {
     }
 
 
-    fun getReservationsByUser(id: Int): MutableLiveData<List<Reservation>> {
+    fun getReservationsByUser(): MutableLiveData<List<Reservation>> {
 
         db.collection("reservations")
-            .whereEqualTo("id_user", id)
+            .whereEqualTo("id_user", getUserUID())
             .addSnapshotListener { value, error ->
                 if (error != null) {
                     Log.w(ContentValues.TAG, "Error getting documents.")
@@ -114,7 +121,7 @@ fun ReservationsScreen(
 ) {
 
     val reservationsTimed = mutableListOf<ReservationTimed>()
-    val reservations by vm.getReservationsByUser(1).observeAsState()
+    val reservations by vm.getReservationsByUser().observeAsState()
     val timeSlots by vm.getTimeSlots().observeAsState()
     val isLoading = vm.loadingState.value ?: true
 
@@ -148,7 +155,7 @@ fun ReservationsScreen(
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 when {
-                    isLoading == true -> {
+                    isLoading -> {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -161,12 +168,10 @@ fun ReservationsScreen(
                     }
 
                     else -> {
-                        reservationsTimed?.let {
-                            Calendar(
-                                navController = navController,
-                                reservationsList = it
-                            )
-                        }
+                        Calendar(
+                            navController = navController,
+                            reservationsList = reservationsTimed
+                        )
                     }
                 }
 

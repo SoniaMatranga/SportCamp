@@ -38,6 +38,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavHostController
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.gowtham.ratingbar.RatingBar
@@ -57,6 +59,12 @@ class CourtReviewViewModel : ViewModel() {
     private val db = Firebase.firestore
     private val court = MutableLiveData<Court>()
     private val rating = MutableLiveData<Rating>()
+    private var user: FirebaseUser = Firebase.auth.currentUser!!
+
+    private fun getUserUID(): String{
+        return user.uid
+    }
+
     fun getCourtById(id_court: Int): MutableLiveData<Court> {
         db.collection("courts")
             .whereEqualTo("id_court", id_court)
@@ -72,10 +80,10 @@ class CourtReviewViewModel : ViewModel() {
         return court
     }
 
-    fun getCourtReviewById(id_court: Int, id_user: Int): LiveData<Rating> {
+    fun getCourtReviewById(id_court: Int): LiveData<Rating> {
         db.collection("ratings")
             .whereEqualTo("id_court", id_court)
-            .whereEqualTo("id_user", id_user)
+            .whereEqualTo("id_user", getUserUID())
             .addSnapshotListener { value, error ->
                 if (error != null) {
                     Log.w(ContentValues.TAG, "Error getting documents.")
@@ -220,7 +228,7 @@ fun CourtReviewScreen(
 ) {
     val idCourt = navController.currentBackStackEntry?.arguments?.getInt(DETAIL_ARGUMENT_KEY3)
     val courtDetails by viewModel.getCourtById(idCourt!!).observeAsState()
-    val feedback by viewModel.getCourtReviewById(idCourt!!, 1).observeAsState()
+    val feedback by viewModel.getCourtReviewById(idCourt!!).observeAsState()
     var alreadyRated by remember { mutableStateOf(true) }
     var alreadyReviewed by remember { mutableStateOf(true) }
     var initialRating: Float by remember { mutableStateOf(0f) }
@@ -280,7 +288,7 @@ fun CourtReviewScreen(
                 courtDetails?.court_rating?.let {
                     RatingStar(rating = it)
                     courtDetails?.court_rating?.let {
-                        var z = ((it * 10.0).roundToInt() / 10.0)
+                        val z = ((it * 10.0).roundToInt() / 10.0)
                         androidx.compose.material3.Text(
                             text = "($z)",
                             modifier = Modifier.padding(start = 2.dp)

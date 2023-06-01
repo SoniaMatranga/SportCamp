@@ -42,6 +42,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavHostController
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY
@@ -65,6 +67,12 @@ class BookReservationsViewModel : ViewModel() {
     private val db = Firebase.firestore
     private val court = MutableLiveData<Court>()
     private val timeSlots = MutableLiveData<List<TimeSlot>>()
+    private var user: FirebaseUser = Firebase.auth.currentUser!!
+
+
+    fun getUserUID(): String{
+        return user.uid
+    }
 
 
     private fun getTimeSlots() {
@@ -131,7 +139,7 @@ class BookReservationsViewModel : ViewModel() {
         return availableTimeSlots
     }
     fun addReservation(
-        idUser: Int?,
+        idUser: String?,
         idCourt: Int?,
         timeSlot: String?,
         date: String?,
@@ -261,7 +269,7 @@ fun BookReservationScreen(
         }
 
 
-        if(timeSlots?.isNotEmpty() == true) {
+        if(timeSlots.isNotEmpty()) {
 
 
             Column {
@@ -313,7 +321,7 @@ Surface(color=Color.White) {
                                     onDismissRequest = { vm.expandedTimeSlot = false },
                                     modifier = Modifier.background(Color.White)
                                 ) {
-                                    timeSlots?.forEach { item ->
+                                    timeSlots.forEach { item ->
                                         DropdownMenuItem(
                                             content = { Text(text = item) },
                                             onClick = {
@@ -392,7 +400,7 @@ Surface(color=Color.White) {
                             if (vm.selectedTimeSlot != "Select time slot" && vm.selectedEquipments != "Select equipments") {
                                 courtDetails?.id_court?.let {
                                     vm.addReservation(
-                                         1,
+                                         vm.getUserUID(),
                                         it, vm.selectedTimeSlot, date, vm.selectedEquipments, ""
                                     )
                                 }

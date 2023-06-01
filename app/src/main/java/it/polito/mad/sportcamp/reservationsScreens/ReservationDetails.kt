@@ -58,6 +58,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavHostController
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY
@@ -78,9 +80,14 @@ class ReservationDetailsViewModel : ViewModel() {
     private val db = Firebase.firestore
     private val reservations = MutableLiveData<List<Reservation>>()
     private val timeSlots = MutableLiveData<List<TimeSlot>>()
+    private var user: FirebaseUser = Firebase.auth.currentUser!!
 
-    private val _loadingState = MutableLiveData<Boolean>(true)
+    private val _loadingState = MutableLiveData(true)
     val loadingState: LiveData<Boolean> = _loadingState
+
+    private fun getUserUID(): String{
+        return user.uid
+    }
 
     fun getLoadingState(): Boolean {
         return _loadingState.value ?: false
@@ -91,7 +98,7 @@ class ReservationDetailsViewModel : ViewModel() {
     }
 
 
-    fun getTimeSlots() {
+    private fun getTimeSlots() {
         db.collection("slots")
             .addSnapshotListener { value, error ->
                 if (error != null) {
@@ -137,12 +144,12 @@ class ReservationDetailsViewModel : ViewModel() {
             }
     }
 
-    fun getReservationsByUserAndDate(id: Int, date: String): MutableLiveData<List<ReservationContent>> {
+    fun getReservationsByUserAndDate(date: String): MutableLiveData<List<ReservationContent>> {
         val reservationsContent = MutableLiveData<List<ReservationContent>>()
         getTimeSlots()
 
         db.collection("reservations")
-            .whereEqualTo("id_user", id)
+            .whereEqualTo("id_user", getUserUID())
             .whereEqualTo("date", date)
             .addSnapshotListener { value, error ->
                 if (error != null) {
@@ -222,7 +229,7 @@ fun ReservationDetails(
     val selectedDate = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY).toString()
     val isLoading = viewModel.loadingState.value ?: true
 
-    val reservations by viewModel.getReservationsByUserAndDate(1, selectedDate).observeAsState()
+    val reservations by viewModel.getReservationsByUserAndDate(selectedDate).observeAsState()
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -231,7 +238,7 @@ fun ReservationDetails(
         CustomToolbarReservationDetails(title = "My reservations details", navController = navController)
 
         when {
-            isLoading == true -> {
+            isLoading -> {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()

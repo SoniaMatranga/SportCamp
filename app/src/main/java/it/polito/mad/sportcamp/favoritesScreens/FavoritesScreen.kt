@@ -41,6 +41,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import it.polito.mad.sportcamp.bottomnav.Screen
@@ -59,16 +61,21 @@ data class ChipsModel(
 class FavoriteViewModel : ViewModel() {
 
     private val db = Firebase.firestore
-    private val _loadingState = MutableLiveData<Boolean>(true)
+    private val _loadingState = MutableLiveData(true)
     val loadingState: LiveData<Boolean> = _loadingState
     var sportFilter by mutableStateOf("Tennis")
     var selectedItem by  mutableStateOf("Tennis")
+    private var user: FirebaseUser = Firebase.auth.currentUser!!
+
+    private fun getUserUID(): String{
+        return user.uid
+    }
 
     fun getLoadingState(): Boolean {
         return _loadingState.value ?: false
     }
 
-    fun setLoadingState(loading: Boolean) {
+    private fun setLoadingState(loading: Boolean) {
         _loadingState.value = loading
     }
 
@@ -79,7 +86,7 @@ class FavoriteViewModel : ViewModel() {
         val courts = MediatorLiveData<List<Court>>()
 
         db.collection("reservations")
-            .whereEqualTo("id_user", 1)
+            .whereEqualTo("id_user", getUserUID())
 
             .whereLessThan("date", currentDate)
             .addSnapshotListener { value, error ->
@@ -124,7 +131,7 @@ class FavoriteViewModel : ViewModel() {
         val courts = MediatorLiveData<List<Court>>()
 
         db.collection("reservations")
-            .whereEqualTo("id_user", 1)
+            .whereEqualTo("id_user", getUserUID())
             .whereLessThan("date", currentDate)
             .addSnapshotListener { value, error ->
                 if (error != null) {
@@ -250,7 +257,7 @@ fun FavoritesScreen(
 
                                 }
                                 false -> {
-                                    vm.selectedItem = item.name;
+                                    vm.selectedItem = item.name
                                     vm.sportFilter = item.name
                                 }
                             }
@@ -274,7 +281,7 @@ fun FavoritesScreen(
             modifier = Modifier.padding(vertical = 2.dp, horizontal = 4.dp),
         ) {
             when {
-                isLoading == true -> {
+                isLoading -> {
                     item {
                         Box(
                             modifier = Modifier

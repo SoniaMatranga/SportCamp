@@ -29,6 +29,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavHostController
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY3
@@ -45,15 +47,20 @@ class CourtReviewListViewModel : ViewModel() {
     private val ratings = MutableLiveData<List<Rating>>()
 
     private val user = MutableLiveData<User>()
+    private var fuser: FirebaseUser = Firebase.auth.currentUser!!
+
+    private fun getUserUID(): String{
+        return fuser.uid
+    }
 
 
     fun getUserById() :MutableLiveData<User>{
         db
             .collection("users")
-            .document("user1")
+            .document(getUserUID())
             .addSnapshotListener { value, error ->
                 if(error != null) Log.w(ContentValues.TAG, "Error getting documents.")
-                if(value != null) user.value = value?.toObject(User::class.java)
+                if(value != null) user.value = value.toObject(User::class.java)
             }
         return user
     }

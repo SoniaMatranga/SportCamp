@@ -59,6 +59,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import it.polito.mad.sportcamp.common.SaveMessage
@@ -67,7 +69,7 @@ import it.polito.mad.sportcamp.ui.theme.*
 import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
 
 
-class EditProfileViewModel (): ViewModel() {
+class EditProfileViewModel : ViewModel() {
 
     var usrName by mutableStateOf("")
     var usrNickname by mutableStateOf("")
@@ -89,17 +91,22 @@ class EditProfileViewModel (): ViewModel() {
 
     private val db = Firebase.firestore
     private val user = MutableLiveData<User>()
+    private var fuser: FirebaseUser = Firebase.auth.currentUser!!
 
 
     fun getUserDocument() : MutableLiveData<User> {
         db
             .collection("users")
-            .document("user1")
+            .document(getUserUID())
             .addSnapshotListener { value, error ->
                 if(error != null) Log.w(ContentValues.TAG, "Error getting documents.")
-                if(value != null) user.value = value?.toObject(User::class.java)
+                if(value != null) user.value = value.toObject(User::class.java)
             }
         return user
+    }
+
+    private fun getUserUID(): String{
+        return fuser.uid
     }
 
 
@@ -133,7 +140,7 @@ class EditProfileViewModel (): ViewModel() {
         id_user: Int,
         image: String
     ) {
-        val userRef = db.collection("users").document("user1")
+        val userRef = db.collection("users").document(getUserUID())
 
         val updateData = hashMapOf(
             "nickname" to nickname,

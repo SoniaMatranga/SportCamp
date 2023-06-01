@@ -18,7 +18,7 @@ data class ReservationContent(
 
 data class ReservationTimed(
     val  id_reservation: Int?,
-    val id_user: Int?,
+    val id_user: String?,
     val id_court: Int?,
     val time_slot: String?,
     val date: String?,

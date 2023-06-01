@@ -282,7 +282,7 @@ fun ReservationEditScreen(
 
 
 
-        if (timeSlots?.isNotEmpty() == true) {
+        if (timeSlots.isNotEmpty()) {
 
             Column {
 
@@ -322,7 +322,7 @@ fun ReservationEditScreen(
                                 expanded = vm.expandedTimeSlot,
                                 onDismissRequest = { vm.expandedTimeSlot = false }
                             ) {
-                                timeSlots?.forEach { item ->
+                                timeSlots.forEach { item ->
                                     DropdownMenuItem(
                                         content = { Text(text = item) },
                                         onClick = {
