@@ -14,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -50,13 +49,17 @@ fun NavItems(){
 fun BottomBar(navController:NavHostController)
 {
     val screens = listOf(
-        Screen.ReservationsBottomBar,
-        Screen.RatingsBottomBar,
-        Screen.ProfileBottomBar
+        Screen.Reservations,
+        Screen.Favorites,
+        Screen.Profile
     )
 
     val navStackBackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navStackBackEntry?.destination
+
+    val showBottomBar = navController
+        .currentBackStackEntryAsState().value?.destination?.route in screens.map { it.route }
+
 
     Row (
         modifier = Modifier
@@ -64,14 +67,16 @@ fun BottomBar(navController:NavHostController)
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
-            ){
-        screens.forEach { screen ->
-            AddItem(
-                screen = screen,
-                currentDestination = currentDestination,
-                navController = navController
-            )
-        }
+            ) {
+        if (showBottomBar){
+            screens.forEach { screen ->
+                AddItem(
+                    screen = screen,
+                    currentDestination = currentDestination,
+                    navController = navController
+                )
+            }
+    }
     }
 }
 
@@ -120,9 +125,3 @@ fun AddItem(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
-@Composable
-@Preview
-fun BottomNavPreview(){
-    NavItems()
-}

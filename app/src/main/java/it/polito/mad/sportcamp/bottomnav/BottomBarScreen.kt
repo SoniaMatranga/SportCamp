@@ -41,27 +41,6 @@ sealed class Screen(
         icon_focused = Icons.Outlined.Person
     )
 
-    object ProfileBottomBar: Screen(
-        route = "profileBottomBar",
-        title = "Profile",
-        icon = Icons.Outlined.Person,
-        icon_focused = Icons.Outlined.Person
-    )
-
-    object RatingsBottomBar: Screen(
-        route = "ratingsBottomBar",
-        title = "Ratings",
-        icon = Icons.Outlined.Star,
-        icon_focused = Icons.Outlined.Star
-    )
-
-    object ReservationsBottomBar: Screen(
-        route = "reservationsBottomBar",
-        title = "Reservations",
-        icon = Icons.Outlined.Dashboard,
-        icon_focused = Icons.Outlined.Dashboard
-    )
-
     object EditProfile: Screen(
         route = "editProfile/{$DETAIL_ARGUMENT_KEY}",
         title = "editProfile",
@@ -137,6 +116,20 @@ sealed class Screen(
             return "reservationEdit/$id_reservation/$id_court/$date"
         }
     }
+
+    object Splash: Screen(
+        route = "splash",
+        title = "Splash",
+        icon = Icons.Outlined.Star,
+        icon_focused = Icons.Outlined.Star
+    )
+
+    object Login: Screen(
+        route = "login",
+        title = "Login",
+        icon = Icons.Outlined.Star,
+        icon_focused = Icons.Outlined.Star
+    )
 
 
 }

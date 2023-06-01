@@ -7,13 +7,14 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import it.polito.mad.sportcamp.profileScreens.EditProfileScreen
 import it.polito.mad.sportcamp.profileScreens.ProfileScreen
 import it.polito.mad.sportcamp.reservationsScreens.AddReservationsScreen
 import it.polito.mad.sportcamp.reservationsScreens.ReservationsScreen
 import it.polito.mad.sportcamp.favoritesScreens.*
+import it.polito.mad.sportcamp.initialScreens.LoginScreen
+import it.polito.mad.sportcamp.initialScreens.SplashScreen
 import it.polito.mad.sportcamp.reservationsScreens.BookReservationScreen
 import it.polito.mad.sportcamp.reservationsScreens.ReservationDetails
 import it.polito.mad.sportcamp.reservationsScreens.ReservationEditScreen
@@ -25,17 +26,15 @@ fun BottomNavGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = Screen.ReservationsBottomBar.route
+        startDestination = Screen.Splash.route
     ) {
-        navigation(
-            startDestination = Screen.Reservations.route,
-            route = Screen.ReservationsBottomBar.route
-        ) {
+
             composable(route = Screen.Reservations.route)
             {
                 ReservationsScreen(navController = navController)
             }
-            composable(route = Screen.ReservationDetails.route,
+            composable(
+                route = Screen.ReservationDetails.route,
                 arguments = listOf(navArgument(DETAIL_ARGUMENT_KEY) {
                     type = NavType.StringType
                 })
@@ -79,9 +78,7 @@ fun BottomNavGraph(
                 ReservationEditScreen(navController = navController)
             }
 
-        }
 
-        navigation(startDestination = Screen.Favorites.route, route = Screen.RatingsBottomBar.route) {
             composable(route = Screen.Favorites.route)
             {
                 FavoritesScreen(navController = navController)
@@ -106,10 +103,8 @@ fun BottomNavGraph(
             {
                 CourtReviewListScreen(navController = navController)
             }
-        }
 
 
-        navigation(startDestination = Screen.Profile.route, route = Screen.ProfileBottomBar.route) {
             composable(route = Screen.Profile.route)
             {
                 ProfileScreen(navController = navController)
@@ -124,7 +119,21 @@ fun BottomNavGraph(
                 // Log.d("Args",it.arguments?.getInt(DETAIL_ARGUMENT_KEY).toString())
                 EditProfileScreen(navController = navController)
             }
-        }
+
+
+
+            composable(route = Screen.Login.route)
+            {
+                LoginScreen(navController = navController)
+            }
+
+            composable(route = Screen.Splash.route)
+            {
+                SplashScreen(navController = navController)
+            }
+
 
     }
+
+
 }
