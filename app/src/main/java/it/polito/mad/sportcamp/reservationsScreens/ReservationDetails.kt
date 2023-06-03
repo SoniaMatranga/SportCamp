@@ -119,7 +119,7 @@ class ReservationDetailsViewModel : ViewModel() {
     }
 
 
-    fun deleteReservationById(id: Int) {
+    fun deleteReservationById(id: String) {
         db.collection("reservations")
             .whereEqualTo("id_reservation", id)
             .get()
@@ -131,7 +131,7 @@ class ReservationDetailsViewModel : ViewModel() {
                         .addOnSuccessListener {
                             // Rimuovi la prenotazione dalla lista delle prenotazioni
                             val currentReservations = reservations.value?.toMutableList()
-                            currentReservations?.removeAll { it.id_reservation == id }
+                            currentReservations?.removeAll { it.id_reservation?.equals(id) ?: false }
                             reservations.value = currentReservations
                         }
                         .addOnFailureListener { exception ->

@@ -61,11 +61,11 @@ class CourtReviewViewModel : ViewModel() {
     private val rating = MutableLiveData<Rating>()
     private var user: FirebaseUser = Firebase.auth.currentUser!!
 
-    private fun getUserUID(): String{
+     fun getUserUID(): String{
         return user.uid
     }
 
-    fun getCourtById(id_court: Int): MutableLiveData<Court> {
+    fun getCourtById(id_court: String): MutableLiveData<Court> {
         db.collection("courts")
             .whereEqualTo("id_court", id_court)
             .addSnapshotListener { value, error ->
@@ -80,7 +80,7 @@ class CourtReviewViewModel : ViewModel() {
         return court
     }
 
-    fun getCourtReviewById(id_court: Int): LiveData<Rating> {
+    fun getCourtReviewById(id_court: String): LiveData<Rating> {
         db.collection("ratings")
             .whereEqualTo("id_court", id_court)
             .whereEqualTo("id_user", getUserUID())
@@ -96,7 +96,7 @@ class CourtReviewViewModel : ViewModel() {
         return rating
     }
 
-    fun deleteReviewById(id: Int) {
+    fun deleteReviewById(id: String) {
         db.collection("ratings")
             .whereEqualTo("id", id)
             .get()
@@ -117,7 +117,7 @@ class CourtReviewViewModel : ViewModel() {
             }
     }
 
-    fun updateCourtRatingById(id_court: Int) {
+    fun updateCourtRatingById(id_court: String) {
         val ratingsRef = db.collection("ratings")
         val query = ratingsRef.whereEqualTo("id_court", id_court)
 
@@ -128,7 +128,7 @@ class CourtReviewViewModel : ViewModel() {
 
                 for (documentSnapshot in querySnapshot.documents) {
                     val rating = documentSnapshot.toObject(Rating::class.java)
-                    if (rating != null && rating.rating != null) {
+                    if (rating?.rating != null) {
                         totalRating += rating.rating
                         totalReviews++
                     }
@@ -164,7 +164,7 @@ class CourtReviewViewModel : ViewModel() {
             }
     }
 
-    fun updateReview(id: Int, rating: Float, review: String){
+    fun updateReview(id: String, rating: Float, review: String){
         val ratingRef = db.collection("ratings")
         val query = ratingRef.whereEqualTo("id", id)
 
@@ -193,23 +193,36 @@ class CourtReviewViewModel : ViewModel() {
             }
     }
 
-    fun insertReview(id: Int?, id_user: Int, id_court: Int, rating: Float, review: String?) {
-        val rating = Rating(
-            id= id,
+    fun insertReview(id_user: String, id_court: String, rating: Float, review: String?) {
+        val ratingTmp = Rating(
             id_user = id_user,
-            id_court=id_court,
-            rating=rating,
-            review=review
+            id_court =id_court,
+            rating =rating,
+            review =review
         )
+            val ratingsCollection = db.collection("ratings")
 
-        db.collection("ratings")
-            .add(rating)
-            .addOnSuccessListener { documentReference ->
-                Log.d(ContentValues.TAG, "Rating added with ID: ${documentReference.id}")
-            }
-            .addOnFailureListener { e ->
-                Log.w(ContentValues.TAG, "Error adding rating", e)
-            }
+            ratingsCollection
+                .add(ratingTmp)
+                .addOnSuccessListener { documentReference ->
+                    val generatedId = documentReference.id
+                    ratingTmp.id= generatedId
+
+                    // Update the reservation document with the generated ID
+                    ratingsCollection.document(generatedId)
+                        .set(ratingTmp)
+                        .addOnSuccessListener {
+                            Log.d(ContentValues.TAG, "Rating added with ID: $generatedId")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.w(ContentValues.TAG, "Error adding rating", e)
+                        }
+                }
+                .addOnFailureListener { e ->
+                    Log.w(ContentValues.TAG, "Error adding rating", e)
+                }
+
+
     }
 
     companion object {
@@ -226,7 +239,7 @@ fun CourtReviewScreen(
     navController: NavHostController,
     viewModel: CourtReviewViewModel = viewModel(factory = CourtReviewViewModel.factory)
 ) {
-    val idCourt = navController.currentBackStackEntry?.arguments?.getInt(DETAIL_ARGUMENT_KEY3)
+    val idCourt = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY3)
     val courtDetails by viewModel.getCourtById(idCourt!!).observeAsState()
     val feedback by viewModel.getCourtReviewById(idCourt!!).observeAsState()
     var alreadyRated by remember { mutableStateOf(true) }
@@ -537,7 +550,7 @@ fun CourtReviewScreen(
             Button(
                 onClick = {
                     if (idCourt != null) {
-                        viewModel.insertReview(null, 1, idCourt, initialRating, text)
+                        viewModel.insertReview( viewModel.getUserUID(), idCourt.toString(), initialRating, text)
                         viewModel.updateCourtRatingById(courtDetails?.id_court!!)
                         Toast.makeText(context, "Review correctly published", Toast.LENGTH_SHORT).show()
                     }

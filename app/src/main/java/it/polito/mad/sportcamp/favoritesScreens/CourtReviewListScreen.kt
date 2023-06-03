@@ -65,7 +65,7 @@ class CourtReviewListViewModel : ViewModel() {
         return user
     }
 
-    fun getCourtReviewsById(id_court: Int) : LiveData<List<Rating>> {
+    fun getCourtReviewsById(id_court: String) : LiveData<List<Rating>> {
 
             db.collection("ratings")
                 .whereEqualTo("id_court", id_court)
@@ -101,7 +101,7 @@ fun CourtReviewListScreen(
     navController: NavHostController,
     viewModel: CourtReviewListViewModel = viewModel(factory = CourtReviewListViewModel.factory)
 ) {
-    val idCourt = navController.currentBackStackEntry?.arguments?.getInt(DETAIL_ARGUMENT_KEY3)
+    val idCourt = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY3)
     val reviews by viewModel.getCourtReviewsById(idCourt!!).observeAsState(listOf())
 
     Column(

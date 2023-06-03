@@ -137,7 +137,7 @@ class EditProfileViewModel : ViewModel() {
         level: String,
         sports: String,
         bio: String,
-        id_user: Int,
+        id_user: String,
         image: String
     ) {
         val userRef = db.collection("users").document(getUserUID())
@@ -265,7 +265,7 @@ fun EditProfileScreen(
                 Button(
                     onClick = {
                         val usr = User(
-                            id_user =  userId.trim().toInt(),
+                            id_user =  userId.trim(),
                             nickname = if (vm.isEditedNickname) vm.usrNickname else user?.nickname,
                             name = if (vm.isEditedName) vm.usrName else user?.name,
                             mail =  user?.mail,
@@ -569,7 +569,7 @@ fun EditProfileScreen(
                                     || vm.isEditedName || vm.isEditedSports || vm.isEditedNickname || isEditedImage) {
                                     //openDialog.value=true
                                     val usr = User(
-                                        id_user =  userId.trim().toInt(),
+                                        id_user =  userId.trim(),
                                         nickname = if (vm.isEditedNickname) vm.usrNickname else user?.nickname,
                                         name = if (vm.isEditedName) vm.usrName else user?.name,
                                         mail =  user?.mail,

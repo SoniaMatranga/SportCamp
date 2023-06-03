@@ -2,9 +2,9 @@ package it.polito.mad.sportcamp.classes
 
 
 data class Rating(
-    val id: Int? = null,
-    val id_user: Int? = null,
-    val id_court: Int? = null,
+    var id: String? = null,
+    val id_user: String? = null,
+    val id_court: String? = null,
     val rating: Float? = null,
     val review: String? = null
 )

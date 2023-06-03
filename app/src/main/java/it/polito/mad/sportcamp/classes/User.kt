@@ -3,7 +3,7 @@ package it.polito.mad.sportcamp.classes
 
 
 data class User(
-    val id_user: Int? = null,
+    val id_user: String? = null,
     val nickname: String? = null,
     val name: String? = null,
     val mail: String? = null,

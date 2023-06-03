@@ -94,7 +94,7 @@ class BookReservationsViewModel : ViewModel() {
                 }
             }
     }
-    fun getCourtById(id_court: Int): MutableLiveData<Court> {
+    fun getCourtById(id_court: String): MutableLiveData<Court> {
         db.collection("courts")
             .whereEqualTo("id_court", id_court)
             .addSnapshotListener { value, error ->
@@ -109,7 +109,7 @@ class BookReservationsViewModel : ViewModel() {
         return court
     }
 
-    suspend fun getAvailableTimeSlots(courtId: Int?, date: String?): MutableLiveData<List<String>> {
+    suspend fun getAvailableTimeSlots(courtId: String, date: String?): MutableLiveData<List<String>> {
         getTimeSlots()
         val availableTimeSlots = MutableLiveData<List<String>>()
 
@@ -140,25 +140,37 @@ class BookReservationsViewModel : ViewModel() {
     }
     fun addReservation(
         idUser: String?,
-        idCourt: Int?,
+        idCourt: String?,
         timeSlot: String?,
         date: String?,
         equipments: String?,
         options: String?
     ) {
-        val reservation = Reservation(
-            id_user = idUser,
-            id_court = idCourt,
-            id_time_slot = getTimeSlotId(timeSlot),
-            date = date,
-            equipments = equipments,
-            options = options
-        )
+            val reservation = Reservation(
+                id_user = idUser,
+                id_court = idCourt,
+                id_time_slot = getTimeSlotId(timeSlot),
+                date = date,
+                equipments = equipments,
+                options = options
+            )
+        val reservationsCollection = db.collection("reservations")
 
-        db.collection("reservations")
+        reservationsCollection
             .add(reservation)
             .addOnSuccessListener { documentReference ->
-                Log.d(ContentValues.TAG, "Reservation added with ID: ${documentReference.id}")
+                val generatedId = documentReference.id
+                reservation.id_reservation = generatedId
+
+                // Update the reservation document with the generated ID
+                reservationsCollection.document(generatedId)
+                    .set(reservation)
+                    .addOnSuccessListener {
+                        Log.d(ContentValues.TAG, "Reservation added with ID: $generatedId")
+                    }
+                    .addOnFailureListener { e ->
+                        Log.w(ContentValues.TAG, "Error adding reservation", e)
+                    }
             }
             .addOnFailureListener { e ->
                 Log.w(ContentValues.TAG, "Error adding reservation", e)
@@ -184,18 +196,18 @@ fun BookReservationScreen(
     vm: BookReservationsViewModel = viewModel(factory = BookReservationsViewModel.factory)
 ) {
 
-    val idCourt = navController.currentBackStackEntry?.arguments?.getInt(DETAIL_ARGUMENT_KEY).toString()
+    val idCourt = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY).toString()
     val date = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY2).toString()
 
 
     var timeSlots by remember { mutableStateOf(emptyList<String>()) }
 
-    LaunchedEffect(idCourt.toInt(), date) {
-        val availableTimeSlots = vm.getAvailableTimeSlots(idCourt.toInt(), date).value
+    LaunchedEffect(idCourt, date) {
+        val availableTimeSlots = vm.getAvailableTimeSlots(idCourt, date).value
         timeSlots = availableTimeSlots ?: emptyList()
     }
 
-    val courtDetails by vm.getCourtById(idCourt.toInt()).observeAsState()
+    val courtDetails by vm.getCourtById(idCourt).observeAsState()
 
 
     val equipments = listOf("Not requested", "Requested")

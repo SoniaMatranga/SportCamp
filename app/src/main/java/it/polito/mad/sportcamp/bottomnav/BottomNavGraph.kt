@@ -52,7 +52,7 @@ fun BottomNavGraph(
                 route = Screen.BookReservation.route,
                 arguments = listOf(
                     navArgument(DETAIL_ARGUMENT_KEY) {
-                        type = NavType.IntType
+                        type = NavType.StringType
                     },
                     navArgument(DETAIL_ARGUMENT_KEY2) {
                         type = NavType.StringType
@@ -66,9 +66,9 @@ fun BottomNavGraph(
             composable(
                 route = Screen.ReservationEdit.route,
                 arguments = listOf(navArgument(DETAIL_ARGUMENT_KEY4) {
-                    type = NavType.IntType
+                    type = NavType.StringType
                 }, navArgument(DETAIL_ARGUMENT_KEY3) {
-                    type = NavType.IntType
+                    type = NavType.StringType
                 }, navArgument(DETAIL_ARGUMENT_KEY2) {
                     type = NavType.StringType
                 }
@@ -87,7 +87,7 @@ fun BottomNavGraph(
             composable(
                 route = Screen.CourtReview.route,
                 arguments = listOf(navArgument(DETAIL_ARGUMENT_KEY3) {
-                    type = NavType.IntType
+                    type = NavType.StringType
                 })
             )
             {
@@ -97,7 +97,7 @@ fun BottomNavGraph(
             composable(
                 route = Screen.CourtReviewList.route,
                 arguments = listOf(navArgument(DETAIL_ARGUMENT_KEY3) {
-                    type = NavType.IntType
+                    type = NavType.StringType
                 })
             )
             {

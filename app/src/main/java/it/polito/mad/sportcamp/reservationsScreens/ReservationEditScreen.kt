@@ -92,7 +92,7 @@ class ReservationEditViewModel : ViewModel() {
             }
     }
 
-    fun getCourtById(id_court: Int): MutableLiveData<Court> {
+    fun getCourtById(id_court: String): MutableLiveData<Court> {
         db.collection("courts")
             .whereEqualTo("id_court", id_court)
             .addSnapshotListener { value, error ->
@@ -108,7 +108,7 @@ class ReservationEditViewModel : ViewModel() {
     }
 
 
-    fun updateReservationById(idReservation: Int) {
+    fun updateReservationById(idReservation: String) {
         val reservationsRef = db.collection("reservations")
         val query = reservationsRef.whereEqualTo("id_reservation", idReservation)
 
@@ -143,7 +143,7 @@ class ReservationEditViewModel : ViewModel() {
     }
 
 
-    suspend fun getAvailableTimeSlots(courtId: Int?, date: String?): MutableLiveData<List<String>> {
+    suspend fun getAvailableTimeSlots(courtId: String, date: String?): MutableLiveData<List<String>> {
         getTimeSlots()
         val availableTimeSlots = MutableLiveData<List<String>>()
 
@@ -190,16 +190,16 @@ fun ReservationEditScreen(
     vm: ReservationEditViewModel= viewModel(factory = ReservationEditViewModel.factory)
 ) {
 
-    val idReservation = navController.currentBackStackEntry?.arguments?.getInt(DETAIL_ARGUMENT_KEY4).toString()
-    val idCourt = navController.currentBackStackEntry?.arguments?.getInt(DETAIL_ARGUMENT_KEY3).toString()
+    val idReservation = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY4).toString()
+    val idCourt = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY3).toString()
     val date = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY2)
     
 
-    val court by vm.getCourtById(idCourt.toInt()).observeAsState()
+    val court by vm.getCourtById(idCourt).observeAsState()
     var timeSlots by remember { mutableStateOf(emptyList<String>()) }
 
-    LaunchedEffect(idCourt.toInt(), date) {
-        val availableTimeSlots = vm.getAvailableTimeSlots(idCourt.toInt(), date).value
+    LaunchedEffect(idCourt, date) {
+        val availableTimeSlots = vm.getAvailableTimeSlots(idCourt, date).value
         timeSlots = availableTimeSlots ?: emptyList()
     }
     //val timeSlots by vm.getAvailableTimeSlots(idCourt.toInt(), date!!).observeAsState()
@@ -398,7 +398,7 @@ fun ReservationEditScreen(
                             if (vm.selectedTimeSlot != "Select time slot" && vm.selectedEquipments != "Select equipments") {
 
                                 vm.updateReservationById(
-                                    idReservation.toInt(),
+                                    idReservation,
                                 )
                                 Toast.makeText( context, "Booking successfully modified!", Toast.LENGTH_SHORT).show()
 

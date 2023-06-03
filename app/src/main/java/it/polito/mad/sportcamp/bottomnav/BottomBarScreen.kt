@@ -68,7 +68,7 @@ sealed class Screen(
        /* fun passDate(values: String): String {
             return this.route.replace(oldValue = "{$DETAIL_ARGUMENT_KEY}", newValue = values)
         }*/
-        fun passValues(id: Int?, date: String?): String {
+        fun passValues(id: String?, date: String?): String {
             return "bookReservation/$id/$date"
         }
     }
@@ -90,7 +90,7 @@ sealed class Screen(
         icon =Icons.Outlined.Edit,
         icon_focused = Icons.Outlined.Edit
     ) {
-        fun passIdCourt(id: Int): String {
+        fun passIdCourt(id: String): String {
             return this.route.replace(oldValue = "{$DETAIL_ARGUMENT_KEY3}", newValue = id.toString())
         }
     }
@@ -101,7 +101,7 @@ sealed class Screen(
         icon =Icons.Outlined.Edit,
         icon_focused = Icons.Outlined.Edit
     ) {
-        fun passIdCourt(id: Int): String {
+        fun passIdCourt(id: String): String {
             return this.route.replace(oldValue = "{$DETAIL_ARGUMENT_KEY3}", newValue = id.toString())
         }
     }
@@ -112,7 +112,7 @@ sealed class Screen(
         icon =Icons.Outlined.Edit,
         icon_focused = Icons.Outlined.Edit
     ) {
-        fun passValues(id_reservation: Int?, id_court: Int?, date: String?): String {
+        fun passValues(id_reservation: String, id_court: String, date: String?): String {
             return "reservationEdit/$id_reservation/$id_court/$date"
         }
     }
