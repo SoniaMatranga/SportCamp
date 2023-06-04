@@ -8,7 +8,7 @@ const val DETAIL_ARGUMENT_KEY = "id"
 const val DETAIL_ARGUMENT_KEY2 = "date"
 const val DETAIL_ARGUMENT_KEY3 = "id_court"
 const val DETAIL_ARGUMENT_KEY4 = "id_reservation"
-const val DETAIL_ARGUMENT_KEY5 = "court_name"
+//const val DETAIL_ARGUMENT_KEY5 = "court_name"
 
 sealed class Screen(
     val route: String,
@@ -129,6 +129,13 @@ sealed class Screen(
         title = "Login",
         icon = Icons.Outlined.Star,
         icon_focused = Icons.Outlined.Star
+    )
+
+    object ProfileDetails: Screen(
+        route = "profileDetails",
+        title = "Profile Details",
+        icon =Icons.Outlined.Edit,
+        icon_focused = Icons.Outlined.Edit
     )
 
 

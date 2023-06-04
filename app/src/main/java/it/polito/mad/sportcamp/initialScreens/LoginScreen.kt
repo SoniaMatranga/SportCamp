@@ -1,5 +1,6 @@
 package it.polito.mad.sportcamp.initialScreens
 
+import android.content.ContentValues
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
@@ -20,21 +21,89 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import it.polito.mad.sportcamp.R
 import it.polito.mad.sportcamp.bottomnav.Screen
+import it.polito.mad.sportcamp.classes.User
 import it.polito.mad.sportcamp.common.LoadingState
 import it.polito.mad.sportcamp.profileScreens.LoginScreenViewModel
+import it.polito.mad.sportcamp.profileScreens.ProfileViewModel
 import it.polito.mad.sportcamp.ui.theme.Orange
+
+
+
+class LoginViewModel : ViewModel() {
+
+    private val db = Firebase.firestore
+    private val user = MutableLiveData<User>()
+    private lateinit var fuser: FirebaseUser
+    var userExists by mutableStateOf(false)
+
+    private val usersCollection = db.collection("users")
+
+    fun getUserDocument() : MutableLiveData<User> {
+        usersCollection
+            .document(getUserUID())
+            .addSnapshotListener { value, error ->
+                if(error != null) Log.w(ContentValues.TAG, "Error getting documents.")
+                if(value != null) user.value = value.toObject(User::class.java)
+            }
+        return user
+    }
+
+    private fun getUserUID(): String{
+        return fuser.uid
+    }
+
+
+    fun isNotNew(callback: (Boolean) -> Unit) {
+        usersCollection.document(getUserUID()).get()
+            .addOnSuccessListener { documentSnapshot ->
+                userExists = documentSnapshot.exists() && documentSnapshot.contains("name")
+                callback(userExists)
+            }
+            .addOnFailureListener { exception ->
+                Log.w(ContentValues.TAG, "Error getting documents.", exception)
+                callback(false) // Assuming false if an error occurs
+            }
+    }
+
+    fun initializeInfo() {
+        fuser = Firebase.auth.currentUser!!
+    }
+
+    companion object {
+        val factory : ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                LoginViewModel()
+            }
+        }
+    }
+}
+
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun LoginScreen(navController: NavController, viewModel: LoginScreenViewModel = viewModel()) {
+fun LoginScreen(
+    navController: NavController,
+    viewModel: LoginScreenViewModel = viewModel(),
+    vm: LoginViewModel = viewModel(factory = LoginViewModel.factory)
+) {
 
     val state by viewModel.loadingState.collectAsState()
     var first by remember {
@@ -151,12 +220,21 @@ fun LoginScreen(navController: NavController, viewModel: LoginScreenViewModel = 
                                 when (state.status) {
                                     LoadingState.Status.SUCCESS -> {
                                         first = false
-                                        navController.navigate(route = Screen.Reservations.route)
-                                        Toast.makeText(
-                                            context,
-                                            "Welcome to Sport Camp!",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
+                                        vm.initializeInfo()
+                                        vm.isNotNew { isExistingUser ->
+                                            if (isExistingUser) {
+                                                // Existing user logic
+                                                navController.navigate(route = Screen.Reservations.route)
+                                                Toast.makeText(
+                                                    context,
+                                                    "Welcome to Sport Camp!",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            } else {
+                                                // New user logic
+                                                navController.navigate(route = Screen.ProfileDetails.route)
+                                            }
+                                        }
                                     }
 
                                     LoadingState.Status.FAILED -> {

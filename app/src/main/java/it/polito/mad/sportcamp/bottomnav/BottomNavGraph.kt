@@ -15,6 +15,7 @@ import it.polito.mad.sportcamp.reservationsScreens.ReservationsScreen
 import it.polito.mad.sportcamp.favoritesScreens.*
 import it.polito.mad.sportcamp.initialScreens.LoginScreen
 import it.polito.mad.sportcamp.initialScreens.SplashScreen
+import it.polito.mad.sportcamp.profileScreens.ProfileDetailsScreen
 import it.polito.mad.sportcamp.reservationsScreens.BookReservationScreen
 import it.polito.mad.sportcamp.reservationsScreens.ReservationDetails
 import it.polito.mad.sportcamp.reservationsScreens.ReservationEditScreen
@@ -131,6 +132,11 @@ fun BottomNavGraph(
             {
                 SplashScreen(navController = navController)
             }
+
+        composable(route = Screen.ProfileDetails.route)
+        {
+            ProfileDetailsScreen(navController = navController)
+        }
 
 
     }
