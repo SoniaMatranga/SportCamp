@@ -77,12 +77,18 @@ class EditProfileViewModel : ViewModel() {
     var usrCity by mutableStateOf("")
     var usrAge by mutableStateOf("")
     var usrGender by mutableStateOf("")
-    var usrLevel by mutableStateOf("")
+    var usrTennisLevel by mutableStateOf("")
+    var usrFootballLevel by mutableStateOf("")
+    var usrBasketLevel by mutableStateOf("")
+    var usrVolleyLevel by mutableStateOf("")
     var usrSports by mutableStateOf("")
     var usrBio by mutableStateOf("")
     var usrImage by mutableStateOf("")
     var isEditedGender by mutableStateOf(false)
-    var isEditedLevel by mutableStateOf(false)
+    var isEditedTennisLevel by mutableStateOf(false)
+    var isEditedFootballLevel by mutableStateOf(false)
+    var isEditedBasketLevel by mutableStateOf(false)
+    var isEditedVolleyLevel by mutableStateOf(false)
     var isEditedSports by mutableStateOf(false)
     var isEditedCity by mutableStateOf(false)
     var isEditedNickname by  mutableStateOf(false)
@@ -119,7 +125,10 @@ class EditProfileViewModel : ViewModel() {
                 usrAge = user?.age?.toString() ?: ""
                 usrBio = user?.bio ?: ""
                 usrCity = user?.city ?: ""
-                usrLevel = user?.level ?: ""
+                usrTennisLevel = user?.tennis_level ?: ""
+                usrFootballLevel = user?.football_level ?: ""
+                usrBasketLevel = user?.basket_level ?: ""
+                usrVolleyLevel = user?.volley_level ?: ""
                 usrGender = user?.gender ?: ""
                 usrSports = user?.sports ?: ""
                 usrImage = user?.image ?: ""
@@ -135,7 +144,10 @@ class EditProfileViewModel : ViewModel() {
         city: String,
         age: Int,
         gender: String,
-        level: String,
+        tennis_level: String,
+        basket_level: String,
+        football_level: String,
+        volley_level: String,
         sports: String,
         bio: String,
         id_user: String,
@@ -150,7 +162,10 @@ class EditProfileViewModel : ViewModel() {
             "city" to city,
             "age" to age,
             "gender" to gender,
-            "level" to level,
+            "tennis_level" to tennis_level,
+            "football_level" to football_level,
+            "volley_level" to volley_level,
+            "basket_level" to basket_level,
             "sports" to sports,
             "bio" to bio,
             "id_user" to id_user,
@@ -273,7 +288,10 @@ fun EditProfileScreen(
                             city = if (vm.isEditedCity) vm.usrCity else user?.city,
                             age = if (vm.isEditedAge) vm.usrAge.toInt() else user?.age,
                             gender = if (vm.isEditedGender) vm.usrGender else user?.gender,
-                            level = if (vm.isEditedLevel) vm.usrLevel else user?.level,
+                            tennis_level = if (vm.isEditedTennisLevel) vm.usrTennisLevel else user?.tennis_level,
+                            football_level =  if (vm.isEditedFootballLevel) vm.usrFootballLevel else user?.football_level,
+                            basket_level = if (vm.isEditedBasketLevel) vm.usrBasketLevel else user?.basket_level,
+                            volley_level =  if (vm.isEditedVolleyLevel) vm.usrVolleyLevel else user?.volley_level,
                             sports = if(vm.isEditedSports) vm.usrSports else user?.sports,
                             bio = if (vm.isEditedBio) vm.usrBio else user?.bio,
                             image = if(bitmap.value != null) bitmap.value?.let {
@@ -533,7 +551,10 @@ fun EditProfileScreen(
 
                     user?.gender?.let { DropDownMenu(if(vm.usrGender != "") vm.usrGender else it, "Gender") }
                     user?.sports?.let { DropDownMenuSports(if (vm.usrSports != "") vm.usrSports else it) }
-                    user?.level?.let { DropDownMenu(if(vm.usrLevel != "") vm.usrLevel else it, "Level") }
+                    user?.tennis_level?.let { DropDownMenu(if(vm.usrTennisLevel != "") vm.usrTennisLevel else it, "Tennis level") }
+                    user?.football_level?.let { DropDownMenu(if(vm.usrFootballLevel != "") vm.usrFootballLevel else it, "Football level") }
+                    user?.basket_level?.let { DropDownMenu(if(vm.usrBasketLevel != "") vm.usrBasketLevel else it, "Basketball level") }
+                    user?.volley_level?.let { DropDownMenu(if(vm.usrVolleyLevel != "") vm.usrVolleyLevel else it, "Volleyball level") }
 
 
                     user?.bio?.let {
@@ -566,8 +587,9 @@ fun EditProfileScreen(
                     ){
                         Column {
                             Button(onClick = {
-                                if ( vm.isEditedAge || vm.isEditedBio || vm.isEditedCity || vm.isEditedGender || vm.isEditedLevel
-                                    || vm.isEditedName || vm.isEditedSports || vm.isEditedNickname || isEditedImage) {
+                                if ( vm.isEditedAge || vm.isEditedBio || vm.isEditedCity || vm.isEditedGender || vm.isEditedTennisLevel
+                                    || vm.isEditedFootballLevel || vm.isEditedBasketLevel || vm.isEditedVolleyLevel ||
+                                     vm.isEditedName || vm.isEditedSports || vm.isEditedNickname || isEditedImage) {
                                     //openDialog.value=true
                                     val usr = User(
                                         id_user =  userId.trim(),
@@ -577,7 +599,10 @@ fun EditProfileScreen(
                                         city = if (vm.isEditedCity) vm.usrCity else user?.city,
                                         age = if (vm.isEditedAge) vm.usrAge.toInt() else user?.age,
                                         gender = if (vm.isEditedGender) vm.usrGender else user?.gender,
-                                        level = if (vm.isEditedLevel) vm.usrLevel else user?.level,
+                                        tennis_level = if (vm.isEditedTennisLevel) vm.usrTennisLevel else user?.tennis_level,
+                                        football_level =  if (vm.isEditedFootballLevel) vm.usrFootballLevel else user?.football_level,
+                                        basket_level = if (vm.isEditedBasketLevel) vm.usrBasketLevel else user?.basket_level,
+                                        volley_level =  if (vm.isEditedVolleyLevel) vm.usrVolleyLevel else user?.volley_level,
                                         sports = if(vm.isEditedSports) vm.usrSports else user?.sports,
                                         bio = if (vm.isEditedBio) vm.usrBio else user?.bio,
                                         image = if(bitmap.value != null) bitmap.value?.let {
@@ -614,7 +639,7 @@ fun updateUserInDB(
     viewModel: EditProfileViewModel
 ) {
     viewModel.updateUser(user.nickname!!, user.name!!,user.mail!!,user.city!!,
-        user.age!!,user.gender!!,user.level!!,user.sports!!,user.bio!!,user.id_user!!, user.image!! )
+        user.age!!,user.gender!!,user.tennis_level!!, user.basket_level!!, user.football_level!!, user.volley_level!!,user.sports!!,user.bio!!,user.id_user!!, user.image!! )
 }
 
 
@@ -669,7 +694,7 @@ fun DropDownMenu(userOption: String, type: String) {
 
     if (type == "Gender")
         suggestions = listOf("Male","Female","Other")
-    if (type == "Level")
+    if (type == "Tennis level" || type == "Football level" || type == "Basketball level" || type == "Volleyball level")
         suggestions = listOf ("Beginner", "Intermediate", "Advanced")
     if (type == "Sports")
         suggestions = listOf("Basketball", "Football", "Tennis", "Volleyball" )
@@ -690,7 +715,7 @@ fun DropDownMenu(userOption: String, type: String) {
                 .padding(all = 10.dp),
             onValueChange = { userInitialValue = it },
             readOnly = true,
-            label = { type },
+            label = { Text("$type") },
             trailingIcon = {
                 Icon(icon, "contentDescription",
                     Modifier.clickable { isExpanded = !isExpanded })
@@ -713,9 +738,21 @@ fun DropDownMenu(userOption: String, type: String) {
                         vm.isEditedGender = true
                         vm.usrGender = label
                     }
-                    if(type == "Level") {
-                        vm.isEditedLevel = true
-                        vm.usrLevel = label
+                    if(type == "Tennis level") {
+                        vm.isEditedTennisLevel = true
+                        vm.usrTennisLevel = label
+                    }
+                    if(type == "Football level") {
+                        vm.isEditedFootballLevel = true
+                        vm.usrFootballLevel = label
+                    }
+                    if(type == "Basketball level") {
+                        vm.isEditedBasketLevel = true
+                        vm.usrBasketLevel = label
+                    }
+                    if(type == "Volleyball level") {
+                        vm.isEditedVolleyLevel = true
+                        vm.usrVolleyLevel = label
                     }
                     if(type == "City") {
                         vm.isEditedCity = true

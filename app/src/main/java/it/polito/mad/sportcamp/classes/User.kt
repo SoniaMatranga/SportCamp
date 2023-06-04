@@ -12,7 +12,6 @@ data class User(
     val city: String? = null,
     val age: Int? = null,
     val gender: String? = null,
-    val level: String? = null,
     val sports: String? = null,
     val bio: String? = null,
     val image: String? = null,

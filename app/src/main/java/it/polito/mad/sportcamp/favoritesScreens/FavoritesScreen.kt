@@ -130,6 +130,7 @@ class FavoriteViewModel : ViewModel() {
             }
             .addOnCompleteListener { setLoadingState(false) }
 
+        setLoadingState(false)
         return courts
     }
 
