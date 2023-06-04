@@ -22,9 +22,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
+import androidx.compose.material.ButtonColors
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
@@ -81,7 +84,7 @@ import kotlin.math.roundToInt
 class ReservationDetailsViewModel : ViewModel() {
 
     private val db = Firebase.firestore
-    private val reservations = MutableLiveData<List<Reservation>>()
+    private val reservations = MutableLiveData<List<ReservationContent>>()
     private val timeSlots = MutableLiveData<List<TimeSlot>>()
     private var user: FirebaseUser = Firebase.auth.currentUser!!
 
@@ -123,6 +126,7 @@ class ReservationDetailsViewModel : ViewModel() {
 
 
     fun deleteReservationById(id: String) {
+
         db.collection("reservations")
             .whereEqualTo("id_reservation", id)
             .get()
@@ -132,7 +136,6 @@ class ReservationDetailsViewModel : ViewModel() {
                     val reservationDocument = reservationDocuments[0]
                     reservationDocument.reference.delete()
                         .addOnSuccessListener {
-                            // Rimuovi la prenotazione dalla lista delle prenotazioni
                             val currentReservations = reservations.value?.toMutableList()
                             currentReservations?.removeAll { it.id_reservation?.equals(id) ?: false }
                             reservations.value = currentReservations
@@ -207,10 +210,11 @@ class ReservationDetailsViewModel : ViewModel() {
 
             // Update the value of reservationsContent once the list is ready
             reservationsContent.value = reservationList
+            reservations.value = reservationsContent.value
             setLoadingState(false)
         }
 
-        return reservationsContent
+        return reservations
     }
 
 
@@ -230,7 +234,7 @@ fun ReservationDetails(
     viewModel: ReservationDetailsViewModel = viewModel(factory = ReservationDetailsViewModel.factory)
 ) {
     val selectedDate = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY).toString()
-    val isLoading = viewModel.loadingState.value ?: true
+    val isLoading = viewModel.loadingState.value ?: false
 
     val reservations by viewModel.getReservationsByUserAndDate(selectedDate).observeAsState()
 
@@ -241,7 +245,7 @@ fun ReservationDetails(
         CustomToolbarReservationDetails(title = "My reservations details", navController = navController)
 
         when {
-            isLoading -> {
+            isLoading && reservations?.size == 0 -> {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -486,11 +490,42 @@ fun ReservationCard(reservation: ReservationContent, selectedDate:String, viewMo
 
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceEvenly
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
+                                Column {
+
+                                    if(!LocalDate.parse(reservation.date).isBefore(today)) {
+                                        Button(
+                                            shape = RoundedCornerShape(5.dp),
+                                            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Gray),
+                                            onClick = {
+                                                navController.navigate(
+                                                    route = Screen.ReservationEdit.passValues(
+                                                        reservation.id_reservation!!,
+                                                        reservation.id_court!!,
+                                                        selectedDate
+                                                    )
+                                                )
+                                            }) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(
+                                                    text = "Edit",
+                                                    fontSize = 15.sp,
+                                                    color = Color.White
+                                                )
+                                                Icon(
+                                                    Icons.Outlined.Edit,
+                                                    contentDescription = "Edit",
+                                                    tint = Color.White
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
                                 Column {
                                     Button(
                                         shape = RoundedCornerShape(5.dp),
+                                        colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
                                         onClick = {
                                             openDialog.value = true
                                         }) {
@@ -507,33 +542,7 @@ fun ReservationCard(reservation: ReservationContent, selectedDate:String, viewMo
                                     }
                                 }
 
-                                Column {
 
-                                    if(!LocalDate.parse(reservation.date).isBefore(today)) {
-                                        Button(
-                                            shape = RoundedCornerShape(5.dp),
-                                            onClick = {
-                                                navController.navigate(
-                                                    route = Screen.ReservationEdit.passValues(
-                                                        reservation.id_reservation!!,
-                                                        reservation.id_court!!,
-                                                        selectedDate
-                                                    )
-                                                )
-                                            }) {
-                                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                                Text(
-                                                    text = "Edit",
-                                                    fontSize = 15.sp,
-                                                )
-                                                Icon(
-                                                    Icons.Outlined.Edit,
-                                                    contentDescription = "Edit"
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
                             }
 
                         }

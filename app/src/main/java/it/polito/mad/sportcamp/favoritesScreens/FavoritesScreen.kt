@@ -296,7 +296,7 @@ fun FavoritesScreen(
             modifier = Modifier.padding(vertical = 2.dp, horizontal = 4.dp),
         ) {
             when {
-                isLoading -> {
+                isLoading && courtsList?.isEmpty()==true -> {
                     item {
                         Box(
                             modifier = Modifier
@@ -315,17 +315,6 @@ fun FavoritesScreen(
                     }
                 }
 
-                courtsList?.isEmpty() == true -> {
-                    item {
-                        Text(
-                            text = "No courts available to be rated on this sport",
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        )
-                    }
-                }
             }
 
         }

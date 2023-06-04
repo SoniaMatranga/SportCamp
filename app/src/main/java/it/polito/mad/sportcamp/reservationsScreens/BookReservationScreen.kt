@@ -59,9 +59,8 @@ import kotlinx.coroutines.tasks.await
 
 class BookReservationsViewModel : ViewModel() {
     var expandedTimeSlot by mutableStateOf(false)
-    var expandedEquipments by mutableStateOf(false)
 
-    var selectedEquipments by mutableStateOf("Select equipments")
+    var selectedEquipments by mutableStateOf("Not requested")
     var selectedTimeSlot by  mutableStateOf("Select time slot")
 
     private val db = Firebase.firestore
@@ -201,6 +200,7 @@ fun BookReservationScreen(
 
 
     var timeSlots by remember { mutableStateOf(emptyList<String>()) }
+    var isCheckedEquipments = remember { mutableStateOf(false) }
 
     LaunchedEffect(idCourt, date) {
         val availableTimeSlots = vm.getAvailableTimeSlots(idCourt, date).value
@@ -209,8 +209,6 @@ fun BookReservationScreen(
 
     val courtDetails by vm.getCourtById(idCourt).observeAsState()
 
-
-    val equipments = listOf("Not requested", "Requested")
     val bitmap = courtDetails?.image?.let { BitmapConverter.converterStringToBitmap(it) }
     val context = LocalContext.current
 
@@ -293,7 +291,7 @@ fun BookReservationScreen(
                         .padding(horizontal = 45.dp, vertical = 10.dp)
                         .background(Color.White)
                 ) {
-Surface(color=Color.White) {
+                Surface(color=Color.White) {
 
 
                     Box(
@@ -345,7 +343,8 @@ Surface(color=Color.White) {
                                 }
                             }
 
-                    }}
+                    }
+                }
 
                 }
                 Row(
@@ -354,47 +353,23 @@ Surface(color=Color.White) {
                         .padding(horizontal = 45.dp, vertical = 10.dp)
                         .background(Color.White)
                 ) {
-
-                    Box(
-                        modifier = Modifier.background(Color.White)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        ExposedDropdownMenuBox(
-                            expanded = vm.expandedEquipments,
-                            onExpandedChange = {
-                                vm.expandedEquipments = !vm.expandedEquipments
-                            },
-                            modifier = Modifier.background(Color.Transparent)
-                        ) {
-                            TextField(
-                                value = vm.selectedEquipments,
-                                onValueChange = {},
-                                readOnly = true,
-                                modifier = Modifier.fillMaxWidth(),
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = vm.expandedEquipments) },
-                                colors=TextFieldDefaults.textFieldColors(
-                                    textColor = Color.Black,
-                                    disabledTextColor = Color.Black,
-                                    backgroundColor = Color.White,
-                                    cursorColor = Color.Black,
-                                    focusedIndicatorColor = Orange,
-                                    unfocusedIndicatorColor = Color.Gray
-                                )
-                            )
-                            ExposedDropdownMenu(
-                                expanded = vm.expandedEquipments,
-                                onDismissRequest = { vm.expandedEquipments = false }
-                            ) {
-                                equipments.forEach { item ->
-                                    DropdownMenuItem(
-                                        content = { Text(text = item) },
-                                        onClick = {
-                                            vm.expandedEquipments = false
-                                            vm.selectedEquipments = item
-                                        }
-                                    )
+                        Checkbox(
+                            checked = isCheckedEquipments.value,
+                            onCheckedChange = {
+                                isCheckedEquipments.value = !isCheckedEquipments.value
+                                if (isCheckedEquipments.value){
+                                    vm.selectedEquipments= "Requested"
+                                } else{
+                                    vm.selectedEquipments= "Not requested"
                                 }
-                            }
-                        }
+                                },
+                            enabled = true,
+                            colors = CheckboxDefaults.colors(MaterialTheme.colors.secondaryVariant)
+                        )
+                        Text(text = "I wish to borrow equipments")
                     }
 
                 }
@@ -409,7 +384,7 @@ Surface(color=Color.White) {
                     Button(
                         shape = RoundedCornerShape(5.dp),
                         onClick = {
-                            if (vm.selectedTimeSlot != "Select time slot" && vm.selectedEquipments != "Select equipments") {
+                            if (vm.selectedTimeSlot != "Select time slot") {
                                 courtDetails?.id_court?.let {
                                     vm.addReservation(
                                          vm.getUserUID(),
@@ -421,7 +396,7 @@ Surface(color=Color.White) {
 
                             } else {
                                 //dialog please chose timeslot and equipments
-                                Toast.makeText(context, "Select both time slot and equipments!", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Select a time slot!", Toast.LENGTH_SHORT).show()
                             }
                         }) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
