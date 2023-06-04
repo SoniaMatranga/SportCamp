@@ -191,9 +191,9 @@ fun ProfileDetailsScreen(
         mutableStateOf<Uri?>(null)
     }
 
-    val bitmap1 = BitmapConverter.converterStringToBitmap(vm.usrImage)
+    //val bitmap1 = BitmapConverter.converterStringToBitmap(vm.usrImage)
     val bitmap = remember {
-        mutableStateOf(bitmap1)
+        mutableStateOf(BitmapConverter.converterStringToBitmap(vm.usrImage))
     }
 
     var isEditedImage by remember { mutableStateOf(false) }
@@ -520,13 +520,13 @@ fun ProfileDetailsScreen(
                         }
                         imageUri?.let {
                             if (Build.VERSION.SDK_INT < 28) {
-                                bitmap.value = MediaStore.Images
-                                    .Media.getBitmap(context.contentResolver, it)
+                                vm.usrImage = BitmapConverter.converterBitmapToString(MediaStore.Images
+                                    .Media.getBitmap(context.contentResolver, it))
 
                             } else {
                                 val source = ImageDecoder
                                     .createSource(context.contentResolver, it)
-                                bitmap.value = ImageDecoder.decodeBitmap(source)
+                                vm.usrImage = BitmapConverter.converterBitmapToString(ImageDecoder.decodeBitmap(source))
                             }
                         }
 
@@ -599,6 +599,7 @@ fun ProfileDetailsScreen(
                                 vm.updateUser { updated ->
                                     if (updated) {
                                         navController.navigate(route = Screen.Reservations.route)
+                                        Toast.makeText(context, "Welcome to Sport Camp, ${vm.usrName}!", Toast.LENGTH_SHORT).show()
                                     } else {
                                         Toast.makeText(context, "Error saving information, please try again", Toast.LENGTH_SHORT).show()
                                     }
@@ -757,7 +758,7 @@ fun DropDownMenuNew(
                 .padding(all = 10.dp),
             onValueChange = { userInitialValue = it },
             readOnly = true,
-            label = { Text("$type") },
+            label = { Text(type) },
             trailingIcon = {
                 Icon(icon, "contentDescription",
                     Modifier.clickable { isExpanded = !isExpanded })

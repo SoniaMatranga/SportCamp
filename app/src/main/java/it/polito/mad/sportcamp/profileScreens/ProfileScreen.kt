@@ -37,8 +37,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -113,9 +111,7 @@ fun ProfileScreen(
     var first by remember {
         mutableStateOf(true)
     }
-    var logout by remember {
-        mutableStateOf(false)
-    }
+
 
     val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
         val task = GoogleSignIn.getSignedInAccountFromIntent(it.data)
@@ -123,6 +119,7 @@ fun ProfileScreen(
             val account = task.getResult(ApiException::class.java)!!
             val credential = GoogleAuthProvider.getCredential(account.idToken!!, null)
             viewModel.linkAccount(credential)
+            vm.updateUser()
         } catch (e: ApiException) {
             Log.w("TAG", "Google sign in failed", e)
         }
@@ -241,12 +238,12 @@ fun ProfileScreen(
                         when (state.status) {
                             LoadingState.Status.SUCCESS -> {
                                 first = false
+                                //vm.updateUser()
                                 Toast.makeText(
                                     context,
                                     "Sign in completed!",
                                     Toast.LENGTH_SHORT
                                 ).show()
-                                vm.updateUser()
                             }
 
                             LoadingState.Status.FAILED -> {
@@ -374,7 +371,7 @@ fun Profile(user: User, navController: NavController) {
             optionsList.clear()
 
             // Add the data to optionsList
-            prepareOptionsData(user)
+            //prepareOptionsData(user)
 
             listPrepared = true
         }
@@ -396,19 +393,29 @@ fun Profile(user: User, navController: NavController) {
                     SportsListRow(user = user)
                 }
 
-                item{
-                    TriStateToggle("Tennis", user.tennis_level)
-                }
-                item{
-                    TriStateToggle("Basket", user.basket_level)
-                }
-
-                item{
-                    TriStateToggle("Football", user.football_level)
+                if(user.sports!!.contains("Tennis")) {
+                    item {
+                        TriStateToggle("Tennis", user.tennis_level)
+                    }
                 }
 
-                item{
-                    TriStateToggle("Volley", user.volley_level)
+                if(user.sports.contains("Basketball")){
+                    item{
+                      TriStateToggle("Basket", user.basket_level)
+                   }
+                }
+
+                if(user.sports.contains("Football")){
+                    item{
+                        TriStateToggle("Football", user.football_level)
+                    }
+                }
+
+
+                if(user.sports.contains("Volleyball")) {
+                    item {
+                        TriStateToggle("Volley", user.volley_level)
+                    }
                 }
                 
                 item{
@@ -418,12 +425,12 @@ fun Profile(user: User, navController: NavController) {
                 items(optionsList) { item ->
                     OptionsItemStyle(item = item)
                 }
-
+/*
                 item{
                     LogoutButton(navController = navController)
                     Spacer(modifier = Modifier.height(50.dp))
                 }
-
+*/
             } else
             {
                 item{
@@ -791,7 +798,7 @@ fun CustomToolbarWithEditButton(title: String, navController: NavHostController)
     TopAppBar(
         title = { Text(text = title, fontFamily = fonts) },
         actions = {
-            IconButton(onClick = {navController.navigate(route = Screen.EditProfile.passId(1))}) {
+            IconButton(onClick = {navController.navigate(route = Screen.EditProfile.route)}) {
                 Icon(Icons.Filled.Edit,
                     contentDescription = "edit",
                     tint = Color.White)
@@ -953,19 +960,19 @@ fun SportsListRow(user: User){
     }
 
 }
-
+/*
 private fun prepareOptionsData(user: User) {
 
     val appIcons = Icons.Outlined
 
-    /*optionsList.add(
+    optionsList.add(
         OptionsData(
             icon = appIcons.Person,
             title = "Name",
             subTitle = user.name.toString()
         )
 
-    )*/
+    )
 
     optionsList.add(
         OptionsData(
@@ -975,7 +982,7 @@ private fun prepareOptionsData(user: User) {
         )
     )
 
-}
+}*/
 
 data class OptionsData(val icon: ImageVector, val title: String, val subTitle: String)
 

@@ -111,10 +111,7 @@ fun BottomNavGraph(
                 ProfileScreen(navController = navController)
             }
             composable(
-                route = Screen.EditProfile.route,
-                arguments = listOf(navArgument(DETAIL_ARGUMENT_KEY) {
-                    type = NavType.IntType
-                })
+                route = Screen.EditProfile.route
             )
             {
                 // Log.d("Args",it.arguments?.getInt(DETAIL_ARGUMENT_KEY).toString())

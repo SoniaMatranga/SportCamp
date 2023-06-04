@@ -46,7 +46,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
-import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY
 import it.polito.mad.sportcamp.classes.User
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.painter.BitmapPainter
@@ -64,6 +63,7 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.SaveMessage
 import it.polito.mad.sportcamp.common.ValidationMessage
 import it.polito.mad.sportcamp.ui.theme.*
@@ -112,7 +112,7 @@ class EditProfileViewModel : ViewModel() {
         return user
     }
 
-    private fun getUserUID(): String{
+    fun getUserUID(): String{
         return fuser.uid
     }
 
@@ -140,7 +140,6 @@ class EditProfileViewModel : ViewModel() {
     fun updateUser(
         nickname: String,
         name: String,
-        mail: String,
         city: String,
         age: Int,
         gender: String,
@@ -158,7 +157,6 @@ class EditProfileViewModel : ViewModel() {
         val updateData = hashMapOf(
             "nickname" to nickname,
             "name" to name,
-            "mail" to mail,
             "city" to city,
             "age" to age,
             "gender" to gender,
@@ -204,7 +202,8 @@ fun EditProfileScreen(
 
     //=========================================================================================
 
-    val userId = navController.currentBackStackEntry?.arguments?.getInt(DETAIL_ARGUMENT_KEY).toString()
+
+    val userId = vm.getUserUID()
     val user by vm.getUserDocument().observeAsState()
 
 
@@ -284,7 +283,7 @@ fun EditProfileScreen(
                             id_user =  userId.trim(),
                             nickname = if (vm.isEditedNickname) vm.usrNickname else user?.nickname,
                             name = if (vm.isEditedName) vm.usrName else user?.name,
-                            mail =  user?.mail,
+                           // mail =  user?.mail,
                             city = if (vm.isEditedCity) vm.usrCity else user?.city,
                             age = if (vm.isEditedAge) vm.usrAge.toInt() else user?.age,
                             gender = if (vm.isEditedGender) vm.usrGender else user?.gender,
@@ -527,11 +526,71 @@ fun EditProfileScreen(
 
 
                     user?.sports?.let { DropDownMenuSports(if (vm.usrSports != "") vm.usrSports else it) }
-                    
-                    user?.tennis_level?.let { TriStateToggleEdit(if(vm.usrTennisLevel != "") vm.usrTennisLevel else it, sport = "Tennis")}
-                    user?.basket_level?.let { TriStateToggleEdit(if(vm.usrBasketLevel != "") vm.usrBasketLevel else it, sport = "Basketball")}
-                    user?.football_level?.let { TriStateToggleEdit(if(vm.usrFootballLevel != "") vm.usrFootballLevel else it,sport = "Football")}
-                    user?.volley_level?.let { TriStateToggleEdit(if(vm.usrVolleyLevel != "") vm.usrVolleyLevel else it,sport = "Volleyball")}
+
+                    user?.tennis_level?.let {
+                        if (vm.usrSports != "") {
+                            if (vm.usrSports.contains("Tennis"))
+                                TriStateToggleEdit(
+                                    if (vm.usrTennisLevel != "") vm.usrTennisLevel else it,
+                                    sport = "Tennis"
+                                )
+                        } else {
+                            if (user?.sports!!.contains("Tennis"))
+                                TriStateToggleEdit(
+                                    if (vm.usrTennisLevel != "") vm.usrTennisLevel else it,
+                                    sport = "Tennis"
+                                )
+                        }
+                    }
+
+                    user?.basket_level?.let {
+                        if (vm.usrSports != "") {
+                            if (vm.usrSports.contains("Basketball"))
+                                TriStateToggleEdit(
+                                    if (vm.usrBasketLevel != "") vm.usrBasketLevel else it,
+                                    sport = "Basketball"
+                                )
+                        } else {
+                            if (user?.sports!!.contains("Basketball"))
+                                TriStateToggleEdit(
+                                    if (vm.usrBasketLevel != "") vm.usrBasketLevel else it,
+                                    sport = "Basketball"
+                                )
+                        }
+                    }
+
+                    user?.football_level?.let {
+                        if (vm.usrSports != "") {
+                            if (vm.usrSports.contains("Football"))
+                                TriStateToggleEdit(
+                                    if (vm.usrFootballLevel != "") vm.usrFootballLevel else it,
+                                    sport = "Football"
+                                )
+                        } else {
+                            if (user?.sports!!.contains("Football"))
+                                TriStateToggleEdit(
+                                    if (vm.usrFootballLevel != "") vm.usrFootballLevel else it,
+                                    sport = "Football"
+                                )
+                        }
+                    }
+
+
+                    user?.volley_level?.let {
+                        if (vm.usrSports != "") {
+                            if (vm.usrSports.contains("Volleyball"))
+                                TriStateToggleEdit(
+                                    if (vm.usrVolleyLevel != "") vm.usrVolleyLevel else it,
+                                    sport = "Volleyball"
+                                )
+                        } else {
+                            if (user?.sports!!.contains("Volleyball"))
+                                TriStateToggleEdit(
+                                    if (vm.usrVolleyLevel != "") vm.usrVolleyLevel else it,
+                                    sport = "Volleyball"
+                                )
+                        }
+                    }
 
                     user?.age?.toString().let {
                         if (it != null) {
@@ -597,7 +656,7 @@ fun EditProfileScreen(
                                         id_user =  userId.trim(),
                                         nickname = if (vm.isEditedNickname) vm.usrNickname else user?.nickname,
                                         name = if (vm.isEditedName) vm.usrName else user?.name,
-                                        mail =  user?.mail,
+                                      //  mail =  user?.mail,
                                         city = if (vm.isEditedCity) vm.usrCity else user?.city,
                                         age = if (vm.isEditedAge) vm.usrAge.toInt() else user?.age,
                                         gender = if (vm.isEditedGender) vm.usrGender else user?.gender,
@@ -614,6 +673,9 @@ fun EditProfileScreen(
                                         } else user?.image)
                                     updateUserInDB(usr, vm)
                                     Toast.makeText(context, "Profile successfully updated!", Toast.LENGTH_SHORT).show()
+                                    navController.navigate(route = Screen.Profile.route){
+                                        popUpTo("editProfile") { inclusive = true }
+                                    }
                                     //openDialog.value = false
                                 } else {
                                     Toast.makeText(context, "Please add or update something...", Toast.LENGTH_SHORT).show()
@@ -640,7 +702,7 @@ fun updateUserInDB(
     user: User,
     viewModel: EditProfileViewModel
 ) {
-    viewModel.updateUser(user.nickname!!, user.name!!,user.mail!!,user.city!!,
+    viewModel.updateUser(user.nickname!!, user.name!!,user.city!!,
         user.age!!,user.gender!!,user.tennis_level!!, user.basket_level!!, user.football_level!!, user.volley_level!!,user.sports!!,user.bio!!,user.id_user!!, user.image!! )
 }
 

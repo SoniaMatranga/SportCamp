@@ -42,15 +42,15 @@ sealed class Screen(
     )
 
     object EditProfile: Screen(
-        route = "editProfile/{$DETAIL_ARGUMENT_KEY}",
+        route = "editProfile",
         title = "editProfile",
         icon =Icons.Outlined.Edit,
         icon_focused = Icons.Outlined.Edit
-    ) {
+    ) /*{
         fun passId(id: Int): String {
             return this.route.replace(oldValue = "{$DETAIL_ARGUMENT_KEY}", newValue = id.toString())
         }
-    }
+    }*/
 
     object AddReservations: Screen(
         route = "addReservations",
