@@ -91,7 +91,7 @@ sealed class Screen(
         icon_focused = Icons.Outlined.Edit
     ) {
         fun passIdCourt(id: String): String {
-            return this.route.replace(oldValue = "{$DETAIL_ARGUMENT_KEY3}", newValue = id.toString())
+            return this.route.replace(oldValue = "{$DETAIL_ARGUMENT_KEY3}", newValue = id)
         }
     }
 
@@ -102,7 +102,7 @@ sealed class Screen(
         icon_focused = Icons.Outlined.Edit
     ) {
         fun passIdCourt(id: String): String {
-            return this.route.replace(oldValue = "{$DETAIL_ARGUMENT_KEY3}", newValue = id.toString())
+            return this.route.replace(oldValue = "{$DETAIL_ARGUMENT_KEY3}", newValue = id)
         }
     }
 

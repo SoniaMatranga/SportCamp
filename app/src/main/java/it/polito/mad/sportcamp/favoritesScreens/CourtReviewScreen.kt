@@ -239,9 +239,9 @@ fun CourtReviewScreen(
     navController: NavHostController,
     viewModel: CourtReviewViewModel = viewModel(factory = CourtReviewViewModel.factory)
 ) {
-    val idCourt = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY3)
-    val courtDetails by viewModel.getCourtById(idCourt!!).observeAsState()
-    val feedback by viewModel.getCourtReviewById(idCourt!!).observeAsState()
+    val idCourt = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY3)?: ""
+    val courtDetails by viewModel.getCourtById(idCourt).observeAsState()
+    val feedback by viewModel.getCourtReviewById(idCourt).observeAsState()
     var alreadyRated by remember { mutableStateOf(true) }
     var alreadyReviewed by remember { mutableStateOf(true) }
     var initialRating: Float by remember { mutableStateOf(0f) }
@@ -550,7 +550,7 @@ fun CourtReviewScreen(
             Button(
                 onClick = {
                     if (idCourt != null) {
-                        viewModel.insertReview( viewModel.getUserUID(), idCourt.toString(), initialRating, text)
+                        viewModel.insertReview( viewModel.getUserUID(), idCourt, initialRating, text)
                         viewModel.updateCourtRatingById(courtDetails?.id_court!!)
                         Toast.makeText(context, "Review correctly published", Toast.LENGTH_SHORT).show()
                     }

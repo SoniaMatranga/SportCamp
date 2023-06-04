@@ -29,6 +29,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavHostController
+import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
@@ -37,6 +38,7 @@ import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY3
 import it.polito.mad.sportcamp.common.BitmapConverter
 import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
 import it.polito.mad.sportcamp.classes.Rating
+import it.polito.mad.sportcamp.classes.RatingContent
 import it.polito.mad.sportcamp.classes.User
 import it.polito.mad.sportcamp.ui.theme.Blue
 
@@ -46,7 +48,7 @@ class CourtReviewListViewModel : ViewModel() {
     private val db = Firebase.firestore
     private val ratings = MutableLiveData<List<Rating>>()
 
-    private val user = MutableLiveData<User>()
+    //private val user = MutableLiveData<User>()
     private var fuser: FirebaseUser = Firebase.auth.currentUser!!
 
     private fun getUserUID(): String{
@@ -54,39 +56,68 @@ class CourtReviewListViewModel : ViewModel() {
     }
 
 
-    fun getUserById() :MutableLiveData<User>{
-        db
-            .collection("users")
-            .document(getUserUID())
+
+    fun getCourtReviewsById(id_court: String): LiveData<List<RatingContent>> {
+        val ratingContents = MutableLiveData<List<RatingContent>>()
+
+        db.collection("ratings")
+            .whereEqualTo("id_court", id_court)
             .addSnapshotListener { value, error ->
-                if(error != null) Log.w(ContentValues.TAG, "Error getting documents.")
-                if(value != null) user.value = value.toObject(User::class.java)
-            }
-        return user
-    }
+                if (error != null) {
+                    Log.w(ContentValues.TAG, "Error getting documents.")
+                    ratingContents.value = emptyList() // Notify an empty list in case of error
+                }
+                if (value != null) {
+                    val ratingContentList = mutableListOf<RatingContent>()
+                    val userIds = value.documents.mapNotNull { it.getString("id_user") }.distinct()
+                    val users = mutableMapOf<String, User>()
 
-    fun getCourtReviewsById(id_court: String) : LiveData<List<Rating>> {
-
-            db.collection("ratings")
-                .whereEqualTo("id_court", id_court)
-                .addSnapshotListener { value, error ->
-                    if (error != null) {
-                        Log.w(ContentValues.TAG, "Error getting documents.")
+                    // Fetch users corresponding to the ratings
+                    val userFetchTasks = userIds.mapNotNull { userId ->
+                        db.collection("users")
+                            .document(userId)
+                            .get()
+                            .addOnSuccessListener { document ->
+                                val user = document.toObject(User::class.java)
+                                if (user != null) {
+                                    users[userId] = user
+                                }
+                            }
+                            .addOnFailureListener { exception ->
+                                Log.w(ContentValues.TAG, "Error getting user: $exception")
+                            }
                     }
-                    if (value != null) {
-                        val ratingList = mutableListOf<Rating>()
-                        for (doc in value.documents) {
-                            val rating = doc.toObject(Rating::class.java)
-                            if (rating != null) {
-                                ratingList.add(rating)
+
+                    Tasks.whenAllComplete(userFetchTasks)
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                // Create RatingContent objects with user information
+                                for (doc in value.documents) {
+                                    val rating = doc.toObject(Rating::class.java)
+                                    if (rating != null && users.containsKey(rating.id_user)) {
+                                        val user = users[rating.id_user]
+                                        val ratingContent = RatingContent(
+                                            id = rating.id,
+                                            id_user = rating.id_user,
+                                            id_court = rating.id_court,
+                                            rating = rating.rating,
+                                            review = rating.review,
+                                            nickname = user?.nickname,
+                                            image = user?.image
+                                        )
+                                        ratingContentList.add(ratingContent)
+                                    }
+                                }
+                                ratingContents.value = ratingContentList
+                            } else {
+                                Log.w(ContentValues.TAG, "Error fetching user data: ${task.exception}")
+                                ratingContents.value = emptyList()
                             }
                         }
-                        ratings.value = ratingList
-                    }
                 }
+            }
 
-            return ratings
-
+        return ratingContents
     }
     companion object {
         val factory : ViewModelProvider.Factory = viewModelFactory {
@@ -96,13 +127,15 @@ class CourtReviewListViewModel : ViewModel() {
         }
     }
 }
+
 @Composable
 fun CourtReviewListScreen(
     navController: NavHostController,
     viewModel: CourtReviewListViewModel = viewModel(factory = CourtReviewListViewModel.factory)
 ) {
-    val idCourt = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY3)
-    val reviews by viewModel.getCourtReviewsById(idCourt!!).observeAsState(listOf())
+    val idCourt = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY3)?: ""
+    val reviews by viewModel.getCourtReviewsById(idCourt).observeAsState(listOf())
+
 
     Column(
         modifier = Modifier
@@ -114,13 +147,14 @@ fun CourtReviewListScreen(
         Spacer(modifier = Modifier.height(10.dp))
 
 
-        LazyColumn(
-            modifier = Modifier.padding(vertical = 2.dp, horizontal = 4.dp),
-        ) {
-            items(items = reviews) { review ->
-                ReviewCard(review = review, viewModel = viewModel)
+        if (reviews.isNotEmpty()) {
+            LazyColumn(
+                modifier = Modifier.padding(vertical = 2.dp, horizontal = 4.dp),
+            ) {
+                items(items = reviews) { review ->
+                    ReviewCard(review = review, viewModel = viewModel)
+                }
             }
-
         }
     }
 
@@ -128,10 +162,10 @@ fun CourtReviewListScreen(
 
 
 @Composable
-fun ReviewCard(review: Rating, viewModel: CourtReviewListViewModel) {
+fun ReviewCard(review: RatingContent, viewModel: CourtReviewListViewModel) {
 
-    val user by viewModel.getUserById().observeAsState()
-    val bitmap = user?.image?.let { BitmapConverter.converterStringToBitmap(it) }
+    //val user by viewModel.getUserById(review.id_user!!).observeAsState()
+    val bitmap = review?.image?.let { BitmapConverter.converterStringToBitmap(it) }
 
     ElevatedCard(
         modifier = Modifier
@@ -170,7 +204,7 @@ fun ReviewCard(review: Rating, viewModel: CourtReviewListViewModel) {
                     }
                 }
                 Column(modifier = Modifier.padding(start = 8.dp)) {
-                    user?.nickname?.let {
+                    review?.nickname?.let {
                         Text(
                             text = it,
                             fontSize = 18.sp,

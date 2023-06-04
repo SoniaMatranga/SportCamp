@@ -1,9 +1,11 @@
 package it.polito.mad.sportcamp.classes
 
+import com.google.firebase.Timestamp
 
 
 data class User(
     val id_user: String? = null,
+    val lastLogin: Timestamp? = null,
     val nickname: String? = null,
     val name: String? = null,
     val mail: String? = null,
