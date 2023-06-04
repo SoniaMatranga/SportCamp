@@ -41,8 +41,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.google.android.gms.tasks.Task
+import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import it.polito.mad.sportcamp.bottomnav.Screen
@@ -63,8 +66,8 @@ class FavoriteViewModel : ViewModel() {
     private val db = Firebase.firestore
     private val _loadingState = MutableLiveData(true)
     val loadingState: LiveData<Boolean> = _loadingState
-    var sportFilter by mutableStateOf("Tennis")
-    var selectedItem by  mutableStateOf("Tennis")
+    var sportFilter by mutableStateOf("")
+    var selectedItem by  mutableStateOf("")
     private var user: FirebaseUser = Firebase.auth.currentUser!!
 
     private fun getUserUID(): String{
@@ -75,101 +78,110 @@ class FavoriteViewModel : ViewModel() {
         return _loadingState.value ?: false
     }
 
-    private fun setLoadingState(loading: Boolean) {
+   fun setLoadingState(loading: Boolean) {
         _loadingState.value = loading
     }
 
-    fun getFilteredCourtsUserPlayed(sportFilter :String): LiveData<List<Court>> {
+    fun getFilteredCourtsUserPlayed(sportFilter: String): LiveData<List<Court>> {
         setLoadingState(true)
         val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
-        val courts = MediatorLiveData<List<Court>>()
+        val courts = MutableLiveData<List<Court>>()
 
         db.collection("reservations")
             .whereEqualTo("id_user", getUserUID())
-
             .whereLessThan("date", currentDate)
-            .addSnapshotListener { value, error ->
-                if (error != null) {
-                    Log.w(ContentValues.TAG, "Error getting documents.")
-                }
-                if (value != null) {
-                    val courtList = mutableListOf<Court>()
-                    for (doc in value.documents) {
-                        val reservation = doc.toObject(Reservation::class.java)
-                        if (reservation != null) {
-                            val courtId = reservation.id_court ?: continue
-                            db.collection("courts")
-                                .whereEqualTo("id_court", courtId)
-                                .whereEqualTo("sport", sportFilter)
-                                .get()
-                                .addOnSuccessListener { courtSnapshot ->
-                                    for (courtDoc in courtSnapshot.documents) {
-                                        val court = courtDoc.toObject(Court::class.java)
-                                        court?.let {
-                                            if(!courtList.contains(it)) {
-                                                courtList.add(it)
-                                            }
-                                        }
-                                    }
-                                    courts.value = courtList
-                                }
-                                .addOnFailureListener { e ->
-                                    Log.w(ContentValues.TAG, "Error getting court documents.", e)
-                                }
-                        }
+            .get()
+            .addOnSuccessListener { reservationSnapshot ->
+                val courtList = mutableListOf<Court>()
+                val courtPromises = mutableListOf<Task<QuerySnapshot>>()
+
+                for (doc in reservationSnapshot.documents) {
+                    val reservation = doc.toObject(Reservation::class.java)
+                    if (reservation != null) {
+                        val courtId = reservation.id_court ?: continue
+                        val courtQuery = db.collection("courts")
+                            .whereEqualTo("id_court", courtId)
+                            .whereEqualTo("sport", sportFilter)
+                            .get()
+                        courtPromises.add(courtQuery)
                     }
                 }
+
+                Tasks.whenAllSuccess<QuerySnapshot>(courtPromises)
+                    .addOnSuccessListener { snapshots ->
+                        for (courtSnapshot in snapshots) {
+                            for (courtDoc in courtSnapshot.documents) {
+                                val court = courtDoc.toObject(Court::class.java)
+                                court?.let {
+                                    if (!courtList.contains(it)) {
+                                        courtList.add(it)
+                                    }
+                                }
+                            }
+                        }
+                        courts.value = courtList
+                    }
+                    .addOnFailureListener { e ->
+                        Log.w(ContentValues.TAG, "Error getting court documents.", e)
+                    }
             }
-        setLoadingState(false)
+            .addOnFailureListener { e ->
+                Log.w(ContentValues.TAG, "Error getting reservation documents.", e)
+            }
+            .addOnCompleteListener { setLoadingState(false) }
+
         return courts
     }
 
     fun getAllCourtsUserPlayed(): LiveData<List<Court>> {
+        setLoadingState(true)
         val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
-        val courts = MediatorLiveData<List<Court>>()
+        val courts = MutableLiveData<List<Court>>()
 
         db.collection("reservations")
             .whereEqualTo("id_user", getUserUID())
             .whereLessThan("date", currentDate)
-            .addSnapshotListener { value, error ->
-                if (error != null) {
-                    Log.w(ContentValues.TAG, "Error getting documents.")
-                }
-                if (value != null) {
-                    val courtList = mutableListOf<Court>()
-                    for (doc in value.documents) {
-                        val reservation = doc.toObject(Reservation::class.java)
-                        if (reservation != null) {
-                            val courtId = reservation.id_court
-                            db.collection("courts")
-                                .whereEqualTo("id_court", courtId)
-                                .get()
-                                .addOnSuccessListener { courtSnapshot ->
-                                    for (courtDoc in courtSnapshot.documents) {
-                                        val court = courtDoc.toObject(Court::class.java)
-                                        court?.let {
-                                            if(!courtList.contains(it)) {
-                                                courtList.add(it)
-                                            }
-                                        }
-                                    }
-                                    courts.value = courtList
+            .get()
+            .addOnSuccessListener { reservationSnapshot ->
+                val courtList = mutableListOf<Court>()
+                val courtPromises = mutableListOf<Task<QuerySnapshot>>()
 
-
-
-                                }
-                                .addOnFailureListener { e ->
-                                    Log.w(ContentValues.TAG, "Error getting court documents.", e)
-                                }
-                        }
+                for (doc in reservationSnapshot.documents) {
+                    val reservation = doc.toObject(Reservation::class.java)
+                    if (reservation != null) {
+                        val courtId = reservation.id_court
+                        val courtQuery = db.collection("courts")
+                            .whereEqualTo("id_court", courtId)
+                            .get()
+                        courtPromises.add(courtQuery)
                     }
-
                 }
-            }
 
-        setLoadingState(false)
+                Tasks.whenAllSuccess<QuerySnapshot>(courtPromises)
+                    .addOnSuccessListener { snapshots ->
+                        for (courtSnapshot in snapshots) {
+                            for (courtDoc in courtSnapshot.documents) {
+                                val court = courtDoc.toObject(Court::class.java)
+                                court?.let {
+                                    if (!courtList.contains(it)) {
+                                        courtList.add(it)
+                                    }
+                                }
+                            }
+                        }
+                        courts.value = courtList
+                    }
+                    .addOnFailureListener { e ->
+                        Log.w(ContentValues.TAG, "Error getting court documents.", e)
+                    }
+            }
+            .addOnFailureListener { e ->
+                Log.w(ContentValues.TAG, "Error getting reservation documents.", e)
+            }
+            .addOnCompleteListener { setLoadingState(false) }
+
         return courts
     }
 
@@ -195,7 +207,10 @@ fun FavoritesScreen(
     val isLoading = vm.loadingState.value ?: true
 
     //val courts by vm.getAllCourtsUserPlayed().observeAsState()
-    val courtsList by vm.getFilteredCourtsUserPlayed(vm.sportFilter).observeAsState()
+    val allCourts by vm.getAllCourtsUserPlayed().observeAsState(emptyList())
+    val filteredCourts by vm.getFilteredCourtsUserPlayed(vm.sportFilter).observeAsState(emptyList())
+
+    val courtsList = if (vm.sportFilter.isEmpty()) allCourts else filteredCourts
 
 
 
@@ -253,7 +268,8 @@ fun FavoritesScreen(
                         onClick = {
                             when (vm.selectedItem == item.name) {
                                 true -> {
-                                    vm.selectedItem = item.name //; vm.all = true
+                                    vm.selectedItem = "" //; vm.all = true
+                                    vm.sportFilter = ""
 
                                 }
                                 false -> {
@@ -319,6 +335,8 @@ fun FavoritesScreen(
 
 @Composable
 fun CourtCard(court: Court, navController: NavController) {
+
+
 
     var expanded by remember { mutableStateOf(false) }
     val bitmap = court.image?.let { BitmapConverter.converterStringToBitmap(it) }
