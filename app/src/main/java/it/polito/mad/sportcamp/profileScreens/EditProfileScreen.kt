@@ -525,6 +525,14 @@ fun EditProfileScreen(
 
                     user?.city?.let { DropDownMenu(if(vm.usrCity != "") vm.usrCity else it, "City") }
 
+
+                    user?.sports?.let { DropDownMenuSports(if (vm.usrSports != "") vm.usrSports else it) }
+                    
+                    user?.tennis_level?.let { TriStateToggleEdit(if(vm.usrTennisLevel != "") vm.usrTennisLevel else it, sport = "Tennis")}
+                    user?.basket_level?.let { TriStateToggleEdit(if(vm.usrBasketLevel != "") vm.usrBasketLevel else it, sport = "Basketball")}
+                    user?.football_level?.let { TriStateToggleEdit(if(vm.usrFootballLevel != "") vm.usrFootballLevel else it,sport = "Football")}
+                    user?.volley_level?.let { TriStateToggleEdit(if(vm.usrVolleyLevel != "") vm.usrVolleyLevel else it,sport = "Volleyball")}
+
                     user?.age?.toString().let {
                         if (it != null) {
                             CustomTextField(
@@ -550,12 +558,6 @@ fun EditProfileScreen(
                     }
 
                     user?.gender?.let { DropDownMenu(if(vm.usrGender != "") vm.usrGender else it, "Gender") }
-                    user?.sports?.let { DropDownMenuSports(if (vm.usrSports != "") vm.usrSports else it) }
-                    user?.tennis_level?.let { DropDownMenu(if(vm.usrTennisLevel != "") vm.usrTennisLevel else it, "Tennis level") }
-                    user?.football_level?.let { DropDownMenu(if(vm.usrFootballLevel != "") vm.usrFootballLevel else it, "Football level") }
-                    user?.basket_level?.let { DropDownMenu(if(vm.usrBasketLevel != "") vm.usrBasketLevel else it, "Basketball level") }
-                    user?.volley_level?.let { DropDownMenu(if(vm.usrVolleyLevel != "") vm.usrVolleyLevel else it, "Volleyball level") }
-
 
                     user?.bio?.let {
                         CustomTextField(
@@ -842,17 +844,34 @@ fun DropDownMenuSports(userOption: String) {
 }
 
 @Composable
-fun TriStateToggleEdit(sport: String) {
+fun TriStateToggleEdit(userOption: String, sport: String) {
+    val vm: EditProfileViewModel = viewModel()
     val states = listOf(
         "Beginner",
         "Intermediate",
         "Advanced",
     )
     var selectedOption by remember {
-        mutableStateOf(states[1])
+        mutableStateOf(userOption)
     }
     val onSelectionChange = { text: String ->
         selectedOption = text
+        if(sport == "Tennis") {
+            vm.isEditedTennisLevel = true
+            vm.usrTennisLevel = selectedOption
+        }
+        if(sport == "Football") {
+            vm.isEditedFootballLevel = true
+            vm.usrFootballLevel = selectedOption
+        }
+        if(sport == "Basketball") {
+            vm.isEditedBasketLevel = true
+            vm.usrBasketLevel = selectedOption
+        }
+        if(sport == "Volleyball") {
+            vm.isEditedVolleyLevel = true
+            vm.usrVolleyLevel = selectedOption
+        }
     }
 
     Column( modifier = Modifier
@@ -867,39 +886,46 @@ fun TriStateToggleEdit(sport: String) {
     }
 
 
-    Surface(
-        shape = RoundedCornerShape(24.dp),
-        elevation = 4.dp,
-        modifier = Modifier
-            .wrapContentSize()
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
     ) {
 
-        Row(
+
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            elevation = 4.dp,
             modifier = Modifier
-                .clip(shape = RoundedCornerShape(24.dp))
-                .background(Color.LightGray)
+                .wrapContentSize()
         ) {
-            states.forEach { text->
-                Text(
-                    text = text,
-                    color = Color.White,
-                    modifier = Modifier
-                        .clip(shape = RoundedCornerShape(24.dp))
-                        .clickable {
-                            onSelectionChange(text)
-                        }
-                        .background(
-                            if (text == selectedOption) {
-                                MaterialTheme.colors.primary
-                            } else {
-                                Color.LightGray
+
+            Row(
+                modifier = Modifier
+                    .clip(shape = RoundedCornerShape(24.dp))
+                    .background(Color.LightGray)
+            ) {
+                states.forEach { text ->
+                    Text(
+                        text = text,
+                        color = Color.White,
+                        modifier = Modifier
+                            .clip(shape = RoundedCornerShape(24.dp))
+                            .clickable {
+                                onSelectionChange(text)
                             }
-                        )
-                        .padding(
-                            vertical = 12.dp,
-                            horizontal = 16.dp,
-                        ),
-                )
+                            .background(
+                                if (text == selectedOption) {
+                                    MaterialTheme.colors.primary
+                                } else {
+                                    Color.LightGray
+                                }
+                            )
+                            .padding(
+                                vertical = 12.dp,
+                                horizontal = 10.dp,
+                            ),
+                    )
+                }
             }
         }
     }

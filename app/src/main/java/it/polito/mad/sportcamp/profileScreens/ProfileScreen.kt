@@ -485,7 +485,7 @@ private fun UserDetails(user: User) {
             Column(
                 modifier = Modifier
                     .weight(weight = 3f, fill = false)
-                    .padding(start = 16.dp),
+                    .padding(horizontal = 16.dp),
             ) {
 
                 // User's name
@@ -988,7 +988,7 @@ fun TriStateToggle(sport: String, level: String?) {
     )
 
 
-    if(level!=null) {
+    if (level != null) {
         Column(
             modifier = Modifier
                 .fillMaxWidth(),
@@ -1001,37 +1001,46 @@ fun TriStateToggle(sport: String, level: String?) {
             )
             Spacer(modifier = Modifier.height(5.dp))
         }
-        Surface(
-            shape = RoundedCornerShape(24.dp),
-            elevation = 4.dp,
-            modifier = Modifier
-                .wrapContentSize()
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
         ) {
 
-            Row(
+
+            Surface(
+                shape = RoundedCornerShape(24.dp),
+                elevation = 4.dp,
                 modifier = Modifier
-                    .clip(shape = RoundedCornerShape(24.dp))
-                    .background(Color.LightGray)
+                    .wrapContentSize()
+                    .padding(horizontal = 10.dp)
             ) {
-                states.forEach { text ->
-                    Text(
-                        text = text,
-                        color = Color.White,
-                        modifier = Modifier
-                            .clip(shape = RoundedCornerShape(24.dp))
-                            .background(
-                                if (text == level) {
-                                    MaterialTheme.colors.primary
-                                } else {
-                                    Color.LightGray
-                                }
-                            )
-                            .padding(
-                                vertical = 12.dp,
-                                horizontal = 16.dp,
-                            ),
-                    )
+
+                Row(
+                    modifier = Modifier
+                        .clip(shape = RoundedCornerShape(24.dp))
+                        .background(Color.LightGray)
+                ) {
+                    states.forEach { text ->
+                        Text(
+                            text = text,
+                            color = Color.White,
+                            modifier = Modifier
+                                .clip(shape = RoundedCornerShape(24.dp))
+                                .background(
+                                    if (text == level) {
+                                        MaterialTheme.colors.primary
+                                    } else {
+                                        Color.LightGray
+                                    }
+                                )
+                                .padding(
+                                    vertical = 12.dp,
+                                    horizontal = 10.dp,
+                                ),
+                        )
+                    }
                 }
+
             }
         }
         Spacer(modifier = Modifier.height(5.dp))
