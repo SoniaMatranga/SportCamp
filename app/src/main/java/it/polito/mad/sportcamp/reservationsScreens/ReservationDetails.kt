@@ -54,6 +54,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -71,6 +72,8 @@ import it.polito.mad.sportcamp.classes.ReservationContent
 import it.polito.mad.sportcamp.classes.TimeSlot
 import it.polito.mad.sportcamp.favoritesScreens.RatingStar
 import it.polito.mad.sportcamp.ui.theme.fonts
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
 import kotlin.math.roundToInt
 
@@ -148,65 +151,65 @@ class ReservationDetailsViewModel : ViewModel() {
         val reservationsContent = MutableLiveData<List<ReservationContent>>()
         getTimeSlots()
 
-        db.collection("reservations")
-            .whereEqualTo("id_user", getUserUID())
-            .whereEqualTo("date", date)
-            .addSnapshotListener { value, error ->
-                if (error != null) {
-                    Log.w(ContentValues.TAG, "Error getting documents.")
-                }
-                if (value != null) {
-                    val reservationList = mutableListOf<ReservationContent>()
-                    for (doc in value.documents) {
-                        val reservation = doc.toObject(Reservation::class.java)
-                        val courtId = reservation?.id_court
+        // Utilizza viewModelScope.launch per avviare un'operazione asincrona
+        viewModelScope.launch {
+            val querySnapshot = db.collection("reservations")
+                .whereEqualTo("id_user", getUserUID())
+                .whereEqualTo("date", date)
+                .get()
+                .await()
 
-                        db.collection("courts")
-                            .whereEqualTo("id_court", courtId)
-                            .get()
-                            .addOnSuccessListener { querySnapshot ->
-                                val courtDocuments = querySnapshot.documents
-                                if (courtDocuments.isNotEmpty()) {
-                                    val courtDocument = courtDocuments[0]
-                                    val courtValue = courtDocument.toObject(Court::class.java)
+            val reservationList = mutableListOf<ReservationContent>()
 
-                                    // Retrieve court information
-                                    val courtName = courtValue?.court_name
-                                    val courtAddress = courtValue?.address
-                                    val courtCity = courtValue?.city
-                                    val courtSport = courtValue?.sport
-                                    val courtRating = courtValue?.court_rating
-                                    val courtImage = courtValue?.image
+            for (doc in querySnapshot.documents) {
+                val reservation = doc.toObject(Reservation::class.java)
+                val courtId = reservation?.id_court
 
-                                    // Retrieve time slot information
-                                    val timeSlotValue = timeSlots.value?.find { it.id_time_slot == reservation?.id_time_slot }
-                                    val timeSlot = timeSlotValue?.time_slot
+                val courtSnapshot = db.collection("courts")
+                    .whereEqualTo("id_court", courtId)
+                    .get()
+                    .await()
 
-                                    // Create ReservationContent object and add it to the list
-                                    val reservationContent = ReservationContent(
-                                        id_reservation = reservation?.id_reservation,
-                                        id_court = reservation?.id_court,
-                                        equipments = reservation?.equipments,
-                                        court_name = courtName,
-                                        address = courtAddress,
-                                        city = courtCity,
-                                        sport = courtSport,
-                                        time_slot = timeSlot,
-                                        date = reservation?.date,
-                                        image = courtImage,
-                                        court_rating = courtRating
-                                    )
-                                    reservationList.add(reservationContent)
+                val courtDocuments = courtSnapshot.documents
+                if (courtDocuments.isNotEmpty()) {
+                    val courtDocument = courtDocuments[0]
+                    val courtValue = courtDocument.toObject(Court::class.java)
 
-                                    // Notify reservationsContent of the updated list
-                                    reservationsContent.value = reservationList
+                    // Retrieve court information
+                    val courtName = courtValue?.court_name
+                    val courtAddress = courtValue?.address
+                    val courtCity = courtValue?.city
+                    val courtSport = courtValue?.sport
+                    val courtRating = courtValue?.court_rating
+                    val courtImage = courtValue?.image
 
-                                }
-                            }
-                    }
+                    // Retrieve time slot information
+                    val timeSlotValue = timeSlots.value?.find { it.id_time_slot == reservation?.id_time_slot }
+                    val timeSlot = timeSlotValue?.time_slot
+
+                    // Create ReservationContent object and add it to the list
+                    val reservationContent = ReservationContent(
+                        id_reservation = reservation?.id_reservation,
+                        id_court = reservation?.id_court,
+                        equipments = reservation?.equipments,
+                        court_name = courtName,
+                        address = courtAddress,
+                        city = courtCity,
+                        sport = courtSport,
+                        time_slot = timeSlot,
+                        date = reservation?.date,
+                        image = courtImage,
+                        court_rating = courtRating
+                    )
+                    reservationList.add(reservationContent)
                 }
             }
-        setLoadingState(false)
+
+            // Update the value of reservationsContent once the list is ready
+            reservationsContent.value = reservationList
+            setLoadingState(false)
+        }
+
         return reservationsContent
     }
 
