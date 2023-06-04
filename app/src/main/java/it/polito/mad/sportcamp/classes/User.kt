@@ -15,6 +15,10 @@ data class User(
     val level: String? = null,
     val sports: String? = null,
     val bio: String? = null,
-    val image: String? = null
+    val image: String? = null,
+    val tennis_level: String? = null,
+    val football_level: String? = null,
+    val volley_level: String? = null,
+    val basket_level: String? = null,
 )
 

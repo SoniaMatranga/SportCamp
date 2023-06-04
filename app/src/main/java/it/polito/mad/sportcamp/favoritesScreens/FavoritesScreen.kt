@@ -65,7 +65,6 @@ class FavoriteViewModel : ViewModel() {
 
     private val db = Firebase.firestore
     private val _loadingState = MutableLiveData(true)
-    val loadingState: LiveData<Boolean> = _loadingState
     var sportFilter by mutableStateOf("")
     var selectedItem by  mutableStateOf("")
     private var user: FirebaseUser = Firebase.auth.currentUser!!
@@ -182,6 +181,7 @@ class FavoriteViewModel : ViewModel() {
             }
             .addOnCompleteListener { setLoadingState(false) }
 
+
         return courts
     }
 
@@ -203,10 +203,8 @@ fun FavoritesScreen(
 ) {
 
 
-    //var sportFilter by remember {mutableStateOf("Tennis")}
-    val isLoading = vm.loadingState.value ?: true
+    val isLoading = vm.getLoadingState()
 
-    //val courts by vm.getAllCourtsUserPlayed().observeAsState()
     val allCourts by vm.getAllCourtsUserPlayed().observeAsState(emptyList())
     val filteredCourts by vm.getFilteredCourtsUserPlayed(vm.sportFilter).observeAsState(emptyList())
 

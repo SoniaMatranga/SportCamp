@@ -20,6 +20,7 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
@@ -803,6 +804,70 @@ fun DropDownMenuSports(userOption: String) {
     }
 }
 
+@Composable
+fun TriStateToggleEdit(sport: String) {
+    val states = listOf(
+        "Beginner",
+        "Intermediate",
+        "Advanced",
+    )
+    var selectedOption by remember {
+        mutableStateOf(states[1])
+    }
+    val onSelectionChange = { text: String ->
+        selectedOption = text
+    }
+
+    Column( modifier = Modifier
+        .fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally) {
+        Spacer(modifier = Modifier.height(5.dp))
+        Text(
+            text = "$sport level" ,
+            fontSize = 16.sp,
+        )
+        Spacer(modifier = Modifier.height(5.dp))
+    }
+
+
+    Surface(
+        shape = RoundedCornerShape(24.dp),
+        elevation = 4.dp,
+        modifier = Modifier
+            .wrapContentSize()
+    ) {
+
+        Row(
+            modifier = Modifier
+                .clip(shape = RoundedCornerShape(24.dp))
+                .background(Color.LightGray)
+        ) {
+            states.forEach { text->
+                Text(
+                    text = text,
+                    color = Color.White,
+                    modifier = Modifier
+                        .clip(shape = RoundedCornerShape(24.dp))
+                        .clickable {
+                            onSelectionChange(text)
+                        }
+                        .background(
+                            if (text == selectedOption) {
+                                MaterialTheme.colors.primary
+                            } else {
+                                Color.LightGray
+                            }
+                        )
+                        .padding(
+                            vertical = 12.dp,
+                            horizontal = 16.dp,
+                        ),
+                )
+            }
+        }
+    }
+    Spacer(modifier = Modifier.height(5.dp))
+}
 
 
 

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
@@ -36,6 +37,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -145,22 +148,66 @@ fun ProfileScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                CustomToolbarWithEditButton(title = "Profile", navController= navController as NavHostController)
+                CustomToolbarWithEditButton(
+                    title = "Profile",
+                    navController = navController as NavHostController
+                )
 
-                user?.let { Profile(user = it) }
-                val context = LocalContext.current
-                val token = stringResource(R.string.default_web_client_id)
-                if(vm.isAnonymous()){
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    ) {
+
+                   user?.let { Profile(user = it, navController=navController) }
+
+
+                    val context = LocalContext.current
+                    val token = stringResource(R.string.default_web_client_id)
+                    if (vm.isAnonymous()) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        ) {
+                            OutlinedButton(
+                                border = ButtonDefaults.outlinedBorder.copy(width = 1.dp),
+                                modifier = Modifier
+                                    .height(50.dp)
+                                    .padding(horizontal = 50.dp)
+                                    .fillMaxWidth(),
+                                onClick = {
+                                    val gso =
+                                        GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                                            .requestIdToken(token)
+                                            .requestEmail()
+                                            .build()
+
+                                    val googleSignInClient = GoogleSignIn.getClient(context, gso)
+                                    launcher.launch(googleSignInClient.signInIntent)
+                                },
+                                content = {
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        content = {
+                                            Icon(
+                                                tint = Color.Unspecified,
+                                                painter = painterResource(id = R.drawable.ic_google),
+                                                contentDescription = null,
+                                            )
+                                            Text(
+                                                style = MaterialTheme.typography.button,
+                                                color = MaterialTheme.colors.onSurface,
+                                                text = "Link with your Google"
+                                            )
+
+                                        }
+                                    )
+                                }
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
                         OutlinedButton(
                             border = ButtonDefaults.outlinedBorder.copy(width = 1.dp),
                             modifier = Modifier
+                                .fillMaxWidth()
                                 .height(50.dp)
-                                .padding(horizontal = 50.dp)
-                                .fillMaxWidth(),
+                                .padding(horizontal = 50.dp),
                             onClick = {
                                 val gso =
                                     GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -169,7 +216,7 @@ fun ProfileScreen(
                                         .build()
 
                                 val googleSignInClient = GoogleSignIn.getClient(context, gso)
-                                launcher.launch(googleSignInClient.signInIntent)
+                                launcher2.launch(googleSignInClient.signInIntent)
                             },
                             content = {
                                 Row(
@@ -184,127 +231,22 @@ fun ProfileScreen(
                                         Text(
                                             style = MaterialTheme.typography.button,
                                             color = MaterialTheme.colors.onSurface,
-                                            text = "Link with your Google"
+                                            text = "Login with Google"
                                         )
-
                                     }
                                 )
                             }
                         )
-                    }
-                    Spacer(modifier = Modifier.height(10.dp))
-                    OutlinedButton(
-                        border = ButtonDefaults.outlinedBorder.copy(width = 1.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp)
-                            .padding(horizontal = 50.dp),
-                        onClick = {
-                            val gso =
-                                GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                                    .requestIdToken(token)
-                                    .requestEmail()
-                                    .build()
-
-                            val googleSignInClient = GoogleSignIn.getClient(context, gso)
-                            launcher2.launch(googleSignInClient.signInIntent)
-                        },
-                        content = {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                content = {
-                                    Icon(
-                                        tint = Color.Unspecified,
-                                        painter = painterResource(id = R.drawable.ic_google),
-                                        contentDescription = null,
-                                    )
-                                    Text(
-                                        style = MaterialTheme.typography.button,
-                                        color = MaterialTheme.colors.onSurface,
-                                        text = "Login with Google"
-                                    )
-                                }
-                            )
-                        }
-                    )
-                    Spacer(modifier = Modifier.height(20.dp))
-                    when (state.status) {
-                        LoadingState.Status.SUCCESS -> {
-                            first = false
-                            Toast.makeText(
-                                context,
-                                "Sign in completed!",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            vm.updateUser()
-                        }
-
-                        LoadingState.Status.FAILED -> {
-                            Toast.makeText(
-                                context,
-                                state.msg ?: "Error",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-
-                        LoadingState.Status.RUNNING -> {
-                            Row {
-                                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                            }
-                        }
-
-                        else -> {}
-                    }
-                } else {
-                    Column(
-                        modifier =
-                        Modifier
-                            .fillMaxWidth()
-                    ) {
-                        OutlinedButton(
-                            border = ButtonDefaults.outlinedBorder.copy(width = 1.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(50.dp)
-                                .padding(horizontal = 50.dp),
-                            onClick = {
-                                viewModel.signOut()
-                                logout=true
-                            },
-                            content = {
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    content = {
-                                        Icon(
-                                            tint = Color.Unspecified,
-                                            painter = painterResource(id = R.drawable.ic_google),
-                                            contentDescription = null,
-                                        )
-                                        Text(
-                                            style = MaterialTheme.typography.button,
-                                            color = MaterialTheme.colors.onSurface,
-                                            text = "Logout"
-                                        )
-
-                                    }
-                                )
-                            }
-                        )
+                        Spacer(modifier = Modifier.height(20.dp))
                         when (state.status) {
                             LoadingState.Status.SUCCESS -> {
-                                if (logout) {
-                                    Toast.makeText(
-                                        context,
-                                        "Logout completed!",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                    navController.navigate(route = Screen.Login.route) {
-                                        popUpTo("profile") { inclusive = true }
-                                    }
-                                    logout = false
-                                }
+                                first = false
+                                Toast.makeText(
+                                    context,
+                                    "Sign in completed!",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                vm.updateUser()
                             }
 
                             LoadingState.Status.FAILED -> {
@@ -313,7 +255,6 @@ fun ProfileScreen(
                                     state.msg ?: "Error",
                                     Toast.LENGTH_SHORT
                                 ).show()
-                                logout = false
                             }
 
                             LoadingState.Status.RUNNING -> {
@@ -324,21 +265,103 @@ fun ProfileScreen(
 
                             else -> {}
                         }
+                    } else {
+                        LogoutButton(navController = navController)
                     }
 
-                }
 
             }
-
 
         }
     }
 }
 
+@Composable
+private fun LogoutButton(
+    navController: NavController,
+    viewModel: LoginScreenViewModel = viewModel()){
+
+    var logout by remember {
+        mutableStateOf(false)
+    }
+    val state by viewModel.loadingState.collectAsState()
+    val context = LocalContext.current
+    Column(
+        modifier =
+        Modifier
+            .fillMaxWidth()
+    ) {
+        OutlinedButton(
+            border = ButtonDefaults.outlinedBorder.copy(width = 1.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+                .padding(horizontal = 50.dp),
+            onClick = {
+                viewModel.signOut()
+                logout = true
+            },
+            content = {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    content = {
+                        Icon(
+                            tint = Color.Unspecified,
+                            painter = painterResource(id = R.drawable.ic_google),
+                            contentDescription = null,
+                        )
+                        Text(
+                            style = MaterialTheme.typography.button,
+                            color = MaterialTheme.colors.onSurface,
+                            text = "Logout"
+                        )
+
+                    }
+                )
+            }
+        )
+        when (state.status) {
+            LoadingState.Status.SUCCESS -> {
+                if (logout) {
+                    Toast.makeText(
+                        context,
+                        "Logout completed!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    navController.navigate(route = Screen.Login.route) {
+                        popUpTo("profile") { inclusive = true }
+                    }
+                    logout = false
+                }
+            }
+
+            LoadingState.Status.FAILED -> {
+                Toast.makeText(
+                    context,
+                    state.msg ?: "Error",
+                    Toast.LENGTH_SHORT
+                ).show()
+                logout = false
+            }
+
+            LoadingState.Status.RUNNING -> {
+                Row {
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                }
+            }
+
+            else -> {}
+        }
+    }
+
+
+}
+
 private val optionsList: ArrayList<OptionsData> = ArrayList()
 
 @Composable
-fun Profile(user: User) {
+fun Profile(user: User, navController: NavController) {
 
     // This indicates if the optionsList has data or not
     // Initially, the list is empty. So, its value is false.
@@ -363,21 +386,41 @@ fun Profile(user: User) {
                 .fillMaxWidth()
         ) {
             if(user.name!=null) {
+
                 item {
                     UserDetails(user = user)
                 }
-                // Show the options
-                items(optionsList) { item ->
-                    Card(
-                        elevation = 10.dp,
-                        modifier = Modifier.padding(horizontal = 30.dp)
 
-                    ) {
-                        OptionsItemStyle(item = item)
-                    }
-                }
+
                 item {
                     SportsListRow(user = user)
+                }
+
+                item{
+                    TriStateToggle("Tennis", user.tennis_level)
+                }
+                item{
+                    TriStateToggle("Basket", user.basket_level)
+                }
+
+                item{
+                    TriStateToggle("Football", user.football_level)
+                }
+
+                item{
+                    TriStateToggle("Volley", user.volley_level)
+                }
+                
+                item{
+                    UserDetailsRow(user = user)
+                    Spacer(modifier = Modifier.height(50.dp))
+                }
+                items(optionsList) { item ->
+                    OptionsItemStyle(item = item)
+                }
+
+                item{
+                    LogoutButton(navController = navController)
                     Spacer(modifier = Modifier.height(50.dp))
                 }
 
@@ -475,11 +518,15 @@ private fun UserDetails(user: User) {
         }
 
     }
+    
+}
 
+@Composable
+private fun UserDetailsRow(user:User) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
 
@@ -488,72 +535,7 @@ private fun UserDetails(user: User) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(
-                modifier = Modifier
-                    .weight(weight = 3f, fill = false)
-                    .padding(start = 16.dp)
 
-            ) {
-
-                // User's level
-                user.level?.let {
-                    Text(
-                        text = "Level",
-                        fontSize = 16.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-
-                // User's level value
-                user.level?.let {
-                    Text(
-                        text = it,
-                        fontSize = 14.sp,
-                        color = Color.Gray,
-                        letterSpacing = (0.8).sp,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-
-            }
-
-            Column(
-                modifier = Modifier
-                    .weight(weight = 3f, fill = false)
-                    .padding(start = 16.dp)
-            ) {
-
-                // User's city
-                user.city?.let {
-                    Text(
-                        text = "City",
-                        fontSize = 16.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-
-                // User's city value
-                user.city?.let {
-                    Text(
-                        text = it,
-                        fontSize = 14.sp,
-                        color = Color.Gray,
-                        letterSpacing = (0.8).sp,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-
-            }
 
             Column(
                 modifier = Modifier
@@ -589,12 +571,76 @@ private fun UserDetails(user: User) {
 
             }
 
+
+            Column(
+                modifier = Modifier
+                    .weight(weight = 3f, fill = false)
+                    .padding(start = 16.dp)
+            ) {
+
+                // User's city
+                user.city?.let {
+                    Text(
+                        text = "City",
+                        fontSize = 16.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                // User's city value
+                user.city?.let {
+                    Text(
+                        text = it,
+                        fontSize = 14.sp,
+                        color = Color.Gray,
+                        letterSpacing = (0.8).sp,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+            }
+            Column(
+                modifier = Modifier
+                    .weight(weight = 3f, fill = false)
+                    .padding(start = 16.dp)
+
+            ) {
+
+                user.age?.let {
+                    Text(
+                        text = "Age",
+                        fontSize = 16.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                user.age?.let {
+                    Text(
+                        text = it.toString(),
+                        fontSize = 14.sp,
+                        color = Color.Gray,
+                        letterSpacing = (0.8).sp,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+            }
+
+
         }
 
     }
-
 }
-
 
 @Composable
 private fun NewUserDetails(user: User) {
@@ -703,9 +749,9 @@ private fun NewUserDetails(user: User) {
 private fun OptionsItemStyle(item: OptionsData) {
 
     Row(
-        modifier = Modifier
-            .padding(all = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier= Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
     ) {
 
         // Icon
@@ -718,27 +764,13 @@ private fun OptionsItemStyle(item: OptionsData) {
         )
 
         Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(
                 modifier = Modifier
                     .weight(weight = 3f, fill = false)
-                    .padding(start = 16.dp)
+                    .padding(start = 10.dp)
             ) {
-
-                // Title
-                Text(
-                    text = item.title,
-                    fontSize = 16.sp,
-
-                    )
-
-                Spacer(modifier = Modifier.height(2.dp))
-
-                // Sub title
                 Text(
                     text = item.subTitle,
                     fontSize = 14.sp,
@@ -774,11 +806,14 @@ fun CustomToolbarWithEditButton(title: String, navController: NavHostController)
 @Composable
 fun SportsListRow(user: User){
 
+    Spacer(modifier = Modifier.height(5.dp))
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(all = 30.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 30.dp, vertical = 5.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
     ) {
 
         // Title
@@ -923,22 +958,14 @@ private fun prepareOptionsData(user: User) {
 
     val appIcons = Icons.Outlined
 
-    optionsList.add(
+    /*optionsList.add(
         OptionsData(
             icon = appIcons.Person,
             title = "Name",
             subTitle = user.name.toString()
         )
 
-    )
-
-    optionsList.add(
-        OptionsData(
-            icon = appIcons.CalendarMonth,
-            title = "Age",
-            subTitle = user.age.toString()
-        )
-    )
+    )*/
 
     optionsList.add(
         OptionsData(
@@ -951,3 +978,62 @@ private fun prepareOptionsData(user: User) {
 }
 
 data class OptionsData(val icon: ImageVector, val title: String, val subTitle: String)
+
+@Composable
+fun TriStateToggle(sport: String, level: String?) {
+    val states = listOf(
+        "Beginner",
+        "Intermediate",
+        "Advanced",
+    )
+
+
+    if(level!=null) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(5.dp))
+            Text(
+                text = "$sport level",
+                fontSize = 16.sp,
+            )
+            Spacer(modifier = Modifier.height(5.dp))
+        }
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            elevation = 4.dp,
+            modifier = Modifier
+                .wrapContentSize()
+        ) {
+
+            Row(
+                modifier = Modifier
+                    .clip(shape = RoundedCornerShape(24.dp))
+                    .background(Color.LightGray)
+            ) {
+                states.forEach { text ->
+                    Text(
+                        text = text,
+                        color = Color.White,
+                        modifier = Modifier
+                            .clip(shape = RoundedCornerShape(24.dp))
+                            .background(
+                                if (text == level) {
+                                    MaterialTheme.colors.primary
+                                } else {
+                                    Color.LightGray
+                                }
+                            )
+                            .padding(
+                                vertical = 12.dp,
+                                horizontal = 16.dp,
+                            ),
+                    )
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(5.dp))
+    }
+}
