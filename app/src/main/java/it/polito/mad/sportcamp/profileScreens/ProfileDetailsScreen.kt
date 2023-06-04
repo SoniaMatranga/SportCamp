@@ -27,8 +27,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
@@ -59,14 +61,22 @@ import com.google.firebase.ktx.Firebase
 import it.polito.mad.sportcamp.R
 import it.polito.mad.sportcamp.bottomnav.Screen
 import androidx.compose.material.Button
+import androidx.compose.material.Checkbox
+import androidx.compose.material.CheckboxDefaults
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
@@ -174,12 +184,6 @@ fun ProfileDetailsScreen(
     var questionIndex by remember { mutableStateOf(0) }
     val totalQuestionsCount = 3
     val scrollState = rememberScrollState()
-    val genderOptions = listOf("Male", "Female", "Other")
-    val expandedGender = remember { mutableStateOf(false) }
-    val cityOptions = listOf("Turin", "Milan", "Rome", "Venice", "Naples", "Padua", "Genoa")
-    val expandedCity = remember { mutableStateOf(false) }
-    val sportOptions = listOf("Basketball", "Football", "Tennis", "Volleyball" )
-    val expandedSports = remember { mutableStateOf(false) }
     val context = LocalContext.current
     val permission = android.Manifest.permission.CAMERA
 
@@ -349,56 +353,9 @@ fun ProfileDetailsScreen(
                             vm.isEditedAge = true
                         }
                     )
+                    DropDownMenuNew(userOption = vm.usrGender, type = "Gender")
+                    DropDownMenuNew(userOption = vm.usrCity, type = "City")
 
-                    Box(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = "Gender: ${vm.usrGender}",
-                            modifier = Modifier
-                                .padding(all = 10.dp)
-                                .clickable { expandedGender.value = true }
-                        )
-                        DropdownMenu(
-                            expanded = expandedGender.value,
-                            onDismissRequest = { expandedGender.value = false },
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            genderOptions.forEach { gender ->
-                                DropdownMenuItem(
-                                    onClick = {
-                                        vm.usrGender = gender
-                                        expandedGender.value = false
-                                    }
-                                ) {
-                                    Text(gender)
-                                }
-                            }
-                        }
-                    }
-
-                    Box(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = "City: ${vm.usrCity}",
-                            modifier = Modifier
-                                .padding(all = 10.dp)
-                                .clickable { expandedCity.value = true }
-                        )
-                        DropdownMenu(
-                            expanded = expandedCity.value,
-                            onDismissRequest = { expandedCity.value = false },
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            cityOptions.forEach { city ->
-                                DropdownMenuItem(
-                                    onClick = {
-                                        vm.usrCity = city
-                                        expandedCity.value = false
-                                    }
-                                ) {
-                                    Text(city)
-                                }
-                            }
-                        }
-                    }
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly
@@ -438,47 +395,85 @@ fun ProfileDetailsScreen(
 
                 1 -> {
                     Text("Choose your favourite sports and choose your level for each of them")
-                   // vm.usrSports.let { DropDownMenuSports(if (vm.usrSports != "") vm.usrSports else it) }
-                    Box(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = "Sport: ${vm.usrSports}",
+                    //DropDownMenuSports(vm.usrSports)
+                    var isExpanded by remember { mutableStateOf(false) }
+                    val suggestions = listOf("Basketball", "Football", "Tennis", "Volleyball")
+
+                    val icon = if (isExpanded)
+                        Icons.Filled.ArrowDropUp
+                    else
+                        Icons.Filled.ArrowDropDown
+
+                    Box {
+                        OutlinedTextField(
+                            value = vm.usrSports,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(all = 10.dp),
+                            onValueChange = { vm.usrSports = it },
+                            readOnly = true,
+                            label = { Text("Sports") },
+                            trailingIcon = {
+                                Icon(
+                                    icon, "contentDescription",
+                                    Modifier.clickable { isExpanded = !isExpanded }
+                                )
+                            }
+                        )
+
+                        DropdownMenu(
+                            expanded = isExpanded,
+                            onDismissRequest = { isExpanded = false},
                             modifier = Modifier
                                 .padding(all = 10.dp)
-                                .clickable { expandedSports.value = true }
-                        )
-                        DropdownMenu(
-                            expanded = expandedSports.value,
-                            onDismissRequest = { expandedSports.value = false },
-                            modifier = Modifier.fillMaxWidth(),
+                                .fillMaxWidth(),
                         ) {
-                            sportOptions.forEach { sport ->
-                                DropdownMenuItem(
-                                    onClick = {
-                                        vm.usrSports = sport
-                                        expandedSports.value = false
+                            val selectedCheckboxes = remember { mutableStateListOf<String>() }
+
+                            suggestions.forEach { labelRow ->
+                                val isChecked = remember { mutableStateOf(false) }
+
+                                DropdownMenuItem(onClick = {
+                                    isChecked.value = !isChecked.value
+
+                                    if (isChecked.value) {
+                                        selectedCheckboxes.add(labelRow)
+                                    } else {
+                                        selectedCheckboxes.remove(labelRow)
                                     }
-                                ) {
-                                    Text(sport)
+
+                                    vm.usrSports = selectedCheckboxes.joinToString(", ")
+                                }) {
+                                    Row(
+                                        modifier = Modifier.padding(8.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Checkbox(
+                                            checked = isChecked.value,
+                                            onCheckedChange = null, // Leave this null to handle the click in DropdownMenuItem
+                                            enabled = true,
+                                            colors = CheckboxDefaults.colors(Color.Blue)
+                                        )
+                                        Text(text = labelRow)
+                                    }
                                 }
                             }
                         }
                     }
 
                     if(vm.usrSports.contains("Tennis"))
-                        vm.usrTennisLevel.let{ TriStateToggleEdit(vm.usrTennisLevel, sport = "Tennis")}
+                        TriStateToggleEditNew(vm.usrTennisLevel,sport = "Tennis")
                     if(vm.usrSports.contains("Basketball"))
-                        vm.usrBasketLevel.let { TriStateToggleEdit(it, sport = "Basketball")}
+                        TriStateToggleEditNew(vm.usrBasketLevel,sport = "Basketball")
                     if(vm.usrSports.contains("Football"))
-                        vm.usrFootballLevel.let { TriStateToggleEdit(it,sport = "Football")}
+                        TriStateToggleEditNew(vm.usrFootballLevel,sport = "Football")
                     if(vm.usrSports.contains("Volleyball"))
-                        vm.usrVolleyLevel.let { TriStateToggleEdit(it,sport = "Volleyball")}
+                        TriStateToggleEditNew(vm.usrVolleyLevel,sport = "Volleyball")
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-
-
                         Button(
                             modifier = Modifier
                                 .padding(top = 10.dp),
@@ -499,7 +494,6 @@ fun ProfileDetailsScreen(
                         }
                     }
                 }
-                // Add more cases for each question
                 2 -> {
                     Text("Show other users something about yourself!")
                     Spacer(modifier = Modifier.height(10.dp))
@@ -624,209 +618,9 @@ fun ProfileDetailsScreen(
 
 
     }
+
 }
 
-
-
-/*
-@Composable
-fun ProfileDetailsScreen(
-    navController: NavHostController,
-    vm: ProfileDetailsViewModel = viewModel(factory = ProfileDetailsViewModel.factory)
-) {
-
-    var usernameValid by remember { mutableStateOf(true) }
-    val scrollState = rememberScrollState()
-    val context = LocalContext.current
-    var questionIndex by remember {
-        mutableStateOf(1)
-    }
-    val totalQuestionsCount = 5
-    val genderOptions = listOf("Male", "Female", "Other")
-    val expandedGender = remember { mutableStateOf(false) }
-    val cityOptions = listOf("Turin", "Milan", "Rome", "Venice", "Naples", "Padua", "Genoa")
-    val expandedCity = remember { mutableStateOf(false) }
-
-    SurveyTopAppProgress(questionIndex, totalQuestionsCount)
-
-
-        Column {
-            if (questionIndex == 1) {
-            CustomTextField(
-                modifier = Modifier
-                    .padding(all = 10.dp)
-                    .fillMaxWidth(),
-                labelResId = R.string.Nickname,
-                inputWrapper = vm.usrNickname,
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.None,
-                    autoCorrect = false,
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Done
-                ),
-                maxLength = 50,
-                maxLines = 1,
-                onTextChanged = { newText ->
-                    vm.usrNickname = newText
-                    vm.isEditedNickname = true
-                }
-
-            )
-
-
-            CustomTextField(
-                modifier = Modifier
-                    .padding(all = 10.dp)
-                    .fillMaxWidth(),
-                labelResId = R.string.Name,
-                inputWrapper = vm.usrName,
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.None,
-                    autoCorrect = false,
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Done
-                ),
-                maxLength = 50,
-                maxLines = 1,
-                onTextChanged = { newText ->
-                    vm.usrName = newText
-                    vm.isEditedName = true
-                }
-            )
-
-            //DropDownMenu(vm.usrCity, "City")
-
-            CustomTextField(
-                modifier = Modifier
-                    .padding(all = 10.dp)
-                    .fillMaxWidth(),
-                labelResId = R.string.Age,
-                inputWrapper = vm.usrAge,
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.None,
-                    autoCorrect = false,
-                    keyboardType = KeyboardType.Number,
-                    imeAction = ImeAction.Done
-                ),
-                maxLength = 3,
-                maxLines = 1,
-                onTextChanged = { newText ->
-                    vm.usrAge = newText
-                    vm.isEditedAge = true
-                }
-            )
-
-
-            DropdownMenu(
-                expanded = expandedGender.value,
-                onDismissRequest = { expandedGender.value = false },
-                modifier = Modifier
-                    .padding(all = 10.dp)
-                    .fillMaxWidth()
-                // modifier = Modifier.popup()
-            ) {
-                genderOptions.forEach { gender ->
-                    androidx.compose.material.DropdownMenuItem(onClick = {
-                        vm.usrGender = gender
-                        expandedGender.value = false
-                    }) {
-                        Text(gender)
-                    }
-                }
-            }
-
-
-                androidx.compose.material.DropdownMenu(
-                    expanded = expandedCity.value,
-                    onDismissRequest = { expandedCity.value = false },
-                    modifier = Modifier
-                        .padding(all = 10.dp)
-                        .fillMaxWidth()
-                ) {
-                    cityOptions.forEach { city ->
-                        androidx.compose.material.DropdownMenuItem(onClick = {
-                            vm.usrCity = city
-                            expandedCity.value = false
-                        }) {
-                            Text(city)
-                        }
-                    }
-                }
-
-
-
-            }
-            Spacer(modifier = Modifier.height(30.dp))
-
-            // Display previous and next buttons
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Button(
-                    onClick = {
-                        if (questionIndex > 1) {
-                            questionIndex--
-                        }
-                    },
-                    enabled = questionIndex > 1
-                ) {
-                    Text("Previous")
-                }
-
-                if (questionIndex < totalQuestionsCount ) {
-                    Button(
-                        onClick = {
-                            if (questionIndex==1) {
-                                if (!usernameValid) {
-                                    Toast.makeText(context, "Username already used", Toast.LENGTH_SHORT).show()
-                                } else {
-                                    questionIndex++
-                                }
-                            } else
-                                questionIndex++
-                        },
-                        enabled =
-                        if (questionIndex==1)
-                        {vm.usrAge != "" && /*vm.usrCity!="" &&*/ vm.usrGender!="" && vm.usrName != "" && vm.usrNickname != ""}
-                        else true
-                    ) {
-                        Text("Next")
-                    }
-                } else {
-                    Button(
-                        onClick = {
-                            vm.updateUser()
-                            navController.navigate(route = Screen.Reservations.route)
-                        }
-                    ) {
-                        Text("Save")
-                    }
-                }
-            }
-
-    }
-
-
-
-           /* Button(
-                onClick = {
-                    usernameValid = vm.updateUser()
-                    if (!usernameValid) {
-                        Toast.makeText(context, "Username already used", Toast.LENGTH_SHORT).show()
-                    } else {
-                        navController.navigate(route = Screen.Reservations.route)
-                    }
-                },
-                enabled = vm.usrAge != "" && /*vm.usrCity!="" && vm.usrGender!="" &&*/ vm.usrName != "" && vm.usrNickname != ""
-            ) {
-                Text(text = "Save")
-            }*/
-
-
-        }
-
-*/
 
 @Composable
 fun SurveyTopAppProgress(
@@ -843,3 +637,157 @@ fun SurveyTopAppProgress(
             .padding(top = 30.dp)
     )
 }
+
+@Composable
+fun TriStateToggleEditNew(
+    userOption: String,
+    sport: String,
+    vm: ProfileDetailsViewModel = viewModel(factory = ProfileDetailsViewModel.factory)
+) {
+
+    val states = listOf(
+        "Beginner",
+        "Intermediate",
+        "Advanced",
+    )
+    var selectedOption by remember {
+        mutableStateOf(userOption)
+    }
+    val onSelectionChange = { text: String ->
+        selectedOption = text
+        if(sport == "Tennis") {
+            vm.usrTennisLevel = selectedOption
+        }
+        if(sport == "Football") {
+            vm.usrFootballLevel = selectedOption
+        }
+        if(sport == "Basketball") {
+            vm.usrBasketLevel = selectedOption
+        }
+        if(sport == "Volleyball") {
+            vm.usrVolleyLevel = selectedOption
+        }
+    }
+
+    Column( modifier = Modifier
+        .fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally) {
+        Spacer(modifier = Modifier.height(5.dp))
+        Text(
+            text = "$sport level" ,
+            fontSize = 16.sp,
+        )
+        Spacer(modifier = Modifier.height(5.dp))
+    }
+
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ) {
+
+
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            elevation = 4.dp,
+            modifier = Modifier
+                .wrapContentSize()
+        ) {
+
+            Row(
+                modifier = Modifier
+                    .clip(shape = RoundedCornerShape(24.dp))
+                    .background(Color.LightGray)
+            ) {
+                states.forEach { text ->
+                    Text(
+                        text = text,
+                        color = Color.White,
+                        modifier = Modifier
+                            .clip(shape = RoundedCornerShape(24.dp))
+                            .clickable {
+                                onSelectionChange(text)
+                            }
+                            .background(
+                                if (text == selectedOption) {
+                                    MaterialTheme.colors.primary
+                                } else {
+                                    Color.LightGray
+                                }
+                            )
+                            .padding(
+                                vertical = 12.dp,
+                                horizontal = 10.dp,
+                            ),
+                    )
+                }
+            }
+        }
+    }
+    Spacer(modifier = Modifier.height(5.dp))
+}
+
+@Composable
+fun DropDownMenuNew(
+    userOption: String,
+    type: String,
+    vm: ProfileDetailsViewModel = viewModel(factory = ProfileDetailsViewModel.factory)
+) {
+
+    var isExpanded by remember { mutableStateOf(false) }
+    var userInitialValue by remember { mutableStateOf(userOption) } //male
+    var suggestions = emptyList<String>()
+
+    if (type == "Gender")
+        suggestions = listOf("Male","Female","Other")
+    if (type == "City")
+        suggestions = listOf("Turin", "Milan", "Rome", "Venice", "Naples", "Padua","Genoa")
+
+    val icon = if (isExpanded)
+        Icons.Filled.ArrowDropUp //it requires androidx.compose.material:material-icons-extended
+    else
+        Icons.Filled.ArrowDropDown
+
+    Box {
+
+        OutlinedTextField(
+            value = userInitialValue,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(all = 10.dp),
+            onValueChange = { userInitialValue = it },
+            readOnly = true,
+            label = { Text("$type") },
+            trailingIcon = {
+                Icon(icon, "contentDescription",
+                    Modifier.clickable { isExpanded = !isExpanded })
+            }
+        )
+
+        DropdownMenu(
+            expanded = isExpanded,
+            onDismissRequest = { isExpanded = false },
+            modifier = Modifier
+                .padding(all = 10.dp)
+                .fillMaxWidth(),
+        ) {
+            suggestions.forEach { label ->
+                DropdownMenuItem(onClick = {
+                    userInitialValue = label
+                    isExpanded = false
+                    if(type == "Gender") {
+                        vm.usrGender = label
+                    }
+                    if(type == "City") {
+                        vm.usrCity = label
+                    }
+                }) {
+                    Text(text = label)
+                }
+            }
+        }
+    }
+
+}
+
+
