@@ -287,7 +287,18 @@ fun ProfileDetailsScreen(
                 0 -> {
                     // Question 1 content
                     Row{
-                        Text("Personal info")
+                        Text(text="Personal info", modifier = Modifier.padding(horizontal = 10.dp))
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp).padding(top=10.dp)
+                    ) {
+                        Text(
+                            text = "Fields with * are mandatory",
+                            color = Color.Gray,
+                            modifier = Modifier.padding(top = 15.dp, bottom = 5.dp),
+                            textAlign = TextAlign.Start,
+                            fontSize= 14.sp
+                        )
                     }
                     CustomTextField(
                         modifier = Modifier
@@ -349,8 +360,8 @@ fun ProfileDetailsScreen(
                             vm.isEditedAge = true
                         }
                     )
-                    DropDownMenuNew(userOption = vm.usrGender, type = "Gender")
-                    DropDownMenuNew(userOption = vm.usrCity, type = "City")
+                    DropDownMenuNew(userOption = vm.usrGender, type = "Gender*")
+                    DropDownMenuNew(userOption = vm.usrCity, type = "City*")
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -390,7 +401,7 @@ fun ProfileDetailsScreen(
                 }
 
                 1 -> {
-                    Text("Choose your favourite sports and choose your level for each of them")
+                    Text(text="Choose your favourite sports and choose your level for each of them", modifier = Modifier.padding(horizontal = 10.dp))
                     //DropDownMenuSports(vm.usrSports)
                     var isExpanded by remember { mutableStateOf(false) }
                     val suggestions = listOf("Basketball", "Football", "Tennis", "Volleyball")
@@ -458,16 +469,16 @@ fun ProfileDetailsScreen(
                     }
 
                     if(vm.usrSports.contains("Tennis"))
-                        TriStateToggleEditNew(vm.usrTennisLevel,sport = "Tennis")
+                        TriStateToggleEditNew(if(vm.usrTennisLevel=="")"Beginner" else vm.usrTennisLevel,sport = "Tennis")
                     if(vm.usrSports.contains("Basketball"))
-                        TriStateToggleEditNew(vm.usrBasketLevel,sport = "Basketball")
+                        TriStateToggleEditNew(if(vm.usrBasketLevel=="")"Beginner" else vm.usrBasketLevel,sport = "Basketball")
                     if(vm.usrSports.contains("Football"))
-                        TriStateToggleEditNew(vm.usrFootballLevel,sport = "Football")
+                        TriStateToggleEditNew(if(vm.usrFootballLevel=="")"Beginner" else vm.usrFootballLevel,sport = "Football")
                     if(vm.usrSports.contains("Volleyball"))
-                        TriStateToggleEditNew(vm.usrVolleyLevel,sport = "Volleyball")
+                        TriStateToggleEditNew(if(vm.usrVolleyLevel=="")"Beginner" else vm.usrVolleyLevel,sport = "Volleyball")
 
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         Button(
@@ -491,7 +502,7 @@ fun ProfileDetailsScreen(
                     }
                 }
                 2 -> {
-                    Text("Show other users something about yourself!")
+                    Text(text="Show other users something about yourself!", modifier = Modifier.padding(horizontal = 10.dp))
                     Spacer(modifier = Modifier.height(10.dp))
                     Box(
                         modifier = Modifier
@@ -734,9 +745,9 @@ fun DropDownMenuNew(
     var userInitialValue by remember { mutableStateOf(userOption) } //male
     var suggestions = emptyList<String>()
 
-    if (type == "Gender")
+    if (type == "Gender*")
         suggestions = listOf("Male","Female","Other")
-    if (type == "City")
+    if (type == "City*")
         suggestions = listOf("Turin", "Milan", "Rome", "Venice", "Naples", "Padua","Genoa")
 
     val icon = if (isExpanded)
@@ -771,10 +782,10 @@ fun DropDownMenuNew(
                 DropdownMenuItem(onClick = {
                     userInitialValue = label
                     isExpanded = false
-                    if(type == "Gender") {
+                    if(type == "Gender*") {
                         vm.usrGender = label
                     }
-                    if(type == "City") {
+                    if(type == "City*") {
                         vm.usrCity = label
                     }
                 }) {

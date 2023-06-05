@@ -646,13 +646,25 @@ fun EditProfileScreen(
                         if (vm.usrSports != "") {
                             if (vm.usrSports.contains("Basketball"))
                                 TriStateToggleEdit(
-                                    if (vm.usrBasketLevel != "") vm.usrBasketLevel else it,
+                                    if (vm.usrBasketLevel != "")
+                                        vm.usrBasketLevel
+                                    else {
+                                        if(it=="")
+                                            "Beginner"
+                                        else it
+                                         },
                                     sport = "Basketball"
                                 )
                         } else {
                             if (user?.sports!!.contains("Basketball"))
                                 TriStateToggleEdit(
-                                    if (vm.usrBasketLevel != "") vm.usrBasketLevel else it,
+                                    if (vm.usrBasketLevel != "")
+                                        vm.usrBasketLevel
+                                    else {
+                                        if(it=="")
+                                            "Beginner"
+                                        else it
+                                    },
                                     sport = "Basketball"
                                 )
                         }
@@ -662,13 +674,25 @@ fun EditProfileScreen(
                         if (vm.usrSports != "") {
                             if (vm.usrSports.contains("Football"))
                                 TriStateToggleEdit(
-                                    if (vm.usrFootballLevel != "") vm.usrFootballLevel else it,
+                                    if (vm.usrFootballLevel != "")
+                                        vm.usrFootballLevel
+                                    else {
+                                        if(it=="")
+                                            "Beginner"
+                                        else it
+                                    },
                                     sport = "Football"
                                 )
                         } else {
                             if (user?.sports!!.contains("Football"))
                                 TriStateToggleEdit(
-                                    if (vm.usrFootballLevel != "") vm.usrFootballLevel else it,
+                                    if (vm.usrFootballLevel != "")
+                                        vm.usrFootballLevel
+                                    else {
+                                        if(it=="")
+                                            "Beginner"
+                                        else it
+                                    },
                                     sport = "Football"
                                 )
                         }
@@ -679,18 +703,30 @@ fun EditProfileScreen(
                         if (vm.usrSports != "") {
                             if (vm.usrSports.contains("Volleyball"))
                                 TriStateToggleEdit(
-                                    if (vm.usrVolleyLevel != "") vm.usrVolleyLevel else it,
-                                    sport = "Volleyball"
+                                    if (vm.usrVolleyLevel != "")
+                                        vm.usrVolleyLevel
+                                    else {
+                                        if(it=="")
+                                            "Beginner"
+                                        else it
+                                    },
+                                    sport = "Vollleyball"
                                 )
                         } else {
                             if (user?.sports!!.contains("Volleyball"))
                                 TriStateToggleEdit(
-                                    if (vm.usrVolleyLevel != "") vm.usrVolleyLevel else it,
+                                    if (vm.usrVolleyLevel != "")
+                                        vm.usrVolleyLevel
+                                    else {
+                                        if(it=="")
+                                            "Beginner"
+                                        else it
+                                    },
                                     sport = "Volleyball"
                                 )
                         }
                     }
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(30.dp))
                     ValidationMessage(validationMessageShown)
                     SaveMessage(saveMessageShown)
                     Row (

@@ -36,7 +36,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import it.polito.mad.sportcamp.R
@@ -99,7 +98,7 @@ class LoginViewModel : ViewModel() {
             Firebase.auth.signInAnonymously().await()
             auth = Firebase.auth
             user = auth.currentUser!!
-            db.collection("users").document(auth.uid!!).set(data, SetOptions.merge())
+            //db.collection("users").document(auth.uid!!).set(data, SetOptions.merge())
             loadingState.emit(LoadingState.LOADED)
         } catch (e: Exception) {
             loadingState.emit(LoadingState.error(e.localizedMessage))

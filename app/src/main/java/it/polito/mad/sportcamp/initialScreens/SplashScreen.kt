@@ -1,6 +1,7 @@
 package it.polito.mad.sportcamp.initialScreens
 
 import android.os.Build
+import android.util.Log
 import android.view.animation.OvershootInterpolator
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -18,6 +19,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import it.polito.mad.sportcamp.R
 import it.polito.mad.sportcamp.bottomnav.Screen
@@ -44,17 +46,37 @@ fun SplashScreen(navController: NavController) = Box(
             })
         )
         delay(1000)
-        if(Firebase.auth.currentUser == null)
-            navController.navigate(route = Screen.Login.route){
-                popUpTo("splash") { inclusive = true }
-            }
-        else {
-            navController.navigate(route = Screen.Reservations.route){
-                popUpTo("splash") { inclusive = true }
-            }
-            Toast.makeText(context, "Welcome back to Sport Camp!", Toast.LENGTH_SHORT).show()
-        }
+        val currentUser = Firebase.auth.currentUser
 
+        if (currentUser != null) {
+            Firebase.firestore.collection("users")
+                .document(Firebase.auth.uid!!)
+                .get()
+                .addOnSuccessListener { documentSnapshot ->
+                    val nicknames = documentSnapshot.getString("nickname") ?: ""
+                    val nicknameExists = nicknames.isNotBlank()
+
+                    if (nicknameExists) {
+                        navController.navigate(route = Screen.Reservations.route) {
+                            popUpTo("splash") { inclusive = true }
+                        }
+                        Toast.makeText(context, "Welcome back to Sport Camp!", Toast.LENGTH_SHORT)
+                            .show()
+                        }
+                    else {
+                        navController.navigate(route = Screen.Login.route) {
+                            popUpTo("splash") { inclusive = true }
+                        }
+                    }
+            }
+                .addOnFailureListener { e ->
+                    Log.e("UpdateUser", "Error updating user data.", e)
+                }
+        } else {
+            navController.navigate(route = Screen.Login.route) {
+                popUpTo("splash") { inclusive = true }
+            }
+        }
     }
 
 
