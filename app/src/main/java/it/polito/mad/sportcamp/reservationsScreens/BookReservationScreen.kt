@@ -35,6 +35,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -67,6 +68,7 @@ class BookReservationsViewModel : ViewModel() {
     private val court = MutableLiveData<Court>()
     private val timeSlots = MutableLiveData<List<TimeSlot>>()
     private var user: FirebaseUser = Firebase.auth.currentUser!!
+    private val availableTimeSlots = MutableLiveData<List<String>>()
 
 
     fun getUserUID(): String{
@@ -108,17 +110,16 @@ class BookReservationsViewModel : ViewModel() {
         return court
     }
 
-    suspend fun getAvailableTimeSlots(courtId: String, date: String?): MutableLiveData<List<String>> {
+    fun getAvailableTimeSlots(courtId: String, date: String?): LiveData<List<String>> {
+
         getTimeSlots()
-        val availableTimeSlots = MutableLiveData<List<String>>()
 
         val reservationsRef = db.collection("reservations")
         val query = reservationsRef
             .whereEqualTo("id_court", courtId)
             .whereEqualTo("date", date)
 
-        try {
-            val reservationsSnapshot = query.get().await()
+        query.get().addOnSuccessListener { reservationsSnapshot ->
             val reservedTimeSlots = reservationsSnapshot.documents.mapNotNull {
                 it.getLong("id_time_slot")?.toString()
             }
@@ -131,7 +132,7 @@ class BookReservationsViewModel : ViewModel() {
 
                 availableTimeSlots.value = availableTimeSlotsList
             }
-        } catch (e: Exception) {
+        }.addOnFailureListener { e ->
             Log.w(ContentValues.TAG, "Error getting available time slots", e)
         }
 
@@ -166,6 +167,9 @@ class BookReservationsViewModel : ViewModel() {
                     .set(reservation)
                     .addOnSuccessListener {
                         Log.d(ContentValues.TAG, "Reservation added with ID: $generatedId")
+                        val currentSlots = availableTimeSlots.value?.toMutableList()
+                        currentSlots?.removeAll { (it == timeSlot) ?: false }
+                        availableTimeSlots.value = currentSlots
                     }
                     .addOnFailureListener { e ->
                         Log.w(ContentValues.TAG, "Error adding reservation", e)
@@ -197,15 +201,15 @@ fun BookReservationScreen(
 
     val idCourt = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY).toString()
     val date = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY2).toString()
+    val timeSlots by vm.getAvailableTimeSlots(idCourt, date).observeAsState()
 
-
-    var timeSlots by remember { mutableStateOf(emptyList<String>()) }
+    //var timeSlots by remember { mutableStateOf(emptyList<String>()) }
     var isCheckedEquipments = remember { mutableStateOf(false) }
 
-    LaunchedEffect(idCourt, date) {
-        val availableTimeSlots = vm.getAvailableTimeSlots(idCourt, date).value
+    /*LaunchedEffect(idCourt, date) {
+        val availableTimeSlots by vm.getAvailableTimeSlots(idCourt, date).observeAsState(initial =  emptyList())
         timeSlots = availableTimeSlots ?: emptyList()
-    }
+    }*/
 
     val courtDetails by vm.getCourtById(idCourt).observeAsState()
 
@@ -279,7 +283,7 @@ fun BookReservationScreen(
         }
 
 
-        if(timeSlots.isNotEmpty()) {
+        if(timeSlots?.isNotEmpty() == true) {
 
 
             Column {
@@ -331,7 +335,7 @@ fun BookReservationScreen(
                                     onDismissRequest = { vm.expandedTimeSlot = false },
                                     modifier = Modifier.background(Color.White)
                                 ) {
-                                    timeSlots.forEach { item ->
+                                    timeSlots!!.forEach { item ->
                                         DropdownMenuItem(
                                             content = { Text(text = item) },
                                             onClick = {

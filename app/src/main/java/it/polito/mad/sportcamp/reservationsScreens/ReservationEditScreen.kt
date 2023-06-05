@@ -39,6 +39,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -69,6 +70,7 @@ class ReservationEditViewModel : ViewModel() {
     private val db = Firebase.firestore
     private val court = MutableLiveData<Court>()
     private val timeSlots = MutableLiveData<List<TimeSlot>>()
+    private val availableTimeSlots = MutableLiveData<List<String>>()
 
 
     private fun getTimeSlots() {
@@ -129,6 +131,9 @@ class ReservationEditViewModel : ViewModel() {
                         )
                             .addOnSuccessListener {
                                 Log.d(ContentValues.TAG, "Reservation updated successfully")
+                                val currentSlots = availableTimeSlots.value?.toMutableList()
+                                currentSlots?.removeAll { it.equals(timeSlot) ?: false }
+                                availableTimeSlots.value = currentSlots
                             }
                             .addOnFailureListener { e ->
                                 Log.w(ContentValues.TAG, "Error updating reservation", e)
@@ -142,17 +147,16 @@ class ReservationEditViewModel : ViewModel() {
     }
 
 
-    suspend fun getAvailableTimeSlots(courtId: String, date: String?): MutableLiveData<List<String>> {
+    fun getAvailableTimeSlots(courtId: String, date: String?): LiveData<List<String>> {
+
         getTimeSlots()
-        val availableTimeSlots = MutableLiveData<List<String>>()
 
         val reservationsRef = db.collection("reservations")
         val query = reservationsRef
             .whereEqualTo("id_court", courtId)
             .whereEqualTo("date", date)
 
-        try {
-            val reservationsSnapshot = query.get().await()
+        query.get().addOnSuccessListener { reservationsSnapshot ->
             val reservedTimeSlots = reservationsSnapshot.documents.mapNotNull {
                 it.getLong("id_time_slot")?.toString()
             }
@@ -165,7 +169,7 @@ class ReservationEditViewModel : ViewModel() {
 
                 availableTimeSlots.value = availableTimeSlotsList
             }
-        } catch (e: Exception) {
+        }.addOnFailureListener { e ->
             Log.w(ContentValues.TAG, "Error getting available time slots", e)
         }
 
@@ -192,16 +196,16 @@ fun ReservationEditScreen(
     val idReservation = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY4).toString()
     val idCourt = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY3).toString()
     val date = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY2)
-    
+    val timeSlots by vm.getAvailableTimeSlots(idCourt, date).observeAsState()
 
     val court by vm.getCourtById(idCourt).observeAsState()
-    var timeSlots by remember { mutableStateOf(emptyList<String>()) }
+    //var timeSlots by remember { mutableStateOf(emptyList<String>()) }
     var isCheckedEquipments = remember { mutableStateOf(false) }
 
-    LaunchedEffect(idCourt, date) {
+    /*LaunchedEffect(idCourt, date) {
         val availableTimeSlots = vm.getAvailableTimeSlots(idCourt, date).value
         timeSlots = availableTimeSlots ?: emptyList()
-    }
+    }*/
     //val timeSlots by vm.getAvailableTimeSlots(idCourt.toInt(), date!!).observeAsState()
 
     val bitmap = court?.image?.let { BitmapConverter.converterStringToBitmap(it) }
@@ -281,7 +285,7 @@ fun ReservationEditScreen(
 
 
 
-        if (timeSlots.isNotEmpty()) {
+        if (timeSlots?.isNotEmpty() == true) {
 
             Column {
 
@@ -321,7 +325,7 @@ fun ReservationEditScreen(
                                 expanded = vm.expandedTimeSlot,
                                 onDismissRequest = { vm.expandedTimeSlot = false }
                             ) {
-                                timeSlots.forEach { item ->
+                                timeSlots!!.forEach { item ->
                                     DropdownMenuItem(
                                         content = { Text(text = item) },
                                         onClick = {
