@@ -224,6 +224,8 @@ fun BookReservationScreen(
     val date = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY2).toString()
     val timeSlots by vm.getAvailableTimeSlots(idCourt, date).observeAsState()
 
+    val isLoading = timeSlots == null
+
     //var timeSlots by remember { mutableStateOf(emptyList<String>()) }
     var isCheckedEquipments = remember { mutableStateOf(false) }
     var isCheckedRandomPlayer = remember { mutableStateOf(false) }
@@ -469,16 +471,22 @@ fun BookReservationScreen(
             }
         }
         else{
-            Box(contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(40.dp),) {
-                Text(
-                    text = "No available time slot for this day, sorry!",
-                    fontSize = 20.sp,
-                    textAlign = TextAlign.Center,
-                    color=MaterialTheme.colors.primary
-                )
+            if (isLoading) {
+                // Mostra uno spinner di caricamento o un altro indicatore di progresso
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+            } else if (timeSlots?.isEmpty() == true) {
+                // Mostra il messaggio "No available time slot for this day, sorry!"
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No available time slot for this day, sorry!",
+                        fontSize = 20.sp,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colors.primary
+                    )
+                }
             }
 
         }
