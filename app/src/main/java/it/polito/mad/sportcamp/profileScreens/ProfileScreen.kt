@@ -402,6 +402,14 @@ fun Profile(user: User, navController: NavController) {
                     UserDetails(user = user)
                 }
 
+                item{
+                    Spacer(modifier = Modifier.height(20.dp))
+                    UserDetailsRow(user = user)
+                    Spacer(modifier = Modifier.height(20.dp))
+                }
+                items(optionsList) { item ->
+                    OptionsItemStyle(item = item)
+                }
 
                 item {
                     SportsListRow(user = user)
@@ -425,22 +433,16 @@ fun Profile(user: User, navController: NavController) {
                     }
                 }
 
-
                 if(user.sports.contains("Volleyball")) {
                     item {
                         TriStateToggle("Volley", user.volley_level)
                     }
                 }
                 
-                item{
-                    UserDetailsRow(user = user)
-                    Spacer(modifier = Modifier.height(50.dp))
-                }
-                items(optionsList) { item ->
-                    OptionsItemStyle(item = item)
-                }
+
 
                 item{
+                    Spacer(modifier = Modifier.height(50.dp))
                     LinkLoginLogoutButtons(navController = navController)
                     Spacer(modifier = Modifier.height(50.dp))
                 }
@@ -565,33 +567,6 @@ private fun UserDetailsRow(user:User) {
 
             ) {
 
-                // User's gender
-                user.gender?.let {
-                    Text(
-                        text = "Gender",
-                        fontSize = 16.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-
-                // User's gender value
-                user.gender?.let {
-                    Text(
-                        text = it,
-                        fontSize = 14.sp,
-                        color = Color.Gray,
-                        letterSpacing = (0.8).sp,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-
-            }
-
 
             Column(
                 modifier = Modifier
@@ -625,6 +600,7 @@ private fun UserDetailsRow(user:User) {
                 }
 
             }
+
             Column(
                 modifier = Modifier
                     .weight(weight = 3f, fill = false)
@@ -646,6 +622,33 @@ private fun UserDetailsRow(user:User) {
                 user.age?.let {
                     Text(
                         text = it.toString(),
+                        fontSize = 14.sp,
+                        color = Color.Gray,
+                        letterSpacing = (0.8).sp,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+            }
+
+                // User's gender
+                user.gender?.let {
+                    Text(
+                        text = "Gender",
+                        fontSize = 16.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                // User's gender value
+                user.gender?.let {
+                    Text(
+                        text = it,
                         fontSize = 14.sp,
                         color = Color.Gray,
                         letterSpacing = (0.8).sp,
@@ -824,158 +827,60 @@ fun CustomToolbarWithEditButton(title: String, navController: NavHostController)
 
 
 }
-
-
 @Composable
-fun SportsListRow(user: User){
-
-    Spacer(modifier = Modifier.height(5.dp))
-
-    Row(
+fun SportsListRow(user: User) {
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 30.dp, vertical = 5.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center
     ) {
-
-        // Title
-        Text(
-            text = "Sports",
-            fontSize = 16.sp,
-        )
-
         Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.fillMaxWidth().padding(bottom=5.dp),
+            horizontalArrangement = Arrangement.Center
         ) {
-            Column(
-                modifier = Modifier
-                    .weight(weight = 3f, fill = false)
-                    .padding(start = 16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-
-                if(user.sports?.contains("Tennis") == true) {
-                    // Icon
-                    Icon(
-                        modifier = Modifier
-                            .size(25.dp),
-                        imageVector = Icons.Outlined.SportsTennis,
-                        contentDescription = "Tennis",
-                        tint = MaterialTheme.colors.primary
-                    )
-
-                    Spacer(modifier = Modifier.height(2.dp))
-
-                    // Sub title
-                    Text(
-                        text = "Tennis",
-                        fontSize = 10.sp,
-                        letterSpacing = (0.8).sp,
-                        color = Color.Gray
-                    )
-                }
-
-            }
-            if(user.sports?.contains("Basketball") == true) {
-                Column(
-                    modifier = Modifier
-                        .weight(weight = 3f, fill = false)
-                        .padding(start = 16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-
-                    // Icon
-                    Icon(
-                        modifier = Modifier
-                            .size(25.dp),
-                        imageVector = Icons.Outlined.SportsBasketball,
-                        contentDescription = "Basketball",
-                        tint = MaterialTheme.colors.primary
-                    )
-
-                    Spacer(modifier = Modifier.height(2.dp))
-
-                    // Sub title
-                    Text(
-                        text = "Basket",
-                        fontSize = 10.sp,
-                        letterSpacing = (0.8).sp,
-                        color = Color.Gray
-
-                    )
-
-                }
-            }
-            if(user.sports?.contains("Football") == true) {
-                Column(
-                    modifier = Modifier
-                        .weight(weight = 4f, fill = false)
-                        .padding(start = 16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-
-                    // Icon
-                    Icon(
-                        modifier = Modifier
-                            .size(25.dp),
-                        imageVector = Icons.Outlined.SportsSoccer,
-                        contentDescription = "Football",
-                        tint = MaterialTheme.colors.primary
-                    )
-
-                    Spacer(modifier = Modifier.height(2.dp))
-
-                    // Sub title
-                    Text(
-                        text = "Football",
-                        fontSize = 10.sp,
-                        letterSpacing = (0.8).sp,
-                        color = Color.Gray
-
-                    )
-
-                }
-            }
-            if(user.sports?.contains("Volleyball") == true) {
-                Column(
-                    modifier = Modifier
-                        .weight(weight = 3f, fill = false)
-                        .padding(start = 16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-
-                    // Icon
-                    Icon(
-                        modifier = Modifier
-                            .size(25.dp),
-                        imageVector = Icons.Outlined.SportsVolleyball,
-                        contentDescription = "Volleyball",
-                        tint = MaterialTheme.colors.primary
-                    )
-
-                    Spacer(modifier = Modifier.height(2.dp))
-
-                    // Sub title
-                    Text(
-                        text = "Volley",
-                        fontSize = 10.sp,
-                        letterSpacing = (0.8).sp,
-                        color = Color.Gray
-
-                    )
-
-                }
-            }
-
+            Text(
+                text = "Sports",
+                fontSize = 16.sp,
+            )
         }
 
-    }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            val sportsList = listOf(
+                Pair("Tennis", Icons.Outlined.SportsTennis),
+                Pair("Basketball", Icons.Outlined.SportsBasketball),
+                Pair("Football", Icons.Outlined.SportsSoccer),
+                Pair("Volleyball", Icons.Outlined.SportsVolleyball)
+            )
 
+            sportsList.forEach { (sport, icon) ->
+                if (user.sports?.contains(sport) == true) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(25.dp),
+                            imageVector = icon,
+                            contentDescription = sport,
+                            tint = MaterialTheme.colors.primary
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = sport,
+                            fontSize = 10.sp,
+                            letterSpacing = 0.8.sp,
+                            color = Color.Gray
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
+
 
 private fun prepareOptionsData(user: User) {
 

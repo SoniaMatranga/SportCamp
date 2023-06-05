@@ -327,10 +327,10 @@ fun EditProfileScreen(
                             city = if (vm.isEditedCity) vm.usrCity else user?.city,
                             age = if (vm.isEditedAge) vm.usrAge.toInt() else user?.age,
                             gender = if (vm.isEditedGender) vm.usrGender else user?.gender,
-                            tennis_level = if (vm.isEditedTennisLevel) vm.usrTennisLevel else user?.tennis_level,
-                            football_level =  if (vm.isEditedFootballLevel) vm.usrFootballLevel else user?.football_level,
-                            basket_level = if (vm.isEditedBasketLevel) vm.usrBasketLevel else user?.basket_level,
-                            volley_level =  if (vm.isEditedVolleyLevel) vm.usrVolleyLevel else user?.volley_level,
+                            tennis_level = if (vm.usrTennisLevel!="") vm.usrTennisLevel else user?.tennis_level,
+                            football_level =  if (vm.usrFootballLevel!="") vm.usrFootballLevel else user?.football_level,
+                            basket_level = if (vm.usrBasketLevel!="") vm.usrBasketLevel else user?.basket_level,
+                            volley_level =  if (vm.usrVolleyLevel!="") vm.usrVolleyLevel else user?.volley_level,
                             sports = if(vm.isEditedSports) vm.usrSports else user?.sports,
                             bio = if (vm.isEditedBio) vm.usrBio else user?.bio,
                             image = if(bitmap.value != null) bitmap.value?.let {
@@ -628,102 +628,118 @@ fun EditProfileScreen(
 
                     user?.tennis_level?.let {
                         if (vm.usrSports != "") {
-                            if (vm.usrSports.contains("Tennis"))
+                            if (vm.usrSports.contains("Tennis")) {
+                                if (vm.usrTennisLevel == "" && it == "")
+                                    vm.usrTennisLevel = "Beginner"
                                 TriStateToggleEdit(
                                     if (vm.usrTennisLevel != "") vm.usrTennisLevel else it,
                                     sport = "Tennis"
                                 )
+                            }
                         } else {
-                            if (user?.sports!!.contains("Tennis"))
+                            if (user?.sports!!.contains("Tennis")) {
+                                if (vm.usrTennisLevel == "" && it == "")
+                                    vm.usrTennisLevel = "Beginner"
                                 TriStateToggleEdit(
-                                    if (vm.usrTennisLevel != "") vm.usrTennisLevel else it,
+                                    if (vm.usrTennisLevel != "")
+                                        vm.usrTennisLevel
+                                    else
+                                        it,
                                     sport = "Tennis"
                                 )
+
+                            }
                         }
                     }
 
                     user?.basket_level?.let {
                         if (vm.usrSports != "") {
-                            if (vm.usrSports.contains("Basketball"))
+                            if (vm.usrSports.contains("Basketball")) {
+                                if (vm.usrBasketLevel == "" && it == "")
+                                    vm.usrBasketLevel = "Beginner"
                                 TriStateToggleEdit(
                                     if (vm.usrBasketLevel != "")
                                         vm.usrBasketLevel
-                                    else {
-                                        if(it=="")
-                                            "Beginner"
-                                        else it
-                                         },
+                                    else
+                                        it,
                                     sport = "Basketball"
                                 )
+                            }
                         } else {
-                            if (user?.sports!!.contains("Basketball"))
+                            if (user?.sports!!.contains("Basketball")){
+                                if(vm.usrBasketLevel=="" && it=="")
+                                    vm.usrBasketLevel = "Beginner"
                                 TriStateToggleEdit(
                                     if (vm.usrBasketLevel != "")
                                         vm.usrBasketLevel
-                                    else {
-                                        if(it=="")
-                                            "Beginner"
-                                        else it
-                                    },
+                                    else
+                                        it,
                                     sport = "Basketball"
                                 )
+                            }
                         }
                     }
 
                     user?.football_level?.let {
                         if (vm.usrSports != "") {
-                            if (vm.usrSports.contains("Football"))
+                            if (vm.usrSports.contains("Football")) {
+                                if (vm.usrFootballLevel == "" && it == "")
+                                    vm.usrFootballLevel = "Beginner"
                                 TriStateToggleEdit(
                                     if (vm.usrFootballLevel != "")
                                         vm.usrFootballLevel
                                     else {
-                                        if(it=="")
-                                            "Beginner"
-                                        else it
+                                        it
                                     },
                                     sport = "Football"
                                 )
+                            }
                         } else {
-                            if (user?.sports!!.contains("Football"))
+                            if (user?.sports!!.contains("Football")) {
+                                if (vm.usrFootballLevel == "" && it == "")
+                                    vm.usrFootballLevel = "Beginner"
                                 TriStateToggleEdit(
                                     if (vm.usrFootballLevel != "")
                                         vm.usrFootballLevel
                                     else {
-                                        if(it=="")
-                                            "Beginner"
-                                        else it
+                                        it
                                     },
                                     sport = "Football"
                                 )
+                            }
                         }
                     }
 
 
                     user?.volley_level?.let {
                         if (vm.usrSports != "") {
-                            if (vm.usrSports.contains("Volleyball"))
+                            if (vm.usrSports.contains("Volleyball")) {
+                                if (vm.usrVolleyLevel == "" && it == "")
+                                    vm.usrVolleyLevel = "Beginner"
                                 TriStateToggleEdit(
                                     if (vm.usrVolleyLevel != "")
                                         vm.usrVolleyLevel
                                     else {
-                                        if(it=="")
-                                            "Beginner"
-                                        else it
+                                        it
                                     },
-                                    sport = "Vollleyball"
+                                    sport = "Volleyball"
                                 )
+                            }
                         } else {
-                            if (user?.sports!!.contains("Volleyball"))
+                            if (user?.sports!!.contains("Volleyball")) {
+                                if (vm.usrVolleyLevel == "" && it == "")
+                                    vm.usrVolleyLevel = "Beginner"
                                 TriStateToggleEdit(
                                     if (vm.usrVolleyLevel != "")
                                         vm.usrVolleyLevel
                                     else {
-                                        if(it=="")
+                                        if (it == "")
                                             "Beginner"
                                         else it
                                     },
                                     sport = "Volleyball"
                                 )
+                            }
                         }
                     }
                     Spacer(modifier = Modifier.height(30.dp))
@@ -758,10 +774,10 @@ fun EditProfileScreen(
                                                         city = if (vm.isEditedCity) vm.usrCity else user?.city,
                                                         age = if (vm.isEditedAge) vm.usrAge.toInt() else user?.age,
                                                         gender = if (vm.isEditedGender) vm.usrGender else user?.gender,
-                                                        tennis_level = if (vm.isEditedTennisLevel) vm.usrTennisLevel else user?.tennis_level,
-                                                        football_level =  if (vm.isEditedFootballLevel) vm.usrFootballLevel else user?.football_level,
-                                                        basket_level = if (vm.isEditedBasketLevel) vm.usrBasketLevel else user?.basket_level,
-                                                        volley_level =  if (vm.isEditedVolleyLevel) vm.usrVolleyLevel else user?.volley_level,
+                                                        tennis_level = if (vm.usrTennisLevel!="") vm.usrTennisLevel else user?.tennis_level,
+                                                        football_level =  if (vm.usrFootballLevel!="") vm.usrFootballLevel else user?.football_level,
+                                                        basket_level = if (vm.usrBasketLevel!="") vm.usrBasketLevel else user?.basket_level,
+                                                        volley_level =  if (vm.usrVolleyLevel!="") vm.usrVolleyLevel else user?.volley_level,
                                                         sports = if(vm.isEditedSports) vm.usrSports else user?.sports,
                                                         bio = if (vm.isEditedBio) vm.usrBio else user?.bio,
                                                         image = if(bitmap.value != null) bitmap.value?.let {
@@ -856,7 +872,7 @@ fun DropDownMenu(userOption: String, type: String) {
     val vm: EditProfileViewModel = viewModel()
 
     var isExpanded by remember { mutableStateOf(false) }
-    var userInitialValue by remember { mutableStateOf(userOption) } //male
+    var userInitialValue by remember { mutableStateOf(userOption) }
     var suggestions = emptyList<String>()
 
     if (type == "Gender*")

@@ -448,7 +448,6 @@ fun ProfileDetailsScreen(
                                     } else {
                                         selectedCheckboxes.remove(labelRow)
                                     }
-
                                     vm.usrSports = selectedCheckboxes.joinToString(", ")
                                 }) {
                                     Row(
@@ -468,14 +467,26 @@ fun ProfileDetailsScreen(
                         }
                     }
 
-                    if(vm.usrSports.contains("Tennis"))
-                        TriStateToggleEditNew(if(vm.usrTennisLevel=="")"Beginner" else vm.usrTennisLevel,sport = "Tennis")
-                    if(vm.usrSports.contains("Basketball"))
-                        TriStateToggleEditNew(if(vm.usrBasketLevel=="")"Beginner" else vm.usrBasketLevel,sport = "Basketball")
-                    if(vm.usrSports.contains("Football"))
-                        TriStateToggleEditNew(if(vm.usrFootballLevel=="")"Beginner" else vm.usrFootballLevel,sport = "Football")
-                    if(vm.usrSports.contains("Volleyball"))
-                        TriStateToggleEditNew(if(vm.usrVolleyLevel=="")"Beginner" else vm.usrVolleyLevel,sport = "Volleyball")
+                    if(vm.usrSports.contains("Tennis")) {
+                        if(vm.usrTennisLevel=="")
+                            vm.usrTennisLevel="Beginner"
+                        TriStateToggleEditNew(vm.usrTennisLevel, sport = "Tennis")
+                    }
+                    if(vm.usrSports.contains("Basketball")){
+                        if(vm.usrBasketLevel=="")
+                            vm.usrBasketLevel="Beginner"
+                        TriStateToggleEditNew(vm.usrBasketLevel,sport = "Basketball")
+                    }
+                    if(vm.usrSports.contains("Football")){
+                        if(vm.usrFootballLevel=="")
+                            vm.usrFootballLevel="Beginner"
+                        TriStateToggleEditNew(vm.usrFootballLevel,sport = "Football")
+                    }
+                    if(vm.usrSports.contains("Volleyball")){
+                        if(vm.usrVolleyLevel=="")
+                            vm.usrVolleyLevel="Beginner"
+                        TriStateToggleEditNew(vm.usrVolleyLevel,sport = "Volleyball")
+                    }
 
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
