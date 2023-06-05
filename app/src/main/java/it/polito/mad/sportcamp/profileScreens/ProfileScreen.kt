@@ -38,9 +38,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
@@ -48,9 +50,12 @@ import androidx.navigation.NavHostController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.AuthCredential
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import it.polito.mad.sportcamp.R
@@ -59,34 +64,101 @@ import it.polito.mad.sportcamp.classes.User
 import it.polito.mad.sportcamp.common.BitmapConverter
 import it.polito.mad.sportcamp.common.LoadingState
 import it.polito.mad.sportcamp.ui.theme.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import java.util.Date
 
 class ProfileViewModel : ViewModel() {
 
     private val db = Firebase.firestore
-    private val user = MutableLiveData<User>()
-    private var fuser: FirebaseUser = Firebase.auth.currentUser!!
+    val loadingState = MutableStateFlow(LoadingState.IDLE)
+    private lateinit var auth: FirebaseAuth
+    private lateinit var userFirebase: FirebaseUser
+    val data = hashMapOf(
+        "lastLogin" to com.google.firebase.Timestamp(Date(System.currentTimeMillis()))
+    )
+    var updated = false
+    private val userDocument = MutableLiveData<User>()
+    val user: LiveData<User> get() = userDocument
 
-    fun getUserDocument() :MutableLiveData<User>{
-        db
-            .collection("users")
-            .document(getUserUID())
-            .addSnapshotListener { value, error ->
-                if(error != null) Log.w(TAG, "Error getting documents.")
-                if(value != null) user.value = value.toObject(User::class.java)
-            }
-        return user
+    fun signWithCredential(credential: AuthCredential) = viewModelScope.launch {
+        try {
+            loadingState.emit(LoadingState.LOADING)
+            Firebase.auth.signInWithCredential(credential).await()
+            auth = Firebase.auth
+            userFirebase = auth.currentUser!!
+            db.collection("users").document(auth.uid!!).set(data, SetOptions.merge())
+            loadingState.emit(LoadingState.LOADED)
+        } catch (e: Exception) {
+            loadingState.emit(LoadingState.error(e.localizedMessage))
+        }
     }
 
-    private fun getUserUID(): String{
-        return fuser.uid
+    fun linkAccount(credential: AuthCredential) = viewModelScope.launch {
+        try {
+            loadingState.emit(LoadingState.LOADING)
+            Firebase.auth.currentUser!!.linkWithCredential(credential).await()
+            loadingState.emit(LoadingState.LOADED)
+            auth = Firebase.auth
+            userFirebase = auth.currentUser!!
+            db.collection("users").document(auth.uid!!).set(data, SetOptions.merge())
+
+        } catch (e: Exception) {
+            loadingState.emit(LoadingState.error(e.localizedMessage))
+        }
+
+    }
+    fun getUserDocument() {
+        db.collection("users")
+            .document(getUserUID())
+            .get()
+            .addOnSuccessListener { document ->
+                val userObject = document.toObject(User::class.java)
+                userDocument.value = userObject
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Error getting user document: ${e.message}")
+            }
+    }
+
+private fun getUserUID(): String {
+        if (!::userFirebase.isInitialized) {
+            userFirebase = Firebase.auth.currentUser!!
+        }
+        return userFirebase.uid
     }
 
     fun isAnonymous(): Boolean{
-        return fuser.isAnonymous
+        if (!::userFirebase.isInitialized) {
+            userFirebase = Firebase.auth.currentUser!!
+        }
+        return userFirebase.isAnonymous
     }
 
     fun updateUser() {
-        fuser = Firebase.auth.currentUser!!
+        userFirebase=Firebase.auth.currentUser!!
+        getUserDocument()
+    }
+    fun updateUser2() {
+        db.collection("users").document(getUserUID()).set(data, SetOptions.merge())
+            .addOnSuccessListener {
+                getUserDocument() // Fetch the updated user document
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Error updating user: ${e.message}")
+            }
+    }
+
+    fun signOut() = viewModelScope.launch {
+        try {
+            loadingState.emit(LoadingState.LOADING)
+            Firebase.auth.signOut()
+            loadingState.emit(LoadingState.LOADED)
+        } catch (e: Exception) {
+            loadingState.emit(LoadingState.error(e.localizedMessage))
+        }
+
     }
 
     companion object {
@@ -105,8 +177,11 @@ fun ProfileScreen(
     vm: ProfileViewModel = viewModel(factory = ProfileViewModel.factory)
 ) {
 
-    val user by vm.getUserDocument().observeAsState()
+    val user by vm.user.observeAsState()
 
+    LaunchedEffect(Unit) {
+        vm.getUserDocument() // Fetch the initial user document
+    }
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -139,14 +214,10 @@ fun ProfileScreen(
 @Composable
 private fun LinkLoginLogoutButtons(
     navController: NavController,
-    vm: ProfileViewModel = viewModel(factory = ProfileViewModel.factory),
-    viewModel: LoginScreenViewModel = viewModel()
+    vm: ProfileViewModel = viewModel(factory = ProfileViewModel.factory)
 ){
 
-    val state by viewModel.loadingState.collectAsState()
-    var first by remember {
-        mutableStateOf(true)
-    }
+    val state by vm.loadingState.collectAsState()
 
 
     val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
@@ -154,8 +225,7 @@ private fun LinkLoginLogoutButtons(
         try {
             val account = task.getResult(ApiException::class.java)!!
             val credential = GoogleAuthProvider.getCredential(account.idToken!!, null)
-            viewModel.linkAccount(credential)
-            vm.updateUser()
+            vm.linkAccount(credential)
         } catch (e: ApiException) {
             Log.w("TAG", "Google sign in failed", e)
         }
@@ -166,7 +236,7 @@ private fun LinkLoginLogoutButtons(
         try {
             val account = task.getResult(ApiException::class.java)!!
             val credential = GoogleAuthProvider.getCredential(account.idToken!!, null)
-            viewModel.signWithCredential(credential)
+            vm.signWithCredential(credential)
         } catch (e: ApiException) {
             Log.w("TAG", "Google sign in failed", e)
         }
@@ -256,13 +326,15 @@ private fun LinkLoginLogoutButtons(
         Spacer(modifier = Modifier.height(20.dp))
         when (state.status) {
             LoadingState.Status.SUCCESS -> {
-                first = false
-                //vm.updateUser()
                 Toast.makeText(
                     context,
                     "Sign in completed!",
                     Toast.LENGTH_SHORT
                 ).show()
+                vm.updateUser2()
+                navController.navigate(Screen.Profile.route){
+                    popUpTo("profile") { inclusive = true }
+                }
             }
 
             LoadingState.Status.FAILED -> {
@@ -282,7 +354,7 @@ private fun LinkLoginLogoutButtons(
             else -> {}
         }
     } else {
-        LogoutButton(navController = navController)
+            LogoutButton(navController = navController)
     }
 
 }
@@ -290,12 +362,13 @@ private fun LinkLoginLogoutButtons(
 @Composable
 private fun LogoutButton(
     navController: NavController,
-    viewModel: LoginScreenViewModel = viewModel()){
+    vm: ProfileViewModel = viewModel(factory = ProfileViewModel.factory)
+){
 
     var logout by remember {
         mutableStateOf(false)
     }
-    val state by viewModel.loadingState.collectAsState()
+    val state by vm.loadingState.collectAsState()
     val context = LocalContext.current
     Column(
         modifier =
@@ -309,7 +382,7 @@ private fun LogoutButton(
                 .height(50.dp)
                 .padding(horizontal = 50.dp),
             onClick = {
-                viewModel.signOut()
+                vm.signOut()
                 logout = true
             },
             content = {
@@ -545,124 +618,104 @@ private fun UserDetails(user: User) {
 }
 
 @Composable
-private fun UserDetailsRow(user:User) {
+private fun UserDetailsRow(user: User) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier
+                .weight(3f)
+                .padding(start = 16.dp)
         ) {
-
-
-            Column(
-                modifier = Modifier
-                    .weight(weight = 3f, fill = false)
-                    .padding(start = 16.dp)
-
-            ) {
-
-
-            Column(
-                modifier = Modifier
-                    .weight(weight = 3f, fill = false)
-                    .padding(start = 16.dp)
-            ) {
-
-                // User's city
-                user.city?.let {
-                    Text(
-                        text = "City",
-                        fontSize = 16.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-
-                // User's city value
-                user.city?.let {
-                    Text(
-                        text = it,
-                        fontSize = 14.sp,
-                        color = Color.Gray,
-                        letterSpacing = (0.8).sp,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-
+            // User's city
+            user.city?.let {
+                Text(
+                    text = "City",
+                    fontSize = 16.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
 
-            Column(
-                modifier = Modifier
-                    .weight(weight = 3f, fill = false)
-                    .padding(start = 16.dp)
-
-            ) {
-
-                user.age?.let {
-                    Text(
-                        text = "Age",
-                        fontSize = 16.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-
-                user.age?.let {
-                    Text(
-                        text = it.toString(),
-                        fontSize = 14.sp,
-                        color = Color.Gray,
-                        letterSpacing = (0.8).sp,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-
+            // User's city value
+            user.city?.let {
+                Text(
+                    text = it,
+                    fontSize = 14.sp,
+                    color = Color.Gray,
+                    letterSpacing = (0.8).sp,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
-
-                // User's gender
-                user.gender?.let {
-                    Text(
-                        text = "Gender",
-                        fontSize = 16.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-
-                // User's gender value
-                user.gender?.let {
-                    Text(
-                        text = it,
-                        fontSize = 14.sp,
-                        color = Color.Gray,
-                        letterSpacing = (0.8).sp,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-
-            }
-
-
         }
 
+        Column(
+            modifier = Modifier
+                .weight(3f)
+        ) {
+            // User's age
+            user.age?.let {
+                Text(
+                    text = "Age",
+                    fontSize = 16.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            // User's age value
+            user.age?.let {
+                Text(
+                    text = it.toString(),
+                    fontSize = 14.sp,
+                    color = Color.Gray,
+                    letterSpacing = (0.8).sp,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .weight(3f)
+                .padding(end = 16.dp)
+        ) {
+            // User's gender
+            user.gender?.let {
+                Text(
+                    text = "Gender",
+                    fontSize = 16.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            // User's gender value
+            user.gender?.let {
+                Text(
+                    text = it,
+                    fontSize = 14.sp,
+                    color = Color.Gray,
+                    letterSpacing = (0.8).sp,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
     }
 }
 
@@ -836,7 +889,9 @@ fun SportsListRow(user: User) {
         verticalArrangement = Arrangement.Center
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(bottom=5.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 5.dp),
             horizontalArrangement = Arrangement.Center
         ) {
             Text(
