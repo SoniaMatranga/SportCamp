@@ -41,6 +41,14 @@ sealed class Screen(
         icon_focused = Icons.Outlined.Person
     )
 
+    //for profile
+    object OpenMatch: Screen(
+        route = "openMatch",
+        title = "Open Matches",
+        icon = Icons.Outlined.Groups,
+        icon_focused = Icons.Outlined.Groups
+    )
+
     object EditProfile: Screen(
         route = "editProfile",
         title = "editProfile",

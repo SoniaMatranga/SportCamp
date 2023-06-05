@@ -9,5 +9,7 @@ data class Reservation(
     val id_time_slot: Int? = null,
     val date: String? = null,
     val equipments: String? = null,
-    val options: String? = null
+    val options: String? = null,
+    val players: String? = null,
+    val state: String? = null
 )

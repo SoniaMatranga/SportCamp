@@ -54,6 +54,7 @@ import it.polito.mad.sportcamp.common.BitmapConverter
 import it.polito.mad.sportcamp.classes.Court
 import it.polito.mad.sportcamp.classes.Reservation
 import it.polito.mad.sportcamp.classes.TimeSlot
+import it.polito.mad.sportcamp.classes.User
 import it.polito.mad.sportcamp.ui.theme.Orange
 import kotlinx.coroutines.tasks.await
 
@@ -63,16 +64,33 @@ class BookReservationsViewModel : ViewModel() {
 
     var selectedEquipments by mutableStateOf("Not requested")
     var selectedTimeSlot by  mutableStateOf("Select time slot")
+    var selectedReservationState by mutableStateOf("Confirmed")
 
     private val db = Firebase.firestore
     private val court = MutableLiveData<Court>()
     private val timeSlots = MutableLiveData<List<TimeSlot>>()
     private var user: FirebaseUser = Firebase.auth.currentUser!!
     private val availableTimeSlots = MutableLiveData<List<String>>()
+    private val userDocument = MutableLiveData<User>()
+
+    init{
+        getUserDocument()
+    }
 
 
     fun getUserUID(): String{
         return user.uid
+    }
+
+    private fun getUserDocument() :MutableLiveData<User>{
+        db
+            .collection("users")
+            .document(getUserUID())
+            .addSnapshotListener { value, error ->
+                if(error != null) Log.w(ContentValues.TAG, "Error getting documents.")
+                if(value != null) userDocument.value = value.toObject(User::class.java)
+            }
+        return userDocument
     }
 
 
@@ -144,15 +162,19 @@ class BookReservationsViewModel : ViewModel() {
         timeSlot: String?,
         date: String?,
         equipments: String?,
-        options: String?
+        options: String?,
+        state: String?
     ) {
+        val nickname = userDocument.value?.nickname.toString()
             val reservation = Reservation(
                 id_user = idUser,
                 id_court = idCourt,
                 id_time_slot = getTimeSlotId(timeSlot),
                 date = date,
                 equipments = equipments,
-                options = options
+                options = options,
+                players = nickname,
+                state = state
             )
         val reservationsCollection = db.collection("reservations")
 
@@ -205,6 +227,7 @@ fun BookReservationScreen(
 
     //var timeSlots by remember { mutableStateOf(emptyList<String>()) }
     var isCheckedEquipments = remember { mutableStateOf(false) }
+    var isCheckedRandomPlayer = remember { mutableStateOf(false) }
 
     /*LaunchedEffect(idCourt, date) {
         val availableTimeSlots by vm.getAvailableTimeSlots(idCourt, date).observeAsState(initial =  emptyList())
@@ -378,6 +401,33 @@ fun BookReservationScreen(
 
                 }
 
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 45.dp, vertical = 10.dp)
+                        .background(Color.White)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = isCheckedRandomPlayer.value,
+                            onCheckedChange = {
+                                isCheckedRandomPlayer.value = !isCheckedRandomPlayer.value
+                                if (isCheckedRandomPlayer.value){
+                                    vm.selectedReservationState= "Pending"
+                                } else{
+                                    vm.selectedReservationState= "Confirmed"
+                                }
+                            },
+                            enabled = true,
+                            colors = CheckboxDefaults.colors(MaterialTheme.colors.secondaryVariant)
+                        )
+                        Text(text = "Publish reservation to search random players")
+                    }
+
+                }
+
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -392,11 +442,16 @@ fun BookReservationScreen(
                                 courtDetails?.id_court?.let {
                                     vm.addReservation(
                                          vm.getUserUID(),
-                                        it, vm.selectedTimeSlot, date, vm.selectedEquipments, ""
+                                        it, vm.selectedTimeSlot, date, vm.selectedEquipments, "", vm.selectedReservationState
                                     )
                                 }
 
-                                Toast.makeText(context, "Booking successfully completed!", Toast.LENGTH_SHORT).show()
+                                if(vm.selectedReservationState == "Confirmed"){
+                                        Toast.makeText(context, "Booking successfully completed!", Toast.LENGTH_SHORT).show()
+                                }
+                                else{
+                                    Toast.makeText(context, "Booking published as open match!", Toast.LENGTH_SHORT).show()
+                                }
 
                             } else {
                                 //dialog please chose timeslot and equipments

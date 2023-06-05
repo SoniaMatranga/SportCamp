@@ -84,6 +84,7 @@ class ReservationsViewModel : ViewModel() {
 
         db.collection("reservations")
             .whereEqualTo("id_user", getUserUID())
+            .whereEqualTo("state", "Confirmed")
             .addSnapshotListener { value, error ->
                 if (error != null) {
                     Log.w(ContentValues.TAG, "Error getting documents.")
