@@ -116,7 +116,6 @@ class EditProfileViewModel : ViewModel() {
         return fuser.uid
     }
 
-
     init {
             val userLiveData = getUserDocument()
             userLiveData.observeForever { user ->
@@ -135,7 +134,6 @@ class EditProfileViewModel : ViewModel() {
             }
 
     }
-
 
     fun updateUser(
         nickname: String,
@@ -179,6 +177,48 @@ class EditProfileViewModel : ViewModel() {
                 Log.e("UpdateUser", "Error updating user data.", e)
             }
     }
+
+    private val usersCollection = db.collection("users")
+    fun checkUsername(callback: (Boolean) -> Unit) {
+        usersCollection.get()
+            .addOnSuccessListener { querySnapshot ->
+                val nicknames = mutableListOf<String>()
+
+                for (document in querySnapshot) {
+                    val nickname = document.getString("nickname")
+                    if (nickname != null) {
+                        nicknames.add(nickname)
+                    }
+                }
+
+                val nicknameExists = nicknames.contains(usrNickname)
+                callback(nicknameExists)
+            }
+            .addOnFailureListener { e ->
+                Log.e("UpdateUser", "Error updating user data.", e)
+            }
+    }
+
+    fun getUserNickname() : String {
+        var nickname=""
+        db
+            .collection("users")
+            .document(getUserUID())
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                if (documentSnapshot != null && documentSnapshot.exists()) {
+                    val user = documentSnapshot.toObject(User::class.java)
+                    nickname = user?.nickname ?: ""
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.w(ContentValues.TAG, "Error getting user document: ", exception)
+            }
+        return nickname
+    }
+
+
+
     companion object {
         val factory : ViewModelProvider.Factory = viewModelFactory {
             initializer {
@@ -205,7 +245,7 @@ fun EditProfileScreen(
 
     val userId = vm.getUserUID()
     val user by vm.getUserDocument().observeAsState()
-
+    val initialNickname = vm.getUserNickname()
 
 
     // The coroutine scope for event handlers calling suspend functions.
@@ -473,6 +513,17 @@ fun EditProfileScreen(
                             )
                         }
                     }
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp).padding(top=10.dp)
+                    ) {
+                        Text(
+                            text = "Fields with * are mandatory",
+                            color = Color.Gray,
+                            modifier = Modifier.padding(top = 15.dp, bottom = 5.dp),
+                            textAlign = TextAlign.Start,
+                            fontSize= 14.sp
+                        )
+                    }
 
                     user?.nickname?.let {
 
@@ -522,7 +573,55 @@ fun EditProfileScreen(
                         )
                     }
 
-                    user?.city?.let { DropDownMenu(if(vm.usrCity != "") vm.usrCity else it, "City") }
+                    user?.age?.toString().let {
+                        if (it != null) {
+                            CustomTextField(
+                                modifier = Modifier
+                                    .padding(all = 10.dp)
+                                    .fillMaxWidth(),
+                                labelResId = R.string.Age,
+                                inputWrapper = if(vm.usrAge != "") vm.usrAge else it,
+                                keyboardOptions = KeyboardOptions(
+                                    capitalization = KeyboardCapitalization.None,
+                                    autoCorrect = false,
+                                    keyboardType = KeyboardType.Number,
+                                    imeAction = ImeAction.Done
+                                ),
+                                maxLength = 3,
+                                maxLines = 1,
+                                onTextChanged = { newText ->
+                                    vm.usrAge = newText
+                                    vm.isEditedAge = true
+                                }
+                            )
+                        }
+                    }
+
+                    user?.gender?.let { DropDownMenu(if(vm.usrGender != "") vm.usrGender else it, "Gender*") }
+
+                    user?.city?.let { DropDownMenu(if(vm.usrCity != "") vm.usrCity else it, "City*") }
+
+                    user?.bio?.let {
+                        CustomTextField(
+                            modifier = Modifier
+                                .padding(all = 10.dp)
+                                .fillMaxWidth(),
+                            labelResId = R.string.Bio,
+                            inputWrapper = if(vm.usrBio != "") vm.usrBio else it,
+                            keyboardOptions = KeyboardOptions(
+                                capitalization = KeyboardCapitalization.None,
+                                autoCorrect = false,
+                                keyboardType = KeyboardType.Text,
+                                imeAction = ImeAction.Done
+                            ),
+                            maxLength = 100,
+                            maxLines = 1,
+                            onTextChanged = { newText ->
+                                vm.usrBio = newText
+                                vm.isEditedBio = true
+                            }
+                        )
+                    }
 
 
                     user?.sports?.let { DropDownMenuSports(if (vm.usrSports != "") vm.usrSports else it) }
@@ -591,54 +690,6 @@ fun EditProfileScreen(
                                 )
                         }
                     }
-
-                    user?.age?.toString().let {
-                        if (it != null) {
-                            CustomTextField(
-                                modifier = Modifier
-                                    .padding(all = 10.dp)
-                                    .fillMaxWidth(),
-                                labelResId = R.string.Age,
-                                inputWrapper = if(vm.usrAge != "") vm.usrAge else it,
-                                keyboardOptions = KeyboardOptions(
-                                    capitalization = KeyboardCapitalization.None,
-                                    autoCorrect = false,
-                                    keyboardType = KeyboardType.Number,
-                                    imeAction = ImeAction.Done
-                                ),
-                                maxLength = 3,
-                                maxLines = 1,
-                                onTextChanged = { newText ->
-                                    vm.usrAge = newText
-                                    vm.isEditedAge = true
-                                }
-                            )
-                        }
-                    }
-
-                    user?.gender?.let { DropDownMenu(if(vm.usrGender != "") vm.usrGender else it, "Gender") }
-
-                    user?.bio?.let {
-                        CustomTextField(
-                            modifier = Modifier
-                                .padding(all = 10.dp)
-                                .fillMaxWidth(),
-                            labelResId = R.string.Bio,
-                            inputWrapper = if(vm.usrBio != "") vm.usrBio else it,
-                            keyboardOptions = KeyboardOptions(
-                                capitalization = KeyboardCapitalization.None,
-                                autoCorrect = false,
-                                keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Done
-                            ),
-                            maxLength = 100,
-                            maxLines = 1,
-                            onTextChanged = { newText ->
-                                vm.usrBio = newText
-                                vm.isEditedBio = true
-                            }
-                        )
-                    }
                     Spacer(modifier = Modifier.height(20.dp))
                     ValidationMessage(validationMessageShown)
                     SaveMessage(saveMessageShown)
@@ -651,30 +702,46 @@ fun EditProfileScreen(
                                 if ( vm.isEditedAge || vm.isEditedBio || vm.isEditedCity || vm.isEditedGender || vm.isEditedTennisLevel
                                     || vm.isEditedFootballLevel || vm.isEditedBasketLevel || vm.isEditedVolleyLevel ||
                                      vm.isEditedName || vm.isEditedSports || vm.isEditedNickname || isEditedImage) {
-                                    //openDialog.value=true
-                                    val usr = User(
-                                        id_user =  userId.trim(),
-                                        nickname = if (vm.isEditedNickname) vm.usrNickname else user?.nickname,
-                                        name = if (vm.isEditedName) vm.usrName else user?.name,
-                                      //  mail =  user?.mail,
-                                        city = if (vm.isEditedCity) vm.usrCity else user?.city,
-                                        age = if (vm.isEditedAge) vm.usrAge.toInt() else user?.age,
-                                        gender = if (vm.isEditedGender) vm.usrGender else user?.gender,
-                                        tennis_level = if (vm.isEditedTennisLevel) vm.usrTennisLevel else user?.tennis_level,
-                                        football_level =  if (vm.isEditedFootballLevel) vm.usrFootballLevel else user?.football_level,
-                                        basket_level = if (vm.isEditedBasketLevel) vm.usrBasketLevel else user?.basket_level,
-                                        volley_level =  if (vm.isEditedVolleyLevel) vm.usrVolleyLevel else user?.volley_level,
-                                        sports = if(vm.isEditedSports) vm.usrSports else user?.sports,
-                                        bio = if (vm.isEditedBio) vm.usrBio else user?.bio,
-                                        image = if(bitmap.value != null) bitmap.value?.let {
-                                            BitmapConverter.converterBitmapToString(
-                                                it
-                                            )
-                                        } else user?.image)
-                                    updateUserInDB(usr, vm)
-                                    Toast.makeText(context, "Profile successfully updated!", Toast.LENGTH_SHORT).show()
-                                    navController.navigate(route = Screen.Profile.route){
-                                        popUpTo("editProfile") { inclusive = true }
+                                    if(vm.usrAge.isNotBlank() &&
+                                        vm.usrCity.isNotBlank() &&
+                                        vm.usrGender.isNotBlank() &&
+                                        vm.usrName.isNotBlank() &&
+                                        vm.usrNickname.isNotBlank()){
+
+                                        vm.checkUsername { usernameExists ->
+                                                if (usernameExists && vm.usrNickname!=initialNickname && vm.isEditedNickname) {
+                                                    Toast.makeText(context, "Username already used", Toast.LENGTH_SHORT).show()
+                                                } else {
+
+                                                    //openDialog.value=true
+                                                    val usr = User(
+                                                        id_user =  userId.trim(),
+                                                        nickname = if (vm.isEditedNickname) vm.usrNickname else user?.nickname,
+                                                        name = if (vm.isEditedName) vm.usrName else user?.name,
+                                                        //  mail =  user?.mail,
+                                                        city = if (vm.isEditedCity) vm.usrCity else user?.city,
+                                                        age = if (vm.isEditedAge) vm.usrAge.toInt() else user?.age,
+                                                        gender = if (vm.isEditedGender) vm.usrGender else user?.gender,
+                                                        tennis_level = if (vm.isEditedTennisLevel) vm.usrTennisLevel else user?.tennis_level,
+                                                        football_level =  if (vm.isEditedFootballLevel) vm.usrFootballLevel else user?.football_level,
+                                                        basket_level = if (vm.isEditedBasketLevel) vm.usrBasketLevel else user?.basket_level,
+                                                        volley_level =  if (vm.isEditedVolleyLevel) vm.usrVolleyLevel else user?.volley_level,
+                                                        sports = if(vm.isEditedSports) vm.usrSports else user?.sports,
+                                                        bio = if (vm.isEditedBio) vm.usrBio else user?.bio,
+                                                        image = if(bitmap.value != null) bitmap.value?.let {
+                                                            BitmapConverter.converterBitmapToString(
+                                                                it
+                                                            )
+                                                        } else user?.image)
+                                                    updateUserInDB(usr, vm)
+                                                    Toast.makeText(context, "Profile successfully updated!", Toast.LENGTH_SHORT).show()
+                                                    navController.navigate(route = Screen.Profile.route){
+                                                        popUpTo("editProfile") { inclusive = true }
+                                                    }
+                                                }
+                                    }
+                                    } else {
+                                        Toast.makeText(context, "Fill in all madatory fields", Toast.LENGTH_SHORT).show()
                                     }
                                     //openDialog.value = false
                                 } else {
@@ -756,13 +823,13 @@ fun DropDownMenu(userOption: String, type: String) {
     var userInitialValue by remember { mutableStateOf(userOption) } //male
     var suggestions = emptyList<String>()
 
-    if (type == "Gender")
+    if (type == "Gender*")
         suggestions = listOf("Male","Female","Other")
     if (type == "Tennis level" || type == "Football level" || type == "Basketball level" || type == "Volleyball level")
         suggestions = listOf ("Beginner", "Intermediate", "Advanced")
     if (type == "Sports")
         suggestions = listOf("Basketball", "Football", "Tennis", "Volleyball" )
-    if (type == "City")
+    if (type == "City*")
         suggestions = listOf("Turin", "Milan", "Rome", "Venice", "Naples", "Padua","Genoa")
 
     val icon = if (isExpanded)
@@ -779,7 +846,7 @@ fun DropDownMenu(userOption: String, type: String) {
                 .padding(all = 10.dp),
             onValueChange = { userInitialValue = it },
             readOnly = true,
-            label = { Text("$type") },
+            label = { Text(type) },
             trailingIcon = {
                 Icon(icon, "contentDescription",
                     Modifier.clickable { isExpanded = !isExpanded })
@@ -798,7 +865,7 @@ fun DropDownMenu(userOption: String, type: String) {
                 DropdownMenuItem(onClick = {
                     userInitialValue = label
                     isExpanded = false
-                    if(type == "Gender") {
+                    if(type == "Gender*") {
                         vm.isEditedGender = true
                         vm.usrGender = label
                     }
@@ -818,7 +885,7 @@ fun DropDownMenu(userOption: String, type: String) {
                         vm.isEditedVolleyLevel = true
                         vm.usrVolleyLevel = label
                     }
-                    if(type == "City") {
+                    if(type == "City*") {
                         vm.isEditedCity = true
                         vm.usrCity = label
                     }

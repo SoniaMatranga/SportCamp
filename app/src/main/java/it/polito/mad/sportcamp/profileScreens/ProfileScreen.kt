@@ -102,8 +102,7 @@ class ProfileViewModel : ViewModel() {
 @Composable
 fun ProfileScreen(
     navController: NavController,
-    vm: ProfileViewModel = viewModel(factory = ProfileViewModel.factory),
-    viewModel: LoginScreenViewModel = viewModel()
+    vm: ProfileViewModel = viewModel(factory = ProfileViewModel.factory)
 ) {
 
     val user by vm.getUserDocument().observeAsState()
@@ -923,7 +922,7 @@ fun SportsListRow(user: User){
                     Icon(
                         modifier = Modifier
                             .size(25.dp),
-                        imageVector = Icons.Outlined.SportsFootball,
+                        imageVector = Icons.Outlined.SportsSoccer,
                         contentDescription = "Football",
                         tint = MaterialTheme.colors.primary
                     )
