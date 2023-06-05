@@ -13,6 +13,7 @@ data class ReservationContent(
     val date: String?,
     val image: String?,
     val court_rating: Float?,
+    val users: List<String>? = null,
     val players: String? = null,
     val state: String? = null
     )
@@ -20,6 +21,7 @@ data class ReservationContent(
 
 data class ReservationTimed(
     val id_reservation: String?,
+    val users: List<String>? = null,
     val id_user: String?,
     val id_court: String?,
     val time_slot: String?,

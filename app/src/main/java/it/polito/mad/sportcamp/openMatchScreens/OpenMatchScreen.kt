@@ -118,7 +118,6 @@ class OpenMatchViewModel : ViewModel() {
 
         viewModelScope.launch {
             val querySnapshot = db.collection("reservations")
-                .whereNotEqualTo("id_user", getUserUID())
                 .whereEqualTo("state", "Pending")
                 .get()
                 .await()
@@ -127,6 +126,8 @@ class OpenMatchViewModel : ViewModel() {
 
             for (doc in querySnapshot.documents) {
                 val reservation = doc.toObject(Reservation::class.java)
+
+                if(!reservation?.users?.contains(getUserUID())!!){
                 val courtId = reservation?.id_court
 
                 val courtSnapshot = db.collection("courts")
@@ -135,38 +136,41 @@ class OpenMatchViewModel : ViewModel() {
                     .await()
 
                 val courtDocuments = courtSnapshot.documents
-                if (courtDocuments.isNotEmpty()) {
-                    val courtDocument = courtDocuments[0]
-                    val courtValue = courtDocument.toObject(Court::class.java)
+                    if (courtDocuments.isNotEmpty()) {
+                        val courtDocument = courtDocuments[0]
+                        val courtValue = courtDocument.toObject(Court::class.java)
 
-                    // Retrieve court information
-                    val courtName = courtValue?.court_name
-                    val courtAddress = courtValue?.address
-                    val courtCity = courtValue?.city
-                    val courtSport = courtValue?.sport
-                    val courtRating = courtValue?.court_rating
-                    val courtImage = courtValue?.image
+                        // Retrieve court information
+                        val courtName = courtValue?.court_name
+                        val courtAddress = courtValue?.address
+                        val courtCity = courtValue?.city
+                        val courtSport = courtValue?.sport
+                        val courtRating = courtValue?.court_rating
+                        val courtImage = courtValue?.image
 
-                    // Retrieve time slot information
-                    val timeSlotValue = timeSlots.value?.find { it.id_time_slot == reservation?.id_time_slot }
-                    val timeSlot = timeSlotValue?.time_slot
+                        // Retrieve time slot information
+                        val timeSlotValue =
+                            timeSlots.value?.find { it.id_time_slot == reservation?.id_time_slot }
+                        val timeSlot = timeSlotValue?.time_slot
 
-                    // Create ReservationContent object and add it to the list
-                    val reservationContent = ReservationContent(
-                        id_reservation = reservation?.id_reservation,
-                        id_court = reservation?.id_court,
-                        equipments = reservation?.equipments,
-                        court_name = courtName,
-                        address = courtAddress,
-                        city = courtCity,
-                        sport = courtSport,
-                        time_slot = timeSlot,
-                        date = reservation?.date,
-                        image = courtImage,
-                        court_rating = courtRating,
-                        players = reservation?.players,
-                    )
-                    reservationList.add(reservationContent)
+                        // Create ReservationContent object and add it to the list
+                        val reservationContent = ReservationContent(
+                            id_reservation = reservation?.id_reservation,
+                            id_court = reservation?.id_court,
+                            equipments = reservation?.equipments,
+                            court_name = courtName,
+                            address = courtAddress,
+                            city = courtCity,
+                            sport = courtSport,
+                            time_slot = timeSlot,
+                            date = reservation?.date,
+                            image = courtImage,
+                            court_rating = courtRating,
+                            users = reservation?.users,
+                            players = reservation?.players,
+                        )
+                        reservationList.add(reservationContent)
+                    }
                 }
             }
 
@@ -187,11 +191,12 @@ class OpenMatchViewModel : ViewModel() {
                     val reservation = documentSnapshot.toObject(Reservation::class.java)
                     if (reservation != null) {
                         val playerList = reservation.players + ", ${userDocument.value?.nickname.toString()}"
+                        val users = reservation.users?.plus("${getUserUID()}")
                         documentSnapshot.reference.update(
                             mapOf(
                                 "state" to "Confirmed",
-                                "players" to playerList
-
+                                "players" to playerList,
+                                "users" to users
                             )
                         )
                             .addOnSuccessListener {

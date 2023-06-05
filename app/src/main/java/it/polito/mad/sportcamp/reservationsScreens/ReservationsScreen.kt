@@ -81,9 +81,10 @@ class ReservationsViewModel : ViewModel() {
 
 
     fun getReservationsByUser(): MutableLiveData<List<Reservation>> {
+        val reservations = MutableLiveData<List<Reservation>>()
 
         db.collection("reservations")
-            .whereEqualTo("id_user", getUserUID())
+            .whereArrayContains("users", getUserUID())
             .whereEqualTo("state", "Confirmed")
             .addSnapshotListener { value, error ->
                 if (error != null) {
@@ -104,7 +105,6 @@ class ReservationsViewModel : ViewModel() {
 
         return reservations
     }
-
 
     companion object {
         val factory : ViewModelProvider.Factory = viewModelFactory {
@@ -132,6 +132,7 @@ fun ReservationsScreen(
             if (timeSlot != null) {
                 val reservationTimed = ReservationTimed(
                     reservation.id_reservation,
+                    reservation.users,
                     reservation.id_user,
                     reservation.id_court,
                     timeSlot.time_slot,

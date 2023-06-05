@@ -4,6 +4,7 @@ package it.polito.mad.sportcamp.classes
 
 data class Reservation(
     var id_reservation: String? = null,
+    val users: List<String>? = null,
     val id_user: String? = null,
     val id_court: String? = null,
     val id_time_slot: Int? = null,

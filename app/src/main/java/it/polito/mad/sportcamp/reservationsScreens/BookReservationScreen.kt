@@ -162,7 +162,6 @@ class BookReservationsViewModel : ViewModel() {
         timeSlot: String?,
         date: String?,
         equipments: String?,
-        options: String?,
         state: String?
     ) {
         val nickname = userDocument.value?.nickname.toString()
@@ -172,8 +171,8 @@ class BookReservationsViewModel : ViewModel() {
                 id_time_slot = getTimeSlotId(timeSlot),
                 date = date,
                 equipments = equipments,
-                options = options,
                 players = nickname,
+                users = listOf(getUserUID()) ,
                 state = state
             )
         val reservationsCollection = db.collection("reservations")
@@ -442,7 +441,7 @@ fun BookReservationScreen(
                                 courtDetails?.id_court?.let {
                                     vm.addReservation(
                                          vm.getUserUID(),
-                                        it, vm.selectedTimeSlot, date, vm.selectedEquipments, "", vm.selectedReservationState
+                                        it, vm.selectedTimeSlot, date, vm.selectedEquipments,  vm.selectedReservationState
                                     )
                                 }
 

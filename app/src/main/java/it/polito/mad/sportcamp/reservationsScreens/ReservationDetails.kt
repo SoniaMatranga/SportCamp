@@ -158,7 +158,7 @@ class ReservationDetailsViewModel : ViewModel() {
         // Utilizza viewModelScope.launch per avviare un'operazione asincrona
         viewModelScope.launch {
             val querySnapshot = db.collection("reservations")
-                .whereEqualTo("id_user", getUserUID())
+                .whereArrayContains("users", getUserUID())
                 .whereEqualTo("date", date)
                 .whereEqualTo("state", "Confirmed")
                 .get()
