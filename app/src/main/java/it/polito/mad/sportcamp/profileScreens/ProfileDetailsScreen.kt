@@ -192,10 +192,6 @@ fun ProfileDetailsScreen(
         mutableStateOf<Uri?>(null)
     }
 
-    //val bitmap1 = BitmapConverter.converterStringToBitmap(vm.usrImage)
-    val bitmap = remember {
-        mutableStateOf(BitmapConverter.converterStringToBitmap(vm.usrImage))
-    }
 
     var isEditedImage by remember { mutableStateOf(false) }
     val galleryLauncher = rememberLauncherForActivityResult(
@@ -207,7 +203,6 @@ fun ProfileDetailsScreen(
 
     val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) {
         vm.usrImage=BitmapConverter.converterBitmapToString(it!!)
-        bitmap.value = it
         isEditedImage = true
     }
     val openCameraDialog = remember { mutableStateOf(false)  }
@@ -504,9 +499,8 @@ fun ProfileDetailsScreen(
                             .padding(all = 8.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        bitmap.value?.let { btm ->
                             Image(
-                                bitmap = btm.asImageBitmap(),
+                                bitmap = BitmapConverter.converterStringToBitmap(vm.usrImage)!!.asImageBitmap(),
                                 contentScale = ContentScale.Crop,
                                 contentDescription = null,
                                 modifier = Modifier
@@ -518,7 +512,7 @@ fun ProfileDetailsScreen(
                                         CircleShape
                                     )
                             )
-                        }
+
                         imageUri?.let {
                             if (Build.VERSION.SDK_INT < 28) {
                                 vm.usrImage = BitmapConverter.converterBitmapToString(MediaStore.Images
