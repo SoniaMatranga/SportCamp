@@ -472,10 +472,8 @@ fun BookReservationScreen(
         }
         else{
             if (isLoading) {
-                // Mostra uno spinner di caricamento o un altro indicatore di progresso
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
             } else if (timeSlots?.isEmpty() == true) {
-                // Mostra il messaggio "No available time slot for this day, sorry!"
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center

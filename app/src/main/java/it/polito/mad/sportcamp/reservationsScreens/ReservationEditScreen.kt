@@ -198,6 +198,8 @@ fun ReservationEditScreen(
     val date = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY2)
     val timeSlots by vm.getAvailableTimeSlots(idCourt, date).observeAsState()
 
+    val isLoading = timeSlots == null
+
     val court by vm.getCourtById(idCourt).observeAsState()
     //var timeSlots by remember { mutableStateOf(emptyList<String>()) }
     var isCheckedEquipments = remember { mutableStateOf(false) }
@@ -402,22 +404,22 @@ fun ReservationEditScreen(
 
         }
         else {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(40.dp),
-            ) {
-                Text(
-                    text = "No available time slot for this day, sorry!",
-                    fontSize = 20.sp,
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colors.primary
-                )
+            if (isLoading) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+            } else if (timeSlots?.isEmpty() == true) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No available time slot for this day, sorry!",
+                        fontSize = 20.sp,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colors.primary
+                    )
+                }
             }
         }
-
-
 
     }
     Spacer(modifier = Modifier.height(20.dp))

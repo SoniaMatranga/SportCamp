@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -204,12 +205,15 @@ fun FavoritesScreen(
 ) {
 
 
-    val isLoading = vm.getLoadingState()
+    //val isLoading = vm.getLoadingState()
 
     val allCourts by vm.getAllCourtsUserPlayed().observeAsState(emptyList())
     val filteredCourts by vm.getFilteredCourtsUserPlayed(vm.sportFilter).observeAsState(emptyList())
 
     val courtsList = if (vm.sportFilter.isEmpty()) allCourts else filteredCourts
+
+    val isLoadingCourts = allCourts == null
+    val isLoadingFilteredCourts = allCourts == null
 
 
 
@@ -292,31 +296,34 @@ fun FavoritesScreen(
                     )
             }
         }
+
         LazyColumn(
             modifier = Modifier.padding(vertical = 2.dp, horizontal = 4.dp),
         ) {
-            when {
-                isLoading && courtsList?.isEmpty()==true -> {
-                    item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(40.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator() // Spinner
-                        }
+            if (isLoadingCourts || isLoadingFilteredCourts) {
+                item {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                }
+            } else if (courtsList?.isNotEmpty() == true) {
+                items(items = courtsList!!) { court ->
+                    CourtCard(court = court, navController = navController)
+                }
+            } else {
+                item {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "No available courts to be rated for this sport, sorry!",
+                            fontSize = 14.sp,
+                            textAlign = TextAlign.Center,
+                        )
                     }
                 }
-
-                courtsList?.isNotEmpty() == true -> {
-                    items(items = courtsList!!) { court ->
-                        CourtCard(court = court, navController = navController)
-                    }
-                }
-
             }
-
         }
     }
 }
