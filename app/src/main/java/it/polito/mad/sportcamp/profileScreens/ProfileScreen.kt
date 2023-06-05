@@ -107,6 +107,43 @@ fun ProfileScreen(
 ) {
 
     val user by vm.getUserDocument().observeAsState()
+
+
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        SportCampTheme {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                CustomToolbarWithEditButton(
+                    title = "Profile",
+                    navController = navController as NavHostController
+                )
+
+
+                   user?.let { Profile(user = it, navController=navController) }
+
+
+
+
+
+
+            }
+
+        }
+    }
+}
+
+@Composable
+private fun LinkLoginLogoutButtons(
+    navController: NavController,
+    vm: ProfileViewModel = viewModel(factory = ProfileViewModel.factory),
+    viewModel: LoginScreenViewModel = viewModel()
+){
+
     val state by viewModel.loadingState.collectAsState()
     var first by remember {
         mutableStateOf(true)
@@ -136,141 +173,119 @@ fun ProfileScreen(
         }
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        SportCampTheme {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+    val context = LocalContext.current
+    val token = stringResource(R.string.default_web_client_id)
 
-                CustomToolbarWithEditButton(
-                    title = "Profile",
-                    navController = navController as NavHostController
-                )
+    if (vm.isAnonymous()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            OutlinedButton(
+                border = ButtonDefaults.outlinedBorder.copy(width = 1.dp),
+                modifier = Modifier
+                    .height(50.dp)
+                    .padding(horizontal = 50.dp)
+                    .fillMaxWidth(),
+                onClick = {
+                    val gso =
+                        GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                            .requestIdToken(token)
+                            .requestEmail()
+                            .build()
 
-
-                   user?.let { Profile(user = it, navController=navController) }
-
-
-                    val context = LocalContext.current
-                    val token = stringResource(R.string.default_web_client_id)
-                    if (vm.isAnonymous()) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        ) {
-                            OutlinedButton(
-                                border = ButtonDefaults.outlinedBorder.copy(width = 1.dp),
-                                modifier = Modifier
-                                    .height(50.dp)
-                                    .padding(horizontal = 50.dp)
-                                    .fillMaxWidth(),
-                                onClick = {
-                                    val gso =
-                                        GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                                            .requestIdToken(token)
-                                            .requestEmail()
-                                            .build()
-
-                                    val googleSignInClient = GoogleSignIn.getClient(context, gso)
-                                    launcher.launch(googleSignInClient.signInIntent)
-                                },
-                                content = {
-                                    Row(
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        content = {
-                                            Icon(
-                                                tint = Color.Unspecified,
-                                                painter = painterResource(id = R.drawable.ic_google),
-                                                contentDescription = null,
-                                            )
-                                            Text(
-                                                style = MaterialTheme.typography.button,
-                                                color = MaterialTheme.colors.onSurface,
-                                                text = "Link with your Google"
-                                            )
-
-                                        }
-                                    )
-                                }
+                    val googleSignInClient = GoogleSignIn.getClient(context, gso)
+                    launcher.launch(googleSignInClient.signInIntent)
+                },
+                content = {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        content = {
+                            Icon(
+                                tint = Color.Unspecified,
+                                painter = painterResource(id = R.drawable.ic_google),
+                                contentDescription = null,
                             )
-                        }
-                        Spacer(modifier = Modifier.height(10.dp))
-                        OutlinedButton(
-                            border = ButtonDefaults.outlinedBorder.copy(width = 1.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(50.dp)
-                                .padding(horizontal = 50.dp),
-                            onClick = {
-                                val gso =
-                                    GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                                        .requestIdToken(token)
-                                        .requestEmail()
-                                        .build()
+                            Text(
+                                style = MaterialTheme.typography.button,
+                                color = MaterialTheme.colors.onSurface,
+                                text = "Link with your Google"
+                            )
 
-                                val googleSignInClient = GoogleSignIn.getClient(context, gso)
-                                launcher2.launch(googleSignInClient.signInIntent)
-                            },
-                            content = {
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    content = {
-                                        Icon(
-                                            tint = Color.Unspecified,
-                                            painter = painterResource(id = R.drawable.ic_google),
-                                            contentDescription = null,
-                                        )
-                                        Text(
-                                            style = MaterialTheme.typography.button,
-                                            color = MaterialTheme.colors.onSurface,
-                                            text = "Login with Google"
-                                        )
-                                    }
-                                )
-                            }
+                        }
+                    )
+                }
+            )
+        }
+        Spacer(modifier = Modifier.height(10.dp))
+        OutlinedButton(
+            border = ButtonDefaults.outlinedBorder.copy(width = 1.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+                .padding(horizontal = 50.dp),
+            onClick = {
+                val gso =
+                    GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                        .requestIdToken(token)
+                        .requestEmail()
+                        .build()
+
+                val googleSignInClient = GoogleSignIn.getClient(context, gso)
+                launcher2.launch(googleSignInClient.signInIntent)
+            },
+            content = {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    content = {
+                        Icon(
+                            tint = Color.Unspecified,
+                            painter = painterResource(id = R.drawable.ic_google),
+                            contentDescription = null,
                         )
-                        Spacer(modifier = Modifier.height(20.dp))
-                        when (state.status) {
-                            LoadingState.Status.SUCCESS -> {
-                                first = false
-                                //vm.updateUser()
-                                Toast.makeText(
-                                    context,
-                                    "Sign in completed!",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-
-                            LoadingState.Status.FAILED -> {
-                                Toast.makeText(
-                                    context,
-                                    state.msg ?: "Error",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-
-                            LoadingState.Status.RUNNING -> {
-                                Row {
-                                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                                }
-                            }
-
-                            else -> {}
-                        }
-                    } else {
-                        LogoutButton(navController = navController)
+                        Text(
+                            style = MaterialTheme.typography.button,
+                            color = MaterialTheme.colors.onSurface,
+                            text = "Login with Google"
+                        )
                     }
-
-
+                )
+            }
+        )
+        Spacer(modifier = Modifier.height(20.dp))
+        when (state.status) {
+            LoadingState.Status.SUCCESS -> {
+                first = false
+                //vm.updateUser()
+                Toast.makeText(
+                    context,
+                    "Sign in completed!",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
 
+            LoadingState.Status.FAILED -> {
+                Toast.makeText(
+                    context,
+                    state.msg ?: "Error",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+
+            LoadingState.Status.RUNNING -> {
+                Row {
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                }
+            }
+
+            else -> {}
         }
+    } else {
+        LogoutButton(navController = navController)
     }
+
 }
 
 @Composable
@@ -371,7 +386,7 @@ fun Profile(user: User, navController: NavController) {
             optionsList.clear()
 
             // Add the data to optionsList
-            //prepareOptionsData(user)
+            prepareOptionsData(user)
 
             listPrepared = true
         }
@@ -425,12 +440,12 @@ fun Profile(user: User, navController: NavController) {
                 items(optionsList) { item ->
                     OptionsItemStyle(item = item)
                 }
-/*
+
                 item{
-                    LogoutButton(navController = navController)
+                    LinkLoginLogoutButtons(navController = navController)
                     Spacer(modifier = Modifier.height(50.dp))
                 }
-*/
+
             } else
             {
                 item{
@@ -755,41 +770,43 @@ private fun NewUserDetails(user: User) {
 @Composable
 private fun OptionsItemStyle(item: OptionsData) {
 
-    Row(
-        modifier= Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
-    ) {
-
-        // Icon
-        Icon(
-            modifier = Modifier
-                .size(25.dp),
-            imageVector = item.icon,
-            contentDescription = item.title,
-            tint = MaterialTheme.colors.primaryVariant
-        )
-
+    if(item.subTitle != null) {
         Row(
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
-            Column(
-                modifier = Modifier
-                    .weight(weight = 3f, fill = false)
-                    .padding(start = 10.dp)
-            ) {
-                Text(
-                    text = item.subTitle,
-                    fontSize = 14.sp,
-                    letterSpacing = (0.8).sp,
-                    color = Color.Gray
 
-                )
+            // Icon
+            Icon(
+                modifier = Modifier
+                    .size(25.dp),
+                imageVector = item.icon,
+                contentDescription = item.title,
+                tint = MaterialTheme.colors.primaryVariant
+            )
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(
+                    modifier = Modifier
+                        .weight(weight = 3f, fill = false)
+                        .padding(start = 10.dp)
+                ) {
+                    Text(
+                        text = item.subTitle,
+                        fontSize = 14.sp,
+                        letterSpacing = (0.8).sp,
+                        color = Color.Gray
+
+                    )
+
+                }
 
             }
 
         }
-
     }
 }
 
@@ -960,11 +977,12 @@ fun SportsListRow(user: User){
     }
 
 }
-/*
+
 private fun prepareOptionsData(user: User) {
 
     val appIcons = Icons.Outlined
 
+    /*
     optionsList.add(
         OptionsData(
             icon = appIcons.Person,
@@ -972,17 +990,19 @@ private fun prepareOptionsData(user: User) {
             subTitle = user.name.toString()
         )
 
-    )
+    )*/
 
-    optionsList.add(
-        OptionsData(
-            icon = appIcons.Mail,
-            title = "Mail",
-            subTitle = user.mail.toString()
+    if(user.mail != null) {
+        optionsList.add(
+            OptionsData(
+                icon = appIcons.Mail,
+                title = "Mail",
+                subTitle = user.mail.toString()
+            )
         )
-    )
+    }
 
-}*/
+}
 
 data class OptionsData(val icon: ImageVector, val title: String, val subTitle: String)
 

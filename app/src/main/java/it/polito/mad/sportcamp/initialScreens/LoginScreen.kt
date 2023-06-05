@@ -106,9 +106,6 @@ fun LoginScreen(
 ) {
 
     val state by viewModel.loadingState.collectAsState()
-    var first by remember {
-        mutableStateOf(true)
-    }
 
     // Equivalent of onActivityResult
     val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
@@ -216,10 +213,10 @@ fun LoginScreen(
                             )
                         }
 
-                            if (first) {
+
                                 when (state.status) {
                                     LoadingState.Status.SUCCESS -> {
-                                        first = false
+
                                         vm.initializeInfo()
                                         vm.isNotNew { isExistingUser ->
                                             if (isExistingUser) {
@@ -249,7 +246,7 @@ fun LoginScreen(
 
                                     else -> {}
                                 }
-                            }
+
                     }
                 }
             )
