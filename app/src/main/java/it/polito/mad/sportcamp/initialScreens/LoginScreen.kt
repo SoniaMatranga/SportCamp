@@ -21,9 +21,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -31,42 +31,40 @@ import androidx.navigation.NavController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.AuthCredential
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import it.polito.mad.sportcamp.R
 import it.polito.mad.sportcamp.bottomnav.Screen
-import it.polito.mad.sportcamp.classes.User
 import it.polito.mad.sportcamp.common.LoadingState
-import it.polito.mad.sportcamp.profileScreens.LoginScreenViewModel
-import it.polito.mad.sportcamp.profileScreens.ProfileViewModel
 import it.polito.mad.sportcamp.ui.theme.Orange
-
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import java.util.Date
 
 
 class LoginViewModel : ViewModel() {
 
+    private var userExists by mutableStateOf(false)
+    val loadingState = MutableStateFlow(LoadingState.IDLE)
+    private lateinit var auth: FirebaseAuth
+    private lateinit var user: FirebaseUser
+    //val googleIdToken = ""
     private val db = Firebase.firestore
-    private val user = MutableLiveData<User>()
-    private lateinit var fuser: FirebaseUser
-    var userExists by mutableStateOf(false)
+    val data = hashMapOf(
+        "lastLogin" to com.google.firebase.Timestamp(Date(System.currentTimeMillis()))
+    )
 
     private val usersCollection = db.collection("users")
 
-    fun getUserDocument() : MutableLiveData<User> {
-        usersCollection
-            .document(getUserUID())
-            .addSnapshotListener { value, error ->
-                if(error != null) Log.w(ContentValues.TAG, "Error getting documents.")
-                if(value != null) user.value = value.toObject(User::class.java)
-            }
-        return user
-    }
-
     private fun getUserUID(): String{
-        return fuser.uid
+        return user.uid
     }
 
 
@@ -82,8 +80,30 @@ class LoginViewModel : ViewModel() {
             }
     }
 
-    fun initializeInfo() {
-        fuser = Firebase.auth.currentUser!!
+    fun signWithCredential(credential: AuthCredential) = viewModelScope.launch {
+        try {
+            loadingState.emit(LoadingState.LOADING)
+            Firebase.auth.signInWithCredential(credential).await()
+            auth = Firebase.auth
+            user = auth.currentUser!!
+            loadingState.emit(LoadingState.LOADED)
+            //db.collection("users").document(auth.uid!!).set(data, SetOptions.merge())
+        } catch (e: Exception) {
+            loadingState.emit(LoadingState.error(e.localizedMessage))
+        }
+    }
+
+    fun signInAnonymously() = viewModelScope.launch {
+        try {
+            loadingState.emit(LoadingState.LOADING)
+            Firebase.auth.signInAnonymously().await()
+            auth = Firebase.auth
+            user = auth.currentUser!!
+            db.collection("users").document(auth.uid!!).set(data, SetOptions.merge())
+            loadingState.emit(LoadingState.LOADED)
+        } catch (e: Exception) {
+            loadingState.emit(LoadingState.error(e.localizedMessage))
+        }
     }
 
     companion object {
@@ -101,11 +121,13 @@ class LoginViewModel : ViewModel() {
 @Composable
 fun LoginScreen(
     navController: NavController,
-    viewModel: LoginScreenViewModel = viewModel(),
     vm: LoginViewModel = viewModel(factory = LoginViewModel.factory)
 ) {
 
-    val state by viewModel.loadingState.collectAsState()
+    val state by vm.loadingState.collectAsState()
+    var first by remember {
+        mutableStateOf(true)
+    }
 
     // Equivalent of onActivityResult
     val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
@@ -113,7 +135,7 @@ fun LoginScreen(
         try {
             val account = task.getResult(ApiException::class.java)!!
             val credential = GoogleAuthProvider.getCredential(account.idToken!!, null)
-            viewModel.signWithCredential(credential)
+            vm.signWithCredential(credential)
         } catch (e: ApiException) {
             Log.w("TAG", "Google sign in failed", e)
         }
@@ -155,46 +177,46 @@ fun LoginScreen(
                             .padding(horizontal = 20.dp)
                             .padding(top = 80.dp)
                     ){
-                    OutlinedButton(
-                        border = ButtonDefaults.outlinedBorder.copy(width = 1.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp)
-                            .padding(horizontal = 50.dp),
-                        onClick = {
-                            val gso =
-                                GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                                    .requestIdToken(token)
-                                    .requestEmail()
-                                    .build()
+                        OutlinedButton(
+                            border = ButtonDefaults.outlinedBorder.copy(width = 1.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp)
+                                .padding(horizontal = 50.dp),
+                            onClick = {
+                                val gso =
+                                    GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                                        .requestIdToken(token)
+                                        .requestEmail()
+                                        .build()
 
-                            val googleSignInClient = GoogleSignIn.getClient(context, gso)
-                            launcher.launch(googleSignInClient.signInIntent)
-                        },
-                        content = {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                content = {
-                                    Text(
-                                        style = MaterialTheme.typography.button,
-                                        color = MaterialTheme.colors.onSurface,
-                                        text = "Login with Google"
-                                    )
-                                    Icon(
-                                        tint = Color.Unspecified,
-                                        painter = painterResource(id = R.drawable.ic_google),
-                                        contentDescription = null,
-                                    )
-                                }
-                            )
-                        }
-                    )
-                }
+                                val googleSignInClient = GoogleSignIn.getClient(context, gso)
+                                launcher.launch(googleSignInClient.signInIntent)
+                            },
+                            content = {
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    content = {
+                                        Text(
+                                            style = MaterialTheme.typography.button,
+                                            color = MaterialTheme.colors.onSurface,
+                                            text = "Login with Google"
+                                        )
+                                        Icon(
+                                            tint = Color.Unspecified,
+                                            painter = painterResource(id = R.drawable.ic_google),
+                                            contentDescription = null,
+                                        )
+                                    }
+                                )
+                            }
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(18.dp))
 
-                    Column() {
+                    Column {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.Center
@@ -207,46 +229,45 @@ fun LoginScreen(
                                     .height(50.dp)
                                     .clickable(
                                         onClick = {
-                                            viewModel.signInAnonymously()
+                                            vm.signInAnonymously()
                                         }
                                     )
                             )
                         }
 
-
-                                when (state.status) {
-                                    LoadingState.Status.SUCCESS -> {
-
-                                        vm.initializeInfo()
-                                        vm.isNotNew { isExistingUser ->
-                                            if (isExistingUser) {
-                                                // Existing user logic
-                                                navController.navigate(route = Screen.Reservations.route)
-                                                Toast.makeText(
-                                                    context,
-                                                    "Welcome to Sport Camp!",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                            } else {
-                                                // New user logic
-                                                navController.navigate(route = Screen.ProfileDetails.route)
-                                            }
+                        if (first) {
+                            when (state.status) {
+                                LoadingState.Status.SUCCESS -> {
+                                    first = false
+                                    vm.isNotNew { isExistingUser ->
+                                        if (isExistingUser) {
+                                            // Existing user logic
+                                            navController.navigate(route = Screen.Reservations.route)
+                                            Toast.makeText(
+                                                context,
+                                                "Welcome to Sport Camp!",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        } else {
+                                            // New user logic
+                                            navController.navigate(route = Screen.ProfileDetails.route)
                                         }
                                     }
-
-                                    LoadingState.Status.FAILED -> {
-                                        Text(text = state.msg ?: "Error")
-                                    }
-
-                                    LoadingState.Status.RUNNING -> {
-                                        Row {
-                                            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                                        }
-                                    }
-
-                                    else -> {}
                                 }
 
+                                LoadingState.Status.FAILED -> {
+                                    Text(text = state.msg ?: "Error")
+                                }
+
+                                LoadingState.Status.RUNNING -> {
+                                    Row {
+                                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                                    }
+                                }
+
+                                else -> {}
+                            }
+                        }
                     }
                 }
             )

@@ -83,6 +83,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import com.google.firebase.firestore.SetOptions
 import it.polito.mad.sportcamp.common.BitmapConverter
 
 
@@ -132,7 +133,7 @@ class ProfileDetailsViewModel : ViewModel() {
         )
 
         userRef
-            .update(updateData as Map<String, Any>)
+            .set(updateData as Map<String, Any>, SetOptions.merge())
             .addOnSuccessListener {
                 Log.d("UpdateUser", "User data updated successfully.")
                 callback(true)
