@@ -56,6 +56,8 @@ import it.polito.mad.sportcamp.classes.User
 import it.polito.mad.sportcamp.common.CustomToolBar
 import it.polito.mad.sportcamp.common.BitmapConverter
 import it.polito.mad.sportcamp.ui.theme.*
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
@@ -112,48 +114,46 @@ class OpenMatchViewModel : ViewModel() {
         return timeSlots
     }
 
-    fun getUsersImages(users: List<String>) : MutableLiveData<List<String>>{
 
-        db.collection("users")
+    fun getPlayers(users: List<String>): Deferred<List<User>> = viewModelScope.async {
+        val playersList = mutableListOf<User>()
+
+        val querySnapshot = db.collection("users")
             .whereIn("id_user", users)
-            .addSnapshotListener { value, error ->
-                if (error != null) {
-                    Log.w(ContentValues.TAG, "Error getting documents.")
-                }
-                if (value != null) {
-                    val userList = mutableListOf<String>()
-                    for (doc in value.documents) {
-                        val user = doc.toObject(User::class.java)
-                        if (user != null) {
-                            user.image?.let { userList.add(it) }
-                        }
-                    }
-                    usersList.value = userList
-                }
+            .get()
+            .await()
+
+        for (doc in querySnapshot.documents) {
+            val user = doc.toObject(User::class.java)
+            if (user != null) {
+                playersList.add(user)
             }
-        return usersList
+        }
+
+        playersList
     }
 
-
-
-    fun getOpenMatches(): MutableLiveData<List<ReservationContent>> {
-
+    suspend fun getOpenMatches(): MutableLiveData<List<ReservationContent>> {
         getTimeSlots()
 
-        viewModelScope.launch {
-            val querySnapshot = db.collection("reservations")
-                .whereEqualTo("state", "Pending")
-                .get()
-                .await()
+        val matchesList = MutableLiveData<List<ReservationContent>>()
 
-            val reservationList = mutableListOf<ReservationContent>()
+        val querySnapshot = db.collection("reservations")
+            .whereEqualTo("state", "Pending")
+            .get()
+            .await()
 
-            for (doc in querySnapshot.documents) {
-                val reservation = doc.toObject(Reservation::class.java)
+        val reservationList = mutableListOf<ReservationContent>()
 
-                if(!reservation?.users?.contains(getUserUID())!!){
+        for (doc in querySnapshot.documents) {
+            val reservation = doc.toObject(Reservation::class.java)
+
+            if (!reservation?.users?.contains(getUserUID())!!) {
                 val courtId = reservation?.id_court
-                val users_images = getUsersImages(reservation.users)
+
+                // Get players using getPlayers and await for the result
+                val playersDeferred = getPlayers(reservation.users)
+                val players = playersDeferred.await()
 
                 val courtSnapshot = db.collection("courts")
                     .whereEqualTo("id_court", courtId)
@@ -162,49 +162,46 @@ class OpenMatchViewModel : ViewModel() {
 
                 val courtDocuments = courtSnapshot.documents
                 if (courtDocuments.isNotEmpty()) {
-                        val courtDocument = courtDocuments[0]
-                        val courtValue = courtDocument.toObject(Court::class.java)
+                    val courtDocument = courtDocuments[0]
+                    val courtValue = courtDocument.toObject(Court::class.java)
 
-                        // Retrieve court information
-                        val courtName = courtValue?.court_name
-                        val courtAddress = courtValue?.address
-                        val courtCity = courtValue?.city
-                        val courtSport = courtValue?.sport
-                        val courtRating = courtValue?.court_rating
-                        val courtImage = courtValue?.image
+                    // Retrieve court information
+                    val courtName = courtValue?.court_name
+                    val courtAddress = courtValue?.address
+                    val courtCity = courtValue?.city
+                    val courtSport = courtValue?.sport
+                    val courtRating = courtValue?.court_rating
+                    val courtImage = courtValue?.image
 
-                        // Retrieve time slot information
-                        val timeSlotValue =
-                            timeSlots.value?.find { it.id_time_slot == reservation?.id_time_slot }
-                        val timeSlot = timeSlotValue?.time_slot
+                    // Retrieve time slot information
+                    val timeSlotValue =
+                        timeSlots.value?.find { it.id_time_slot == reservation?.id_time_slot }
+                    val timeSlot = timeSlotValue?.time_slot
 
-                        // Create ReservationContent object and add it to the list
-                        val reservationContent = ReservationContent(
-                            id_reservation = reservation?.id_reservation,
-                            id_court = reservation?.id_court,
-                            equipments = reservation?.equipments,
-                            court_name = courtName,
-                            address = courtAddress,
-                            city = courtCity,
-                            sport = courtSport,
-                            time_slot = timeSlot,
-                            date = reservation?.date,
-                            image = courtImage,
-                            court_rating = courtRating,
-                            users = reservation?.users,
-                            players = reservation?.players,
-                            users_images = users_images.value
-                        )
-                        reservationList.add(reservationContent)
-                    }
+                    // Create ReservationContent object and add it to the list
+                    val reservationContent = ReservationContent(
+                        id_reservation = reservation?.id_reservation,
+                        id_court = reservation?.id_court,
+                        equipments = reservation?.equipments,
+                        court_name = courtName,
+                        address = courtAddress,
+                        city = courtCity,
+                        sport = courtSport,
+                        time_slot = timeSlot,
+                        date = reservation?.date,
+                        image = courtImage,
+                        court_rating = courtRating,
+                        users = reservation?.users,
+                        players = reservation?.players,
+                        players_info = players
+                    )
+                    reservationList.add(reservationContent)
                 }
             }
-
-            // Update the value of reservationsContent once the list is ready
-            matches.value = reservationList
         }
 
-        return matches
+        matchesList.value = reservationList
+        return matchesList
     }
 
     fun updateReservationById(idReservation: String) {
@@ -259,7 +256,17 @@ fun OpenMatchScreen(
     vm: OpenMatchViewModel = viewModel(factory = OpenMatchViewModel.factory)
 ) {
 
-    val matches by vm.getOpenMatches().observeAsState(listOf())
+    //val matches by vm.getOpenMatches().observeAsState(listOf())
+    val coroutineScope = rememberCoroutineScope()
+    val matchesState = coroutineScope.run {
+        val matches: MutableLiveData<List<ReservationContent>> = remember { MutableLiveData<List<ReservationContent>>()}
+        launch {
+            matches.value = vm.getOpenMatches().value
+        }
+        matches.observeAsState(emptyList())
+    }
+
+    val matches = matchesState.value
 
 
     Column(
@@ -270,14 +277,20 @@ fun OpenMatchScreen(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-
             if (matches.isNotEmpty()) {
                 LazyColumn(
                     modifier = Modifier.padding(vertical = 2.dp, horizontal = 4.dp),
                 ) {
                     items(items = matches) { match ->
-                        MatchCard(match= match, vm = vm, navController=navController)
+                        MatchCard(match = match, vm = vm, navController = navController)
                     }
+                }
+            } else {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
                 }
             }
 
@@ -360,38 +373,37 @@ fun MatchCard(match: ReservationContent, vm: OpenMatchViewModel, navController: 
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
-                match.users_images?.forEach {
-                    val bitm = it.let { BitmapConverter.converterStringToBitmap(it) }
-                    if (match.players?.isNotEmpty() == true) {
-                        match.players.let {
+                match.players_info?.forEach {
+                    val bitm = it.image.let { BitmapConverter.converterStringToBitmap(it!!) }
 
-                                Column(
-                                    verticalArrangement = Arrangement.Center,
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    if (bitm != null) {
-                                        Image(
-                                            painter = BitmapPainter(bitm.asImageBitmap()),
-                                            contentDescription = "User Picture",
-                                            contentScale = ContentScale.Crop,
-                                            modifier = Modifier
-                                                .clip(CircleShape)
-                                                .size(50.dp)
-                                                .border(2.dp, Blue.copy(0.6f), CircleShape)
-                                                .clickable { navController.navigate(
-                                                    Screen.PlayerProfile.passId(match.users!![0])) },
-                                        )
-                                    }
-                                    Text(
-                                        text = it,
-                                        modifier = Modifier.padding(start = 2.dp)
+                            Column(
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                if (bitm != null) {
+                                    Image(
+                                        painter = BitmapPainter(bitm.asImageBitmap()),
+                                        contentDescription = "User Picture",
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier
+                                            .clip(CircleShape)
+                                            .size(50.dp)
+                                            .border(2.dp, Blue.copy(0.6f), CircleShape)
+                                            .clickable {
+                                                navController.navigate(
+                                                    Screen.PlayerProfile.passId(match.users!![0])
+                                                )
+                                            },
                                     )
                                 }
-                        }
-                    }
-
+                                Text(
+                                    text = it.nickname!!,
+                                    modifier = Modifier.padding(start = 2.dp)
+                                )
+                            }
                 }
             }
+
 
             if (match.date?.isNotEmpty() == true) {
                 match.date?.let {
