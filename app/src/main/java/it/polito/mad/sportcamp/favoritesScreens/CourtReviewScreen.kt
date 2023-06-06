@@ -13,6 +13,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -58,14 +59,17 @@ class CourtReviewViewModel : ViewModel() {
 
     private val db = Firebase.firestore
     private val court = MutableLiveData<Court>()
-    private val rating = MutableLiveData<Rating>()
+    val rating = MutableLiveData<Rating>()
     private var user: FirebaseUser = Firebase.auth.currentUser!!
+    var id_court = ""
+    var alreadyRated =  true
+    var alreadyReviewed =  true
 
      fun getUserUID(): String{
         return user.uid
     }
 
-    fun getCourtById(id_court: String): MutableLiveData<Court> {
+    fun getCourtById(): MutableLiveData<Court> {
         db.collection("courts")
             .whereEqualTo("id_court", id_court)
             .addSnapshotListener { value, error ->
@@ -80,7 +84,7 @@ class CourtReviewViewModel : ViewModel() {
         return court
     }
 
-    fun getCourtReviewById(id_court: String): LiveData<Rating> {
+    fun getCourtReviewById(): LiveData<Rating> {
         db.collection("ratings")
             .whereEqualTo("id_court", id_court)
             .whereEqualTo("id_user", getUserUID())
@@ -106,6 +110,7 @@ class CourtReviewViewModel : ViewModel() {
                     val reviewDocument = reviewDocuments[0]
                     reviewDocument.reference.delete()
                         .addOnSuccessListener {
+                            updateCourtRatingById()
                         }
                         .addOnFailureListener { exception ->
                             Log.w(ContentValues.TAG, "Error deleting reservation.", exception)
@@ -117,7 +122,7 @@ class CourtReviewViewModel : ViewModel() {
             }
     }
 
-    fun updateCourtRatingById(id_court: String) {
+    fun updateCourtRatingById() {
         val ratingsRef = db.collection("ratings")
         val query = ratingsRef.whereEqualTo("id_court", id_court)
 
@@ -148,6 +153,7 @@ class CourtReviewViewModel : ViewModel() {
                                 )
                             )
                                 .addOnSuccessListener {
+                                    updateCourtRatingById()
                                     Log.d(ContentValues.TAG, "Court rating updated successfully")
                                 }
                                 .addOnFailureListener { e ->
@@ -180,6 +186,7 @@ class CourtReviewViewModel : ViewModel() {
                             )
                         )
                             .addOnSuccessListener {
+
                                 Log.d(ContentValues.TAG, " Rating updated successfully")
                             }
                             .addOnFailureListener { e ->
@@ -193,7 +200,7 @@ class CourtReviewViewModel : ViewModel() {
             }
     }
 
-    fun insertReview(id_user: String, id_court: String, rating: Float, review: String?) {
+    fun insertReview(id_user: String, rating: Float, review: String?) {
         val ratingTmp = Rating(
             id_user = id_user,
             id_court =id_court,
@@ -240,21 +247,29 @@ fun CourtReviewScreen(
     viewModel: CourtReviewViewModel = viewModel(factory = CourtReviewViewModel.factory)
 ) {
     val idCourt = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY3)?: ""
-    val courtDetails by viewModel.getCourtById(idCourt).observeAsState()
-    val feedback by viewModel.getCourtReviewById(idCourt).observeAsState()
-    var alreadyRated by remember { mutableStateOf(true) }
-    var alreadyReviewed by remember { mutableStateOf(true) }
+    viewModel.id_court=idCourt
+    val courtDetails by viewModel.getCourtById().observeAsState()
+    val feedback by viewModel.getCourtReviewById().observeAsState()
     var initialRating: Float by remember { mutableStateOf(0f) }
     var text by remember { mutableStateOf("") }
+
     val context = LocalContext.current
 
-    if (alreadyRated) {
-        feedback?.rating?.let {
-            initialRating = feedback!!.rating!!
+    LaunchedEffect(feedback) {
+        if (viewModel.alreadyRated) {
+            feedback?.rating?.let {
+                initialRating = feedback!!.rating!!
+            }
+        }
+
+        if (viewModel.alreadyReviewed) {
+            feedback?.review?.let {
+                text = feedback!!.review!!
+            }
         }
     }
 
-    if(alreadyReviewed){
+    if(viewModel.alreadyReviewed){
         feedback?.review?.let {
             text = feedback!!.review!!
         }
@@ -394,7 +409,7 @@ fun CourtReviewScreen(
                                     initialRating = it
                                 },
                                 onRatingChanged = {
-                                    alreadyRated = false
+                                    viewModel.alreadyRated = false
                                 }
                             )
                         }
@@ -450,7 +465,7 @@ fun CourtReviewScreen(
                                         value = it,
                                         onValueChange = {
                                             if (it.length <= maxLength) text = it
-                                            alreadyReviewed = false
+                                            viewModel.alreadyReviewed = false
                                         },
                                         placeholder = {
                                             Text(
@@ -494,14 +509,20 @@ fun CourtReviewScreen(
                 confirmButton = {
                     Button(
                         onClick = {
-                            viewModel.deleteReviewById(feedback?.id!!)
-                            alreadyRated = false
-                            alreadyReviewed = false
+                            viewModel.rating.value?.id?.let { viewModel.deleteReviewById(it) }
+                            viewModel.alreadyRated = false
+                            viewModel.alreadyReviewed = false
                             initialRating=0f
                             text=""
-                            viewModel.updateCourtRatingById(courtDetails?.id_court!!)
+                            viewModel.updateCourtRatingById()
                             openDialog.value = false
                             Toast.makeText(context, "Review correctly deleted", Toast.LENGTH_SHORT).show()
+                            navController.navigate(
+                                route = Screen.Favorites.route,
+                                builder = {
+                                    popUpTo(Screen.CourtReview.route) { inclusive = true }
+                                }
+                            )
                         }) {
                         Text("Yes, delete it")
                     }
@@ -517,7 +538,7 @@ fun CourtReviewScreen(
             )
         }
 
-        if(feedback?.rating!=null){
+        if(viewModel.rating.value?.rating!=null){
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -530,12 +551,17 @@ fun CourtReviewScreen(
                 ){
                     Text(text = "Delete")
                 }
-                Button(onClick = { text.let {
-                    viewModel.updateReview(feedback?.id!!,initialRating, it) }
-                    viewModel.updateCourtRatingById(courtDetails?.id_court!!)
+                Button(onClick = {
+                    viewModel.updateReview(viewModel.rating.value!!.id!!,initialRating, text)
                     Toast.makeText(context, "Review correctly updated", Toast.LENGTH_SHORT).show()
+                    navController.navigate(
+                        route = Screen.CourtReviewList.passIdCourt(viewModel.id_court),
+                        builder = {
+                            popUpTo(Screen.CourtReview.route) { inclusive = true }
+                        }
+                    )
                 },
-                    enabled = (!alreadyRated && initialRating!=0f && initialRating!=feedback?.rating) || (!alreadyReviewed && initialRating!=0f && text!=feedback?.review)
+                    enabled = (!viewModel.alreadyRated && initialRating!=0f && initialRating!= viewModel.rating.value!!.rating) || (!viewModel.alreadyReviewed && initialRating!=0f && text!= viewModel.rating.value!!.review)
                 ) {
                     Text(text = "Update")
                 }
@@ -549,13 +575,17 @@ fun CourtReviewScreen(
             ){
             Button(
                 onClick = {
-                    if (idCourt != null) {
-                        viewModel.insertReview( viewModel.getUserUID(), idCourt, initialRating, text)
-                        viewModel.updateCourtRatingById(courtDetails?.id_court!!)
+                        viewModel.insertReview( viewModel.getUserUID(), initialRating, text)
+                        viewModel.updateCourtRatingById()
                         Toast.makeText(context, "Review correctly published", Toast.LENGTH_SHORT).show()
-                    }
+                    navController.navigate(
+                        route = Screen.CourtReviewList.passIdCourt(viewModel.id_court),
+                        builder = {
+                            popUpTo(Screen.CourtReview.route) { inclusive = true }
+                        }
+                    )
                     },
-                enabled = !alreadyRated && initialRating!=0f
+                enabled = !viewModel.alreadyRated && initialRating!=0f
             ) {
                 Text(text = "Publish Review")
             }
