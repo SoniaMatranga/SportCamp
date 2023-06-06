@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
@@ -75,6 +76,7 @@ import it.polito.mad.sportcamp.classes.Reservation
 import it.polito.mad.sportcamp.classes.ReservationContent
 import it.polito.mad.sportcamp.classes.TimeSlot
 import it.polito.mad.sportcamp.favoritesScreens.RatingStar
+import it.polito.mad.sportcamp.openMatchScreens.MatchCard
 import it.polito.mad.sportcamp.ui.theme.fonts
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -89,19 +91,8 @@ class ReservationDetailsViewModel : ViewModel() {
     private val timeSlots = MutableLiveData<List<TimeSlot>>()
     private var user: FirebaseUser = Firebase.auth.currentUser!!
 
-    private val _loadingState = MutableLiveData(true)
-    val loadingState: LiveData<Boolean> = _loadingState
-
     private fun getUserUID(): String{
         return user.uid
-    }
-
-    fun getLoadingState(): Boolean {
-        return _loadingState.value ?: false
-    }
-
-    fun setLoadingState(loading: Boolean) {
-        _loadingState.value = loading
     }
 
 
@@ -214,7 +205,6 @@ class ReservationDetailsViewModel : ViewModel() {
             // Update the value of reservationsContent once the list is ready
             reservationsContent.value = reservationList
             reservations.value = reservationsContent.value
-            setLoadingState(false)
         }
 
         return reservations
@@ -237,7 +227,6 @@ fun ReservationDetails(
     viewModel: ReservationDetailsViewModel = viewModel(factory = ReservationDetailsViewModel.factory)
 ) {
     val selectedDate = navController.currentBackStackEntry?.arguments?.getString(DETAIL_ARGUMENT_KEY).toString()
-    val isLoading = viewModel.loadingState.value ?: false
 
     val reservations by viewModel.getReservationsByUserAndDate(selectedDate).observeAsState()
 
@@ -247,21 +236,16 @@ fun ReservationDetails(
 
         CustomToolbarReservationDetails(title = "My reservations details", navController = navController)
 
-        when {
-            isLoading && reservations?.size == 0 -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(40.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator() // Spinner
-                }
-
+        if (reservations?.isNotEmpty() == true) {
+            reservations?.let {
+                ReservationsList(reservations = it, selectedDate= selectedDate, viewModel = viewModel, navController=navController)
             }
-
-            else -> {
-                reservations?.let { ReservationsList(reservations = it, selectedDate= selectedDate, viewModel = viewModel, navController=navController) }
+        } else {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                androidx.compose.material.CircularProgressIndicator()
             }
         }
 
