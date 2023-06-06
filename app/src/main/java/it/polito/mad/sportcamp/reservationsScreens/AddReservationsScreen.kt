@@ -348,6 +348,14 @@ private fun CourtCard(court: Court, dateFilter: String , navController: NavHostC
                                     )
                                 }
                             }
+                            Row {
+                                court.price?.let {
+                                    Text(
+                                        text = "Price: ${court.price}",
+                                        fontSize = 14.sp,
+                                    )
+                                }
+                            }
                         }
 
 

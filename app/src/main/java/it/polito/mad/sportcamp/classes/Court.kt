@@ -10,4 +10,6 @@ data class Court(
    val sport: String?  = null,
    val court_rating: Float?  = null,
    val image: String?  = null,
+   val tel: String?  = null,
+   val price: String?  = null,
 )

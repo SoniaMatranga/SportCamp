@@ -304,6 +304,21 @@ fun BookReservationScreen(
                                     )
                                 }
                             }
+                            Row(modifier= Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween) {
+
+                                courtDetails?.tel?.let {
+                                    Text(
+                                        text = "Tel: $it",
+                                    )
+                                }
+                                courtDetails?.price?.let {
+                                    Text(
+                                        text = "Price: $it",
+                                    )
+                                }
+
+                            }
 
                         }
 
