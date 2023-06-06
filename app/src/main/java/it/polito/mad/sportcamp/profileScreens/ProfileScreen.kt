@@ -89,6 +89,16 @@ class ProfileViewModel : ViewModel() {
             auth = Firebase.auth
             userFirebase = auth.currentUser!!
             db.collection("users").document(auth.uid!!).set(data, SetOptions.merge())
+            db.collection("users")
+                .document(getUserUID())
+                .get()
+                .addOnSuccessListener { document ->
+                    val userObject = document.toObject(User::class.java)
+                    userDocument.value = userObject
+                }
+                .addOnFailureListener { e ->
+                    Log.e(TAG, "Error getting user document: ${e.message}")
+                }
             loadingState.emit(LoadingState.LOADED)
         } catch (e: Exception) {
             loadingState.emit(LoadingState.error(e.localizedMessage))
@@ -99,11 +109,20 @@ class ProfileViewModel : ViewModel() {
         try {
             loadingState.emit(LoadingState.LOADING)
             Firebase.auth.currentUser!!.linkWithCredential(credential).await()
-            loadingState.emit(LoadingState.LOADED)
             auth = Firebase.auth
             userFirebase = auth.currentUser!!
             db.collection("users").document(auth.uid!!).set(data, SetOptions.merge())
-
+            db.collection("users")
+                .document(getUserUID())
+                .get()
+                .addOnSuccessListener { document ->
+                    val userObject = document.toObject(User::class.java)
+                    userDocument.value = userObject
+                }
+                .addOnFailureListener { e ->
+                    Log.e(TAG, "Error getting user document: ${e.message}")
+                }
+            loadingState.emit(LoadingState.LOADED)
         } catch (e: Exception) {
             loadingState.emit(LoadingState.error(e.localizedMessage))
         }
@@ -134,20 +153,6 @@ private fun getUserUID(): String {
             userFirebase = Firebase.auth.currentUser!!
         }
         return userFirebase.isAnonymous
-    }
-
-    fun updateUser() {
-        userFirebase=Firebase.auth.currentUser!!
-        getUserDocument()
-    }
-    fun updateUser2() {
-        db.collection("users").document(getUserUID()).set(data, SetOptions.merge())
-            .addOnSuccessListener {
-                getUserDocument() // Fetch the updated user document
-            }
-            .addOnFailureListener { e ->
-                Log.e(TAG, "Error updating user: ${e.message}")
-            }
     }
 
     fun signOut() = viewModelScope.launch {
@@ -198,7 +203,7 @@ fun ProfileScreen(
                 )
 
 
-                   user?.let { Profile(user = it, navController=navController) }
+                   user?.let { Profile(navController=navController) }
 
 
 
@@ -331,10 +336,6 @@ private fun LinkLoginLogoutButtons(
                     "Sign in completed!",
                     Toast.LENGTH_SHORT
                 ).show()
-                vm.updateUser2()
-                navController.navigate(Screen.Profile.route){
-                    popUpTo("profile") { inclusive = true }
-                }
             }
 
             LoadingState.Status.FAILED -> {
@@ -445,8 +446,12 @@ private fun LogoutButton(
 private val optionsList: ArrayList<OptionsData> = ArrayList()
 
 @Composable
-fun Profile(user: User, navController: NavController) {
+fun Profile(
+    navController: NavController,
+    vm: ProfileViewModel = viewModel(factory = ProfileViewModel.factory)
+    ) {
 
+        val user by vm.user.observeAsState()
     // This indicates if the optionsList has data or not
     // Initially, the list is empty. So, its value is false.
     var listPrepared by remember {
@@ -458,7 +463,7 @@ fun Profile(user: User, navController: NavController) {
             optionsList.clear()
 
             // Add the data to optionsList
-            prepareOptionsData(user)
+            prepareOptionsData(user!!)
 
             listPrepared = true
         }
@@ -469,15 +474,15 @@ fun Profile(user: User, navController: NavController) {
             modifier = Modifier
                 .fillMaxWidth()
         ) {
-            if(user.name!=null) {
+            if(user!!.name!=null) {
 
                 item {
-                    UserDetails(user = user)
+                    UserDetails()
                 }
 
                 item{
                     Spacer(modifier = Modifier.height(20.dp))
-                    UserDetailsRow(user = user)
+                    UserDetailsRow(user = user!!)
                     Spacer(modifier = Modifier.height(20.dp))
                 }
                 items(optionsList) { item ->
@@ -485,30 +490,30 @@ fun Profile(user: User, navController: NavController) {
                 }
 
                 item {
-                    SportsListRow(user = user)
+                    SportsListRow(user = user!!)
                 }
 
-                if(user.sports!!.contains("Tennis")) {
+                if(user!!.sports!!.contains("Tennis")) {
                     item {
-                        TriStateToggle("Tennis", user.tennis_level)
+                        TriStateToggle("Tennis", user!!.tennis_level)
                     }
                 }
 
-                if(user.sports.contains("Basketball")){
+                if(user!!.sports!!.contains("Basketball")){
                     item{
-                      TriStateToggle("Basket", user.basket_level)
+                      TriStateToggle("Basket", user!!.basket_level)
                    }
                 }
 
-                if(user.sports.contains("Football")){
+                if(user!!.sports!!.contains("Football")){
                     item{
-                        TriStateToggle("Football", user.football_level)
+                        TriStateToggle("Football", user!!.football_level)
                     }
                 }
 
-                if(user.sports.contains("Volleyball")) {
+                if(user!!.sports!!.contains("Volleyball")) {
                     item {
-                        TriStateToggle("Volley", user.volley_level)
+                        TriStateToggle("Volley", user!!.volley_level)
                     }
                 }
                 
@@ -523,7 +528,7 @@ fun Profile(user: User, navController: NavController) {
             } else
             {
                 item{
-                    NewUserDetails(user = user)
+                    NewUserDetails(user = user!!)
                 }
             }
 
@@ -535,10 +540,13 @@ fun Profile(user: User, navController: NavController) {
 
 
 @Composable
-private fun UserDetails(user: User) {
+private fun UserDetails(
+    vm: ProfileViewModel = viewModel(factory = ProfileViewModel.factory)
+) {
 
+    val user by vm.user.observeAsState()
 
-    val bitmap = user.image?.let { BitmapConverter.converterStringToBitmap(it) }
+    val bitmap = user!!.image?.let { BitmapConverter.converterStringToBitmap(it) }
 
     Box(
         modifier = Modifier
@@ -585,7 +593,7 @@ private fun UserDetails(user: User) {
             ) {
 
                 // User's name
-                user.nickname?.let {
+                user!!.nickname?.let {
                     Text(
                         text = it,
                         fontSize = 20.sp,
@@ -597,7 +605,7 @@ private fun UserDetails(user: User) {
                 }
 
                 // User's bio
-                user.bio?.let {
+                user!!.bio?.let {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
                         text = it,
