@@ -67,6 +67,7 @@ class OpenMatchViewModel : ViewModel() {
     private var user: FirebaseUser = Firebase.auth.currentUser!!
     private val matches = MutableLiveData<List<ReservationContent>>()
     private val timeSlots = MutableLiveData<List<TimeSlot>>()
+    private val usersList = MutableLiveData<List<String>>()
     private val userDocument = MutableLiveData<User>()
 
     init{
@@ -111,6 +112,29 @@ class OpenMatchViewModel : ViewModel() {
         return timeSlots
     }
 
+    fun getUsersImages(users: List<String>) : MutableLiveData<List<String>>{
+
+        db.collection("users")
+            .whereIn("id_user", users)
+            .addSnapshotListener { value, error ->
+                if (error != null) {
+                    Log.w(ContentValues.TAG, "Error getting documents.")
+                }
+                if (value != null) {
+                    val userList = mutableListOf<String>()
+                    for (doc in value.documents) {
+                        val user = doc.toObject(User::class.java)
+                        if (user != null) {
+                            user.image?.let { userList.add(it) }
+                        }
+                    }
+                    usersList.value = userList
+                }
+            }
+        return usersList
+    }
+
+
 
     fun getOpenMatches(): MutableLiveData<List<ReservationContent>> {
 
@@ -129,6 +153,7 @@ class OpenMatchViewModel : ViewModel() {
 
                 if(!reservation?.users?.contains(getUserUID())!!){
                 val courtId = reservation?.id_court
+                val users_images = getUsersImages(reservation.users)
 
                 val courtSnapshot = db.collection("courts")
                     .whereEqualTo("id_court", courtId)
@@ -136,7 +161,7 @@ class OpenMatchViewModel : ViewModel() {
                     .await()
 
                 val courtDocuments = courtSnapshot.documents
-                    if (courtDocuments.isNotEmpty()) {
+                if (courtDocuments.isNotEmpty()) {
                         val courtDocument = courtDocuments[0]
                         val courtValue = courtDocument.toObject(Court::class.java)
 
@@ -168,6 +193,7 @@ class OpenMatchViewModel : ViewModel() {
                             court_rating = courtRating,
                             users = reservation?.users,
                             players = reservation?.players,
+                            users_images = users_images.value
                         )
                         reservationList.add(reservationContent)
                     }
@@ -250,7 +276,7 @@ fun OpenMatchScreen(
                     modifier = Modifier.padding(vertical = 2.dp, horizontal = 4.dp),
                 ) {
                     items(items = matches) { match ->
-                        MatchCard(match= match, vm = vm)
+                        MatchCard(match= match, vm = vm, navController=navController)
                     }
                 }
             }
@@ -261,7 +287,7 @@ fun OpenMatchScreen(
 
 
 @Composable
-fun MatchCard(match: ReservationContent, vm: OpenMatchViewModel) {
+fun MatchCard(match: ReservationContent, vm: OpenMatchViewModel, navController: NavController) {
 
     val bitmap = match?.image?.let { BitmapConverter.converterStringToBitmap(it) }
     val context = LocalContext.current
@@ -281,7 +307,8 @@ fun MatchCard(match: ReservationContent, vm: OpenMatchViewModel) {
     ) {
         Column(
             modifier = Modifier
-                .background(Color.White).padding(10.dp)
+                .background(Color.White)
+                .padding(10.dp)
 
         ) {
             if (bitmap != null) {
@@ -327,47 +354,72 @@ fun MatchCard(match: ReservationContent, vm: OpenMatchViewModel) {
 
             }
 
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
 
-                if (match.players?.isNotEmpty() == true) {
-                    match.players?.let {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Text(
-                                text = "Players: $it",
-                                modifier = Modifier.padding(start = 2.dp)
-                            )
-                        }
-                    }
-                }
+                match.users_images?.forEach {
+                    val bitm = it.let { BitmapConverter.converterStringToBitmap(it) }
+                    if (match.players?.isNotEmpty() == true) {
+                        match.players.let {
 
-                if (match.date?.isNotEmpty() == true) {
-                    match.date?.let {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Text(
-                                text = "Date: $it",
-                                modifier = Modifier.padding(start = 2.dp)
-                            )
+                                Column(
+                                    verticalArrangement = Arrangement.Center,
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    if (bitm != null) {
+                                        Image(
+                                            painter = BitmapPainter(bitm.asImageBitmap()),
+                                            contentDescription = "User Picture",
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier
+                                                .clip(CircleShape)
+                                                .size(50.dp)
+                                                .border(2.dp, Blue.copy(0.6f), CircleShape)
+                                                .clickable { navController.navigate(
+                                                    Screen.PlayerProfile.passId(match.users!![0])) },
+                                        )
+                                    }
+                                    Text(
+                                        text = it,
+                                        modifier = Modifier.padding(start = 2.dp)
+                                    )
+                                }
                         }
                     }
+
                 }
-                if (match.time_slot?.isNotEmpty() == true) {
-                    match.time_slot?.let {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Text(
-                                text = "Time slot : $it",
-                                modifier = Modifier.padding(start = 2.dp)
-                            )
-                        }
+            }
+
+            if (match.date?.isNotEmpty() == true) {
+                match.date?.let {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "Date: $it",
+                            modifier = Modifier.padding(start = 2.dp)
+                        )
                     }
                 }
+            }
+            if (match.time_slot?.isNotEmpty() == true) {
+                match.time_slot?.let {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "Time slot : $it",
+                            modifier = Modifier.padding(start = 2.dp)
+                        )
+                    }
+                }
+            }
+
 
 
                 Row(

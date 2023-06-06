@@ -49,6 +49,17 @@ sealed class Screen(
         icon_focused = Icons.Outlined.Groups
     )
 
+    object PlayerProfile: Screen(
+        route = "playerProfile/{$DETAIL_ARGUMENT_KEY}",
+        title = "Player profile",
+        icon =Icons.Outlined.Person,
+        icon_focused = Icons.Outlined.Person
+    ){
+        fun passId(idUser: String): String {
+            return this.route.replace(oldValue = "{$DETAIL_ARGUMENT_KEY}", newValue = idUser)
+        }
+    }
+
     object EditProfile: Screen(
         route = "editProfile",
         title = "editProfile",

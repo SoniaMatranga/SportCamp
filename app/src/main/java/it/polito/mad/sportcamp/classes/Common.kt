@@ -15,7 +15,8 @@ data class ReservationContent(
     val court_rating: Float?,
     val users: List<String>? = null,
     val players: String? = null,
-    val state: String? = null
+    val state: String? = null,
+    val users_images: List<String>? = null
     )
 
 

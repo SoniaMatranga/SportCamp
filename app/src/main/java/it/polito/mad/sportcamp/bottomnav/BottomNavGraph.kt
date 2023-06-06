@@ -16,6 +16,7 @@ import it.polito.mad.sportcamp.favoritesScreens.*
 import it.polito.mad.sportcamp.initialScreens.LoginScreen
 import it.polito.mad.sportcamp.initialScreens.SplashScreen
 import it.polito.mad.sportcamp.openMatchScreens.OpenMatchScreen
+import it.polito.mad.sportcamp.openMatchScreens.PlayerProfileScreen
 import it.polito.mad.sportcamp.profileScreens.ProfileDetailsScreen
 import it.polito.mad.sportcamp.reservationsScreens.BookReservationScreen
 import it.polito.mad.sportcamp.reservationsScreens.ReservationDetails
@@ -111,6 +112,16 @@ fun BottomNavGraph(
             composable(route = Screen.OpenMatch.route)
             {
                 OpenMatchScreen(navController = navController)
+            }
+
+            composable(
+                route = Screen.PlayerProfile.route,
+                arguments = listOf(navArgument(DETAIL_ARGUMENT_KEY) {
+                    type = NavType.StringType
+                })
+            )
+            {
+                PlayerProfileScreen(navController = navController)
             }
 
             composable(route = Screen.Profile.route)
