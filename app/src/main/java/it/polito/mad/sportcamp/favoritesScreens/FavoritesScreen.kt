@@ -52,6 +52,7 @@ import com.google.firebase.ktx.Firebase
 import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.classes.Reservation
 import it.polito.mad.sportcamp.ui.theme.Blue
+import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.roundToInt
@@ -131,7 +132,6 @@ class FavoriteViewModel : ViewModel() {
             }
             .addOnCompleteListener { setLoadingState(false) }
 
-        setLoadingState(false)
         return courts
     }
 
@@ -212,8 +212,7 @@ fun FavoritesScreen(
 
     val courtsList = if (vm.sportFilter.isEmpty()) allCourts else filteredCourts
 
-    val isLoadingCourts = allCourts == null
-    val isLoadingFilteredCourts = allCourts == null
+    val delayedState = remember { mutableStateOf(false) }
 
 
 
@@ -273,11 +272,13 @@ fun FavoritesScreen(
                                 true -> {
                                     vm.selectedItem = "" //; vm.all = true
                                     vm.sportFilter = ""
+                                    delayedState.value = false
 
                                 }
                                 false -> {
                                     vm.selectedItem = item.name
                                     vm.sportFilter = item.name
+                                    delayedState.value = false
                                 }
                             }
                         },
@@ -297,20 +298,18 @@ fun FavoritesScreen(
             }
         }
 
+
         LazyColumn(
             modifier = Modifier.padding(vertical = 2.dp, horizontal = 4.dp),
         ) {
-            if (isLoadingCourts || isLoadingFilteredCourts) {
-                item {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                    )
-                }
-            } else if (courtsList?.isNotEmpty() == true) {
+
+            if (courtsList?.isNotEmpty() == true) {
                 items(items = courtsList!!) { court ->
                     CourtCard(court = court, navController = navController)
                 }
-            } else {
+
+
+            } else if (delayedState.value) {
                 item {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -322,6 +321,32 @@ fun FavoritesScreen(
                             textAlign = TextAlign.Center,
                         )
                     }
+                }
+
+            } else if (courtsList?.isEmpty() == true){
+                item {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+
+                        androidx.compose.material.CircularProgressIndicator()
+                        LaunchedEffect(Unit) {
+                            delay(2000L)
+                            delayedState.value = true
+                        }
+
+                    }
+                }
+
+            }
+            else{
+                item {
+                    Text(
+                        text = "Oh no! Some error occurred, please, try again",
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.Center,
+                    )
                 }
             }
         }
