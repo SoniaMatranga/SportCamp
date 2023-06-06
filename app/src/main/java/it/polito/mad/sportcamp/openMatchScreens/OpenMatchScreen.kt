@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -58,6 +59,7 @@ import it.polito.mad.sportcamp.common.BitmapConverter
 import it.polito.mad.sportcamp.ui.theme.*
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
@@ -67,10 +69,10 @@ class OpenMatchViewModel : ViewModel() {
 
     private val db = Firebase.firestore
     private var user: FirebaseUser = Firebase.auth.currentUser!!
-    private val matches = MutableLiveData<List<ReservationContent>>()
     private val timeSlots = MutableLiveData<List<TimeSlot>>()
     private val usersList = MutableLiveData<List<String>>()
     private val userDocument = MutableLiveData<User>()
+     val matchesList = MutableLiveData<List<ReservationContent>>()
 
     init{
         getUserDocument()
@@ -136,8 +138,6 @@ class OpenMatchViewModel : ViewModel() {
     suspend fun getOpenMatches(): MutableLiveData<List<ReservationContent>> {
         getTimeSlots()
 
-        val matchesList = MutableLiveData<List<ReservationContent>>()
-
         val querySnapshot = db.collection("reservations")
             .whereEqualTo("state", "Pending")
             .get()
@@ -193,7 +193,8 @@ class OpenMatchViewModel : ViewModel() {
                         court_rating = courtRating,
                         users = reservation?.users,
                         players = reservation?.players,
-                        players_info = players
+                        players_info = players,
+                        players_number = reservation?.players_number
                     )
                     reservationList.add(reservationContent)
                 }
@@ -215,18 +216,56 @@ class OpenMatchViewModel : ViewModel() {
                     if (reservation != null) {
                         val playerList = reservation.players + ", ${userDocument.value?.nickname.toString()}"
                         val users = reservation.users?.plus("${getUserUID()}")
+                        val playersNum = reservation.players_number?.dec()
                         documentSnapshot.reference.update(
                             mapOf(
                                 "state" to "Confirmed",
                                 "players" to playerList,
-                                "users" to users
+                                "users" to users,
+                                "players_number" to playersNum
                             )
                         )
                             .addOnSuccessListener {
                                 Log.d(ContentValues.TAG, "Reservation confirmed successfully!")
-                                val currentMatches = matches.value?.toMutableList()
+                                val currentMatches = matchesList.value?.toMutableList()
                                 currentMatches?.removeAll { it.id_reservation.equals(idReservation) ?: false }
-                                matches.value = currentMatches
+                                matchesList.value = currentMatches
+                            }
+                            .addOnFailureListener { e ->
+                                Log.w(ContentValues.TAG, "Error updating reservation", e)
+                            }
+                    }
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.w(ContentValues.TAG, "Error getting reservation", e)
+            }
+    }
+
+    fun updateReservationPlayersNumberById(idReservation: String) {
+        val reservationsRef = db.collection("reservations")
+        val query = reservationsRef.whereEqualTo("id_reservation", idReservation)
+
+        query.get()
+            .addOnSuccessListener { querySnapshot ->
+                for (documentSnapshot in querySnapshot.documents) {
+                    val reservation = documentSnapshot.toObject(Reservation::class.java)
+                    if (reservation != null) {
+                        val playerList = reservation.players + ", ${userDocument.value?.nickname.toString()}"
+                        val users = reservation.users?.plus("${getUserUID()}")
+                        val playersNum = reservation.players_number?.dec()
+                        documentSnapshot.reference.update(
+                            mapOf(
+                                "players" to playerList,
+                                "users" to users,
+                                "players_number" to playersNum
+                            )
+                        )
+                            .addOnSuccessListener {
+                                Log.d(ContentValues.TAG, "Reservation confirmed successfully!")
+                                val currentMatches = matchesList.value?.toMutableList()
+                                currentMatches?.removeAll { it.id_reservation.equals(idReservation) ?: false }
+                                matchesList.value = currentMatches
                             }
                             .addOnFailureListener { e ->
                                 Log.w(ContentValues.TAG, "Error updating reservation", e)
@@ -256,6 +295,7 @@ fun OpenMatchScreen(
     vm: OpenMatchViewModel = viewModel(factory = OpenMatchViewModel.factory)
 ) {
 
+
     //val matches by vm.getOpenMatches().observeAsState(listOf())
     val coroutineScope = rememberCoroutineScope()
     val matchesState = coroutineScope.run {
@@ -266,7 +306,8 @@ fun OpenMatchScreen(
         matches.observeAsState(emptyList())
     }
 
-    val matches = matchesState.value
+    val matches by vm.matchesList.observeAsState()
+    val delayedState = remember { mutableStateOf(false) }
 
 
     Column(
@@ -277,20 +318,39 @@ fun OpenMatchScreen(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            if (matches.isNotEmpty()) {
+            if (matches?.isNotEmpty() == true) {
                 LazyColumn(
                     modifier = Modifier.padding(vertical = 2.dp, horizontal = 4.dp),
                 ) {
-                    items(items = matches) { match ->
+                    items(items = matches!!) { match ->
                         MatchCard(match = match, vm = vm, navController = navController)
                     }
                 }
-            } else {
+            }
+            else if (delayedState.value) {
+                    Box(
+                        modifier = Modifier.fillMaxSize()
+                            .padding(30.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        androidx.compose.material3.Text(
+                            text = "No available open matches, sorry! If you are looking for some players you can publish a new reservation request!",
+                            fontSize = 14.sp,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+
+
+            }else {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator()
+                    LaunchedEffect(Unit) {
+                        delay(2000L)
+                        delayedState.value = true
+                    }
                 }
             }
 
@@ -391,7 +451,7 @@ fun MatchCard(match: ReservationContent, vm: OpenMatchViewModel, navController: 
                                             .border(2.dp, Blue.copy(0.6f), CircleShape)
                                             .clickable {
                                                 navController.navigate(
-                                                    Screen.PlayerProfile.passId(match.users!![0])
+                                                    Screen.PlayerProfile.passId(it.id_user!!)
                                                 )
                                             },
                                     )
@@ -432,6 +492,20 @@ fun MatchCard(match: ReservationContent, vm: OpenMatchViewModel, navController: 
                 }
             }
 
+            if (match.players_number!= 0) {
+                match.players_number?.let {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "Still looking for: $it players",
+                            modifier = Modifier.padding(start = 2.dp)
+                        )
+                    }
+                }
+            }
+
 
 
                 Row(
@@ -443,8 +517,16 @@ fun MatchCard(match: ReservationContent, vm: OpenMatchViewModel, navController: 
                             shape = RoundedCornerShape(5.dp),
                             colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
                             onClick = {
-                                match.id_reservation?.let { vm.updateReservationById(it) }
-                                Toast.makeText(context, "Match succesfully confirmed!", Toast.LENGTH_SHORT).show()
+                                match.id_reservation?.let {
+                                    if(match.players_number == 1) {
+                                        vm.updateReservationById(it)
+                                        Toast.makeText(context, "Match succesfully confirmed! You can now see it on you calendar", Toast.LENGTH_SHORT).show()
+                                    }
+                                    else{
+                                        vm.updateReservationPlayersNumberById(it)
+                                        Toast.makeText(context, "Match succesfully accepted!", Toast.LENGTH_SHORT).show()
+                                    } }
+
                             }) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(

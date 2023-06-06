@@ -5,6 +5,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -55,6 +57,7 @@ import it.polito.mad.sportcamp.classes.Court
 import it.polito.mad.sportcamp.classes.Reservation
 import it.polito.mad.sportcamp.classes.TimeSlot
 import it.polito.mad.sportcamp.classes.User
+import it.polito.mad.sportcamp.profileScreens.EditProfileViewModel
 import it.polito.mad.sportcamp.ui.theme.Orange
 import kotlinx.coroutines.tasks.await
 
@@ -65,6 +68,7 @@ class BookReservationsViewModel : ViewModel() {
     var selectedEquipments by mutableStateOf("Not requested")
     var selectedTimeSlot by  mutableStateOf("Select time slot")
     var selectedReservationState by mutableStateOf("Confirmed")
+    var selectedPlayersNumber by mutableStateOf("1")
 
     private val db = Firebase.firestore
     private val court = MutableLiveData<Court>()
@@ -162,7 +166,8 @@ class BookReservationsViewModel : ViewModel() {
         timeSlot: String?,
         date: String?,
         equipments: String?,
-        state: String?
+        state: String?,
+        playersNumber: Int?
     ) {
         val nickname = userDocument.value?.nickname.toString()
             val reservation = Reservation(
@@ -173,7 +178,8 @@ class BookReservationsViewModel : ViewModel() {
                 equipments = equipments,
                 players = nickname,
                 users = listOf(getUserUID()) ,
-                state = state
+                state = state,
+                players_number = playersNumber
             )
         val reservationsCollection = db.collection("reservations")
 
@@ -378,7 +384,7 @@ fun BookReservationScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 45.dp, vertical = 10.dp)
+                        .padding(horizontal = 45.dp, vertical = 5.dp)
                         .background(Color.White)
                 ) {
                     Row(
@@ -405,7 +411,7 @@ fun BookReservationScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 45.dp, vertical = 10.dp)
+                        .padding(horizontal = 45.dp, vertical = 5.dp)
                         .background(Color.White)
                 ) {
                     Row(
@@ -424,9 +430,13 @@ fun BookReservationScreen(
                             enabled = true,
                             colors = CheckboxDefaults.colors(MaterialTheme.colors.secondaryVariant)
                         )
-                        Text(text = "Publish reservation to search random players")
+                        Text(text = "Publish reservation request to search random players")
                     }
 
+                }
+
+                if(isCheckedRandomPlayer.value){
+                    PlayerNumberToggleEdit(userOption = vm.selectedPlayersNumber)
                 }
 
 
@@ -443,7 +453,7 @@ fun BookReservationScreen(
                                 courtDetails?.id_court?.let {
                                     vm.addReservation(
                                          vm.getUserUID(),
-                                        it, vm.selectedTimeSlot, date, vm.selectedEquipments,  vm.selectedReservationState
+                                        it, vm.selectedTimeSlot, date, vm.selectedEquipments,  vm.selectedReservationState, vm.selectedPlayersNumber.toInt()
                                     )
                                 }
 
@@ -461,7 +471,7 @@ fun BookReservationScreen(
                         }) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = "Book court",
+                                text = if(!isCheckedRandomPlayer.value) {"Book court"} else{"Publish"},
                                 fontSize = 15.sp,
                                 textAlign = TextAlign.Center
                             )
@@ -492,4 +502,76 @@ fun BookReservationScreen(
 
     }
     Spacer(modifier = Modifier.height(20.dp))
+}
+
+@Composable
+fun PlayerNumberToggleEdit(userOption: String) {
+    val vm: BookReservationsViewModel = viewModel()
+    val states = listOf(
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+    var selectedOption by remember {
+        mutableStateOf(userOption)
+    }
+    val onSelectionChange = { text: String ->
+        selectedOption = text
+        vm.selectedPlayersNumber=selectedOption
+    }
+
+    Column( modifier = Modifier
+        .fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally) {
+        Spacer(modifier = Modifier.height(5.dp))
+        Text(
+            text = "Select the number of players you are looking for" ,
+            fontSize = 10.sp,
+        )
+        Spacer(modifier = Modifier.height(5.dp))
+    }
+
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ) {
+
+
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            elevation = 4.dp,
+            modifier = Modifier
+                .wrapContentSize()
+        ) {
+
+            Row(
+                modifier = Modifier
+                    .clip(shape = RoundedCornerShape(24.dp))
+                    .background(Color.LightGray)
+            ) {
+                states.forEach { text ->
+                    Text(
+                        text = text.toString(),
+                        color = Color.White,
+                        modifier = Modifier
+                            .clip(shape = RoundedCornerShape(24.dp))
+                            .clickable {
+                                onSelectionChange(text.toString())
+                            }
+                            .background(
+                                if (text.toString() == selectedOption) {
+                                    MaterialTheme.colors.primary
+                                } else {
+                                    Color.LightGray
+                                }
+                            )
+                            .padding(
+                                vertical = 12.dp,
+                                horizontal = 10.dp,
+                            ),
+                    )
+                }
+            }
+        }
+    }
+
+    Spacer(modifier = Modifier.height(10.dp))
 }

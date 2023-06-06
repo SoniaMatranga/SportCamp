@@ -12,5 +12,6 @@ data class Reservation(
     val equipments: String? = null,
     val options: String? = null,
     val players: String? = null,
+    val players_number: Int? = null,
     val state: String? = null
 )

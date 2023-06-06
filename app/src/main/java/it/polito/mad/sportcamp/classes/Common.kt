@@ -16,7 +16,8 @@ data class ReservationContent(
     val users: List<String>? = null,
     val players: String? = null,
     val state: String? = null,
-    val players_info: List<User>? = null
+    val players_info: List<User>? = null,
+    val players_number: Int? = null,
     )
 
 
