@@ -514,7 +514,7 @@ fun OpenMatchScreen(
                 ) {
                     CircularProgressIndicator()
                     LaunchedEffect(Unit) {
-                        delay(2000L)
+                        delay(3000L)
                         delayedState.value = true
                     }
                 }

@@ -457,6 +457,11 @@ fun BookReservationScreen(
                                     )
                                 }
 
+                                vm.selectedTimeSlot = "Select time slot"
+                                vm.selectedEquipments = "Not requested"
+                                vm.selectedReservationState = "Confirmed"
+                                vm.selectedPlayersNumber = "1"
+
                                 if(vm.selectedReservationState == "Confirmed"){
                                         Toast.makeText(context, "Booking successfully completed!", Toast.LENGTH_SHORT).show()
                                 }

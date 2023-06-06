@@ -90,7 +90,7 @@ class FavoriteViewModel : ViewModel() {
         val courts = MutableLiveData<List<Court>>()
 
         db.collection("reservations")
-            .whereEqualTo("id_user", getUserUID())
+            .whereArrayContains("users", getUserUID())
             .whereLessThan("date", currentDate)
             .get()
             .addOnSuccessListener { reservationSnapshot ->
@@ -142,7 +142,7 @@ class FavoriteViewModel : ViewModel() {
         val courts = MutableLiveData<List<Court>>()
 
         db.collection("reservations")
-            .whereEqualTo("id_user", getUserUID())
+            .whereArrayContains("users", getUserUID())
             .whereLessThan("date", currentDate)
             .get()
             .addOnSuccessListener { reservationSnapshot ->
@@ -332,7 +332,7 @@ fun FavoritesScreen(
 
                         androidx.compose.material.CircularProgressIndicator()
                         LaunchedEffect(Unit) {
-                            delay(2000L)
+                            delay(3000L)
                             delayedState.value = true
                         }
 
