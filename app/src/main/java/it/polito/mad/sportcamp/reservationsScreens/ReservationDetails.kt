@@ -485,9 +485,10 @@ fun ReservationCard(reservation: ReservationContent, selectedDate:String, viewMo
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Column {
+                                if(!LocalDate.parse(reservation.date).isBefore(today)) {
+                                    Column {
 
-                                    if(!LocalDate.parse(reservation.date).isBefore(today)) {
+
                                         Button(
                                             shape = RoundedCornerShape(5.dp),
                                             colors = ButtonDefaults.buttonColors(backgroundColor = Color.Gray),
@@ -513,24 +514,25 @@ fun ReservationCard(reservation: ReservationContent, selectedDate:String, viewMo
                                                 )
                                             }
                                         }
+
                                     }
-                                }
-                                Column {
-                                    Button(
-                                        shape = RoundedCornerShape(5.dp),
-                                        colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
-                                        onClick = {
-                                            openDialog.value = true
-                                        }) {
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Text(
-                                                text = "Delete",
-                                                fontSize = 15.sp,
-                                            )
-                                            Icon(
-                                                Icons.Outlined.Delete,
-                                                contentDescription = "Delete"
-                                            )
+                                    Column {
+                                        Button(
+                                            shape = RoundedCornerShape(5.dp),
+                                            colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
+                                            onClick = {
+                                                openDialog.value = true
+                                            }) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(
+                                                    text = "Delete",
+                                                    fontSize = 15.sp,
+                                                )
+                                                Icon(
+                                                    Icons.Outlined.Delete,
+                                                    contentDescription = "Delete"
+                                                )
+                                            }
                                         }
                                     }
                                 }
