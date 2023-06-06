@@ -630,6 +630,47 @@ private fun UserDetailsRow(user: User) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(start=26.dp, top = 3.dp, bottom=10.dp),
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.Top
+    ) {
+        Column(modifier = Modifier
+            .weight(2f)
+            .padding(start = 16.dp),
+            verticalArrangement = Arrangement.Bottom) {
+            user.name?.let {
+                Text(
+                    text = "Full Name:",
+                    fontSize = 16.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+
+        Column(modifier = Modifier
+            .weight(5f),
+        horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.Bottom) {
+            // User's name value
+            user.name?.let {
+                Text(
+                    text = it,
+                    fontSize = 16.sp,
+                    color = Color.Gray,
+                    letterSpacing = (0.8).sp,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
             .padding(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

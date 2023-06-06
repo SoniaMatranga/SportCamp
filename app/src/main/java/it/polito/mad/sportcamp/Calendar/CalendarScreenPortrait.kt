@@ -27,7 +27,7 @@ fun CalendarScreenPortrait(
                 modifier = Modifier
                     .animateContentSize()
                     .fillMaxWidth()
-                    .padding(15.dp),
+                    .padding(horizontal = 15.dp),
                 dayContent = { dayState ->
                     EventDay(
                         state = dayState,
