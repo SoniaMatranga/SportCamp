@@ -290,10 +290,10 @@ fun WelcomeCard(userName: String) {
                 Row {
                     Text(
                         modifier = Modifier.padding(top = 2.dp, end = 5.dp),
-                        text = "This is a calendar that makes it easy to manage and view" +
+                        text = "This is your reservations calendar to manage and view" +
                                 " your bookings. Add new reservations or publish open " +
                                 "matches by clicking on the plus button to try your hand " +
-                                "at new challenges!",
+                                "at new challenges! Have fun!",
                         color = Color.Gray,
                         fontSize = 14.sp,
                     )

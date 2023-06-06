@@ -226,7 +226,7 @@ fun FavoritesScreen(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically){
            Text(
-               text="Leave a review and rate the courts you've played. Click stars to se all the ratings",
+               text="Leave a review and rate the courts you've played. Click stars to see all the ratings",
                color = Color.Gray,
                 textAlign = TextAlign.Center,
                modifier = Modifier

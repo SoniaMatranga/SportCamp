@@ -480,14 +480,14 @@ fun Profile(
                     UserDetails()
                 }
 
+
+
                 item{
                     Spacer(modifier = Modifier.height(20.dp))
                     UserDetailsRow(user = user!!)
                     Spacer(modifier = Modifier.height(20.dp))
                 }
-                items(optionsList) { item ->
-                    OptionsItemStyle(item = item)
-                }
+
 
                 item {
                     SportsListRow(user = user!!)
@@ -516,11 +516,16 @@ fun Profile(
                         TriStateToggle("Volley", user!!.volley_level)
                     }
                 }
+
+                items(optionsList) { item ->
+                    Spacer(modifier = Modifier.height(50.dp))
+                    OptionsItemStyle(item = item)
+                }
                 
 
 
                 item{
-                    Spacer(modifier = Modifier.height(50.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
                     LinkLoginLogoutButtons(navController = navController)
                     Spacer(modifier = Modifier.height(50.dp))
                 }
@@ -640,7 +645,7 @@ private fun UserDetailsRow(user: User) {
             verticalArrangement = Arrangement.Bottom) {
             user.name?.let {
                 Text(
-                    text = "Full Name:",
+                    text = "Name:",
                     fontSize = 16.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
