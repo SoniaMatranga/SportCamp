@@ -11,6 +11,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.unit.dp
@@ -18,11 +19,18 @@ import it.polito.mad.sportcamp.ui.theme.SportCampTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.SportsBasketball
+import androidx.compose.material.icons.filled.SportsSoccer
+import androidx.compose.material.icons.filled.SportsTennis
+import androidx.compose.material.icons.filled.SportsVolleyball
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -34,6 +42,7 @@ import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -56,6 +65,7 @@ import it.polito.mad.sportcamp.classes.TimeSlot
 import it.polito.mad.sportcamp.classes.User
 import it.polito.mad.sportcamp.common.CustomToolBar
 import it.polito.mad.sportcamp.common.BitmapConverter
+import it.polito.mad.sportcamp.favoritesScreens.ChipsModel
 import it.polito.mad.sportcamp.ui.theme.*
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
@@ -72,7 +82,10 @@ class OpenMatchViewModel : ViewModel() {
     private val timeSlots = MutableLiveData<List<TimeSlot>>()
     private val usersList = MutableLiveData<List<String>>()
     private val userDocument = MutableLiveData<User>()
+    var selectedItem by  mutableStateOf("New requests")
+    var matchesFilter by mutableStateOf("New requests")
      val matchesList = MutableLiveData<List<ReservationContent>>()
+    val acceptedMatchesList = MutableLiveData<List<ReservationContent>>()
 
     init{
         getUserDocument()
@@ -205,6 +218,76 @@ class OpenMatchViewModel : ViewModel() {
         return matchesList
     }
 
+    suspend fun getAcceptedOpenMatches(): MutableLiveData<List<ReservationContent>> {
+        getTimeSlots()
+
+        val querySnapshot = db.collection("reservations")
+            .whereEqualTo("state", "Pending")
+            .get()
+            .await()
+
+        val reservationList = mutableListOf<ReservationContent>()
+
+        for (doc in querySnapshot.documents) {
+            val reservation = doc.toObject(Reservation::class.java)
+
+            if (reservation?.users?.contains(getUserUID())!!) {
+                val courtId = reservation?.id_court
+
+                // Get players using getPlayers and await for the result
+                val playersDeferred = getPlayers(reservation.users)
+                val players = playersDeferred.await()
+
+                val courtSnapshot = db.collection("courts")
+                    .whereEqualTo("id_court", courtId)
+                    .get()
+                    .await()
+
+                val courtDocuments = courtSnapshot.documents
+                if (courtDocuments.isNotEmpty()) {
+                    val courtDocument = courtDocuments[0]
+                    val courtValue = courtDocument.toObject(Court::class.java)
+
+                    // Retrieve court information
+                    val courtName = courtValue?.court_name
+                    val courtAddress = courtValue?.address
+                    val courtCity = courtValue?.city
+                    val courtSport = courtValue?.sport
+                    val courtRating = courtValue?.court_rating
+                    val courtImage = courtValue?.image
+
+                    // Retrieve time slot information
+                    val timeSlotValue =
+                        timeSlots.value?.find { it.id_time_slot == reservation?.id_time_slot }
+                    val timeSlot = timeSlotValue?.time_slot
+
+                    // Create ReservationContent object and add it to the list
+                    val reservationContent = ReservationContent(
+                        id_reservation = reservation?.id_reservation,
+                        id_court = reservation?.id_court,
+                        equipments = reservation?.equipments,
+                        court_name = courtName,
+                        address = courtAddress,
+                        city = courtCity,
+                        sport = courtSport,
+                        time_slot = timeSlot,
+                        date = reservation?.date,
+                        image = courtImage,
+                        court_rating = courtRating,
+                        users = reservation?.users,
+                        players = reservation?.players,
+                        players_info = players,
+                        players_number = reservation?.players_number
+                    )
+                    reservationList.add(reservationContent)
+                }
+            }
+        }
+
+        acceptedMatchesList.value = reservationList
+        return acceptedMatchesList
+    }
+
     fun updateReservationById(idReservation: String) {
         val reservationsRef = db.collection("reservations")
         val query = reservationsRef.whereEqualTo("id_reservation", idReservation)
@@ -288,6 +371,7 @@ class OpenMatchViewModel : ViewModel() {
         }
     }
 }
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun OpenMatchScreen(
@@ -306,8 +390,32 @@ fun OpenMatchScreen(
         matches.observeAsState(emptyList())
     }
 
-    val matches by vm.matchesList.observeAsState()
+    val acceptedMatchesState = coroutineScope.run {
+        val acceptedMatches: MutableLiveData<List<ReservationContent>> = remember { MutableLiveData<List<ReservationContent>>()}
+        launch {
+            acceptedMatches.value = vm.getAcceptedOpenMatches().value
+        }
+        acceptedMatches.observeAsState(emptyList())
+    }
+
+    val openMatches by vm.matchesList.observeAsState()
+    val acceptedMatches by vm.acceptedMatchesList.observeAsState()
+
+    var matches = if (vm.matchesFilter.equals("New requests")) openMatches else acceptedMatches
     val delayedState = remember { mutableStateOf(false) }
+
+    val filterList = listOf(
+        ChipsModel(
+            name = "New requests",
+            leadingIcon = Icons.Default.SportsTennis,
+            trailingIcon = Icons.Default.Close
+        ),
+        ChipsModel(
+            name = "Pending reservations",
+            leadingIcon = Icons.Default.SportsSoccer,
+            trailingIcon = Icons.Default.Close
+        )
+    )
 
 
     Column(
@@ -318,14 +426,73 @@ fun OpenMatchScreen(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            if (matches?.isNotEmpty() == true) {
-                LazyColumn(
-                    modifier = Modifier.padding(vertical = 2.dp, horizontal = 4.dp),
-                ) {
-                    items(items = matches!!) { match ->
-                        MatchCard(match = match, vm = vm, navController = navController)
-                    }
+            var isSelected by remember { mutableStateOf(false) }
+
+            LazyRow (modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween)
+            {
+                items(filterList) { item ->
+                    isSelected = vm.selectedItem == item.name
+                    Spacer(modifier = Modifier.padding(5.dp))
+                    androidx.compose.material3.FilterChip(
+                        selected = isSelected,
+                        onClick = {
+                            when (vm.selectedItem == item.name) {
+                                true -> {
+                                    vm.selectedItem = item.name
+                                    vm.matchesFilter = item.name
+                                    matches = if (vm.matchesFilter.equals("New requests")) openMatches else acceptedMatches
+                                    delayedState.value = false
+
+                                }
+                                false -> {
+                                    vm.selectedItem = item.name
+                                    vm.matchesFilter = item.name
+                                    matches = if (vm.matchesFilter.equals("New requests")) openMatches else acceptedMatches
+                                    delayedState.value = false
+                                }
+                            }
+                        },
+                        label = {
+                            androidx.compose.material3.Text(
+                                text = item.name,
+                                color= if(isSelected){Color.White} else Color.Black)
+                        },
+                        colors = FilterChipDefaults.filterChipColors(containerColor = Color.Transparent, selectedContainerColor = Blue.copy(alpha = 0.6f))
+                    )
+                    Spacer(modifier = Modifier.padding(5.dp))
                 }
+            }
+
+            if(matches?.isNotEmpty() == true) {
+
+                    LazyColumn(
+                        modifier = Modifier.padding(vertical = 2.dp, horizontal = 4.dp),
+                    ) {
+                        item {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 10.dp),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                androidx.compose.material3.Text(
+                                    text = if (vm.matchesFilter.equals("New requests")) {"Join other players and book a court all together!"} else {
+                                        "We are still looking for players! These reservations will be confirmed in your calendar when the requested players number is reached. The booking will not be confirmed if not all players are present within 12 hours before the match "},
+                                    color = Color.Gray,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 20.dp)
+                                )
+                            }
+                        }
+
+                        items(items = matches!!) { match ->
+                            MatchCard(match = match, vm = vm, navController = navController)
+                        }
+                    }
             }
             else if (delayedState.value) {
                     Box(
@@ -339,7 +506,6 @@ fun OpenMatchScreen(
                             textAlign = TextAlign.Center,
                         )
                     }
-
 
             }else {
                 Box(
@@ -409,16 +575,22 @@ fun MatchCard(match: ReservationContent, vm: OpenMatchViewModel, navController: 
                     Row() {
                         match?.court_name?.let {
                             Text(
+                                overflow = TextOverflow.Ellipsis,
+                                maxLines =2,
                                 text = it,
                                 fontSize = 18.sp,
+                                modifier = Modifier.padding(start = 1.dp)
                             )
                         }
                     }
                     Row() {
                         match?.address?.let {
                             Text(
+                                overflow = TextOverflow.Ellipsis,
+                                maxLines =2,
                                 text = it,
                                 fontSize = 15.sp,
+                                modifier = Modifier.padding(start = 1.dp)
                             )
                         }
                     }
@@ -507,6 +679,7 @@ fun MatchCard(match: ReservationContent, vm: OpenMatchViewModel, navController: 
             }
 
 
+            if(vm.selectedItem.equals("New requests")) {
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -518,14 +691,22 @@ fun MatchCard(match: ReservationContent, vm: OpenMatchViewModel, navController: 
                             colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
                             onClick = {
                                 match.id_reservation?.let {
-                                    if(match.players_number == 1) {
+                                    if (match.players_number == 1) {
                                         vm.updateReservationById(it)
-                                        Toast.makeText(context, "Match succesfully confirmed! You can now see it on you calendar", Toast.LENGTH_SHORT).show()
-                                    }
-                                    else{
+                                        Toast.makeText(
+                                            context,
+                                            "Match succesfully confirmed! You can now see it on you calendar",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    } else {
                                         vm.updateReservationPlayersNumberById(it)
-                                        Toast.makeText(context, "Match succesfully accepted!", Toast.LENGTH_SHORT).show()
-                                    } }
+                                        Toast.makeText(
+                                            context,
+                                            "Match succesfully accepted! You will find it in pending reservations",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                }
 
                             }) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -539,6 +720,7 @@ fun MatchCard(match: ReservationContent, vm: OpenMatchViewModel, navController: 
                     }
 
                 }
+            }
 
 
         }
