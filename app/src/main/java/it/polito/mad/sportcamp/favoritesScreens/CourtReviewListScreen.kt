@@ -35,6 +35,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import it.polito.mad.sportcamp.bottomnav.DETAIL_ARGUMENT_KEY3
+import it.polito.mad.sportcamp.bottomnav.Screen
 import it.polito.mad.sportcamp.common.BitmapConverter
 import it.polito.mad.sportcamp.common.CustomToolbarWithBackArrow
 import it.polito.mad.sportcamp.classes.Rating
@@ -152,7 +153,7 @@ fun CourtReviewListScreen(
                 modifier = Modifier.padding(vertical = 2.dp, horizontal = 4.dp),
             ) {
                 items(items = reviews) { review ->
-                    ReviewCard(review = review, viewModel = viewModel)
+                    ReviewCard(review = review, viewModel = viewModel, navController = navController)
                 }
             }
         }
@@ -162,7 +163,7 @@ fun CourtReviewListScreen(
 
 
 @Composable
-fun ReviewCard(review: RatingContent, viewModel: CourtReviewListViewModel) {
+fun ReviewCard(review: RatingContent, viewModel: CourtReviewListViewModel, navController: NavHostController) {
 
     //val user by viewModel.getUserById(review.id_user!!).observeAsState()
     val bitmap = review?.image?.let { BitmapConverter.converterStringToBitmap(it) }
@@ -200,6 +201,11 @@ fun ReviewCard(review: RatingContent, viewModel: CourtReviewListViewModel) {
                                 .clip(CircleShape)
                                 .size(50.dp)
                                 .border(2.dp, Blue.copy(0.6f), CircleShape)
+                                .clickable {
+                                    navController.navigate(
+                                        Screen.PlayerProfile.passId(review.id_user!!)
+                                    )
+                                },
                         )
                     }
                 }

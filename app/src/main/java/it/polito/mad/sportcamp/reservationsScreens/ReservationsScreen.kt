@@ -250,7 +250,7 @@ fun WelcomeCard(userName: String) {
         elevation = 5.dp,
         modifier = Modifier
             .padding(horizontal = 5.dp)
-            .padding(top = 5.dp, bottom = 30.dp),
+            .padding(top = 5.dp, bottom = 20.dp),
         shape = RoundedCornerShape(10.dp),
     ) {
         Row {
@@ -280,7 +280,7 @@ fun WelcomeCard(userName: String) {
                 modifier = Modifier
                     .weight(3f)
                     .padding(horizontal = 2.dp)
-                    .padding(bottom = 10.dp)
+                    .padding(bottom = 5.dp)
             ) {
                 Text(
                     modifier = Modifier.padding(top = 2.dp),
@@ -295,7 +295,7 @@ fun WelcomeCard(userName: String) {
                                 "matches by clicking on the plus button to try your hand " +
                                 "at new challenges! Have fun!",
                         color = Color.Gray,
-                        fontSize = 14.sp,
+                        fontSize = 13.sp,
                     )
                 }
             }
